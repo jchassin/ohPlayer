@@ -9,8 +9,8 @@
 #include <OpenHome/Av/VolumeManager.h>
 #include <OpenHome/Web/ConfigUi/FileResourceHandler.h>
 #include <OpenHome/Web/WebAppFramework.h>
-
 #include "Volume.h"
+#include "RaspdacMiniOledIF.h"
 
 namespace OpenHome {
     class Shell;
@@ -44,6 +44,8 @@ class ExampleMediaPlayer : private Net::IResourceManager
     static const TUint kMaxUiTabs       = 4;
     static const TUint kUiSendQueueSize = kMaxUiTabs * 200;
     static const TUint kShellPort       = 2323;
+    static const TUint kOhMdpPort       = 4444;
+
 public:
     ExampleMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 					   const Brx& aUdn,
@@ -81,6 +83,8 @@ protected:
 #ifdef DEBUG
     Media::IPipelineObserver         *iPipelineStateLogger;
 #endif // DEBUG
+    Media::IPipelineObserver           *iRaspdacObserver;
+    RaspdacVolumeObserver        *iRaspdacVolumeObserver;
     Media::PipelineInitParams        *iInitParams;
     Media::AllocatorInfoLogger       *iInfoLogger;
     Net::DvDeviceStandard            *iDevice;

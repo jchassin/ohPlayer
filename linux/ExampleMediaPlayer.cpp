@@ -1,5 +1,6 @@
 #include <glib.h>
 #include <string>
+#include "RaspdacMiniOledIF.h"
 
 #include <OpenHome/Media/Codec/CodecFactory.h>
 #include <OpenHome/Media/Codec/ContainerFactory.h>
@@ -18,6 +19,7 @@
 #include <OpenHome/Web/ConfigUi/ConfigUi.h>
 #include <OpenHome/Private/Shell.h>
 #include <OpenHome/Private/ShellCommandDebug.h>
+
 
 #include "ConfigGTKKeyStore.h"
 #include "ControlPointProxy.h"
@@ -41,7 +43,7 @@ using namespace OpenHome::Web;
 const Brn ExampleMediaPlayer::kIconOpenHomeFileName("OpenHomeIcon");
 
 ExampleMediaPlayer::ExampleMediaPlayer(Net::DvStack& aDvStack,
-									   Net::CpStack& aCpStack,
+                                       Net::CpStack& aCpStack,
                                        const Brx& aUdn,
                                        const TChar* aRoom,
                                        const TChar* aProductName,
@@ -58,6 +60,7 @@ ExampleMediaPlayer::ExampleMediaPlayer(Net::DvStack& aDvStack,
     iShell = new Shell(aDvStack.Env(), kShellPort);
     iShellDebug = new ShellCommandDebug(*iShell);
     iInfoLogger = new Media::AllocatorInfoLogger();
+
 
     // Do NOT set UPnP friendly name attributes at this stage.
     // (Wait until MediaPlayer is created so that friendly name can be
@@ -125,10 +128,17 @@ ExampleMediaPlayer::ExampleMediaPlayer(Net::DvStack& aDvStack,
     iPipelineStateLogger = new LoggingPipelineObserver();
     iMediaPlayer->Pipeline().AddObserver(*iPipelineStateLogger);
 #endif // DEBUG
+    iRaspdacObserver = new RaspdacObserver();
+    iMediaPlayer->Pipeline().AddObserver(*iRaspdacObserver);
+
+    iRaspdacVolumeObserver = new RaspdacVolumeObserver();
+    iMediaPlayer->VolumeManager().AddVolumeObserver(*iRaspdacVolumeObserver);
+
+
 
     iFnUpdaterStandard = new
         Av::FriendlyNameAttributeUpdater(iMediaPlayer->FriendlyNameObservable(),
-										 iMediaPlayer->ThreadPool(),
+                                         iMediaPlayer->ThreadPool(),
                                         *iDevice);
 
     iFnManagerUpnpAv = new
@@ -136,8 +146,8 @@ ExampleMediaPlayer::ExampleMediaPlayer(Net::DvStack& aDvStack,
 
     iFnUpdaterUpnpAv = new
         Av::FriendlyNameAttributeUpdater(*iFnManagerUpnpAv,
-										 iMediaPlayer->ThreadPool(),
-										 *iDeviceUpnpAv);
+                                         iMediaPlayer->ThreadPool(),
+                                         *iDeviceUpnpAv);
 
     // Set up config app.
 	auto webAppInit = new WebAppFrameworkInitParams();
