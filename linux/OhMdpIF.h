@@ -28,7 +28,7 @@ class OhMdpIF //singleton
   public:
      static OhMdpIF * getInstance();
 
-     void setTrack(OpenHome::Brn aTitle, OpenHome::Brn anArtist, OpenHome::Brn anAlbum);
+     void setTrack(OpenHome::Brn aTitle, OpenHome::Brn anArtist, OpenHome::Brn anAlbum, OpenHome::Brn anAlbumArtURI);
      void setMode(OpenHome::Brn aMode);
      void setTime(OpenHome::TUint anElapsed, OpenHome::TUint aDuration);
      void setStreamInfo(OpenHome::TUint aBitRate, OpenHome::TUint aChannelNum, OpenHome::TUint aBitDepth, OpenHome::TUint aSampleFreq);
@@ -37,6 +37,7 @@ class OhMdpIF //singleton
      OpenHome::Brn iTitle;
      OpenHome::Brn iArtist;
      OpenHome::Brn iAlbum;
+     OpenHome::Brn iAlbumArtURI;
      OpenHome::Brn iMode;
      OpenHome::TUint iElapsed;
      OpenHome::TUint iDuration;

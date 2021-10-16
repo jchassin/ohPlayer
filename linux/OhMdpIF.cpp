@@ -40,12 +40,18 @@ public:
     void Run()
     {
         const Brn exitUnix("exit");
-        const Brn exitDos("exit\r");
+        const Brn exitDos("exit\r"); // not that smart but for debug purpose
         const Brn statusCommand("status");
+        const Brn statusCommandDos("status\r");
+
         const Brn currentSongCommand("currentsong");
+        const Brn currentSongCommandDos("currentsong\r");
+
 	const Brn titleHdr("Title: ");
         const Brn artistHdr("Artist: ");
         const Brn albumHdr("Album: ");
+        const Brn albumArtURI("AlbumArtURI: ");
+
 
         const Brn timeHdr("time: ");
         const Brn elapsedHdr("elapsed: ");
@@ -71,7 +77,7 @@ public:
             try {
                 Brn buf = iReaderUntil->ReadUntil('\n');
                 //Log::Print("buf received : "); Log::Print(buf);
-		if (buf.Equals(statusCommand))
+		if (buf.Equals(statusCommand)||buf.Equals(statusCommandDos))
                 {
                   //Log::Print("status received");
                   sprintf(aBuff, "%u", iParentOhMdpIF->iVolume);
@@ -90,7 +96,7 @@ public:
                   iWriteBuffer->Write(durationHdr);iWriteBuffer->Write(Brn(aBuff));iWriteBuffer->Write(EndOfLine);
 
                 }
-		else if (buf.Equals(currentSongCommand))
+		else if (buf.Equals(currentSongCommand)||buf.Equals(currentSongCommandDos))
                 {
                   //Log::Print("current received");
 
@@ -99,14 +105,14 @@ public:
                   iWriteBuffer->Write(EndOfLine);
                   iWriteBuffer->Write(artistHdr);iWriteBuffer->Write(iParentOhMdpIF->iArtist);iWriteBuffer->Write(EndOfLine);
                   iWriteBuffer->Write(albumHdr);iWriteBuffer->Write(iParentOhMdpIF->iAlbum);iWriteBuffer->Write(EndOfLine);
+                  iWriteBuffer->Write(albumArtURI);iWriteBuffer->Write(iParentOhMdpIF->iAlbumArtURI);iWriteBuffer->Write(EndOfLine);
+
                   sprintf(aBuff, "%u", iParentOhMdpIF->iElapsed);
 
                   iWriteBuffer->Write(timeHdr);iWriteBuffer->Write (Brn(aBuff)); iWriteBuffer->Write(Brn(":")); 
 
                   sprintf(aBuff, "%u", iParentOhMdpIF->iDuration);
                   iWriteBuffer->Write (Brn(aBuff)); iWriteBuffer->Write(EndOfLine); 
-
-
                 }
 
                 iWriteBuffer->Write(Brn("OK")); iWriteBuffer->Write(EndOfLine);
@@ -150,11 +156,12 @@ void OhMdpIF::setStreamInfo(TUint aBitRate, TUint aChannelNum, TUint aBitDepth, 
     iSampleFreq = aSampleFreq;
 }
 
-void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum)
+void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
 {
    iTitle = aTitle;
    iArtist = anArtist;
    iAlbum = anAlbum;
+   iAlbumArtURI = anAlbumArtURI;
 }
 
 
