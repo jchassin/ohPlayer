@@ -1,0 +1,13 @@
+[Unit]
+Description=Startup Open Home Player
+Wants=multi-user.target
+[Service]
+#ExecStartPre=/bin/sleep 10
+ExecStart=openhome-player
+StandardOutput=null
+User=jean
+Type=simple
+Restart=always
+KillSignal=SIGINT
+[Install]
+WantedBy=multi-user.target

@@ -1,5 +1,5 @@
 #if 0
-#include "RaspdacMiniOledIF.h"
+#include "RaspdacMiniIF.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Buffer.h>
 using namespace OpenHome;
@@ -7,7 +7,7 @@ using namespace OpenHome;
 using namespace OpenHome::Media;
 
 #else
-#include "RaspdacMiniOledIF.h"
+#include "RaspdacMiniIF.h"
 
 #include <OpenHome/Media/PipelineObserver.h>
 #include <OpenHome/Types.h>
@@ -63,6 +63,10 @@ void RaspdacObserver::NotifyMode(const Brx& /*aMode*/,
 {
 }
 
+#ifndef DEBUG_IF
+void RaspdacObserver::NotifyMetaText(const Brx& /* aText */)
+{}
+#else
 void RaspdacObserver::NotifyMetaText(const Brx& aText)
 {
     Log::Print("MetaText : ");
@@ -71,8 +75,8 @@ void RaspdacObserver::NotifyMetaText(const Brx& aText)
        Log::Print("%02.02X ", src[i]);
     }
     Log::Print("MetaText :\n");
-    
 }
+#endif    
 void RaspdacObserver::NotifyTime(TUint aSeconds,  TUint aTrackDurationSeconds)
 {
         iOhMdpIF->setTime(aSeconds, aTrackDurationSeconds);
@@ -83,7 +87,10 @@ void RaspdacObserver::NotifyTime(TUint aSeconds,  TUint aTrackDurationSeconds)
 
 void RaspdacObserver::NotifyTrack(Track& aTrack, const Brx& aMode, TBool aStartOfStream)
 {
-#if 0
+    Log::Print("Pipeline report property: TRACK {uri=%.*s; trackId=%u; startOfStream=%u}\n",
+               PBUF(aTrack.Uri()), aTrack.Id(), aStartOfStream);
+
+#ifdef DEBUG_IF
         Log::Print("Track MetaData : %.*s\n", PBUF(aTrack.MetaData()));
 	
 	const TByte* src = aTrack.MetaData();
@@ -97,6 +104,12 @@ Brn xmlBuffer(aTrack.MetaData()) ;
 Brn aTitle;
 Brn aAlbumName;
 Brn aArtistName;
+Brn aAlbumArtURI;
+
+try {
+        aAlbumArtURI = XmlParserBasic::Find("albumArtURI", xmlBuffer);
+}
+catch (...) {aAlbumArtURI = Brn("");}
 
 try {
         aTitle = XmlParserBasic::Find("title", xmlBuffer);
@@ -110,8 +123,8 @@ try {
         aArtistName = XmlParserBasic::Find("artist",xmlBuffer );
 } catch (...) {aArtistName = Brn("");}
         
-iOhMdpIF->setTrack(aTitle, aArtistName, aAlbumName);
-Log::Print("Artist : %.*s Album : %.*s Track : %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle));
+iOhMdpIF->setTrack(aTitle, aArtistName, aAlbumName, aAlbumArtURI);
+Log::Print("Artist : %.*s Album : %.*s Track : %.*s\n URI : %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle), PBUF(aAlbumArtURI));
 
 
 }
@@ -137,19 +150,19 @@ void RaspdacVolumeObserver::VolumeChanged(const IVolumeValue& aVolume)
 }
 
 
-// RaspdacMiniOledIF
+// RaspdacMiniIF
 #if 0
-RaspdacMiniOledIF::RaspdacMiniOledIF(PipelineManager &pPipeline)
+RaspdacMiniIF::RaspdacMiniIF(PipelineManager &pPipeline)
 {
 //   iRaspdacObserver = new RaspdacObserver();
  //  iPipelineManager = pPipeline;
 
   //  iPipelineManager.AddObserver(*iRaspdacObserver);
 }
-RaspdacMiniOledIF::~RaspdacMiniOledIF()
+RaspdacMiniIF::~RaspdacMiniIF()
 {
 }
-int RaspdacMiniOledIF::test(int a)
+int RaspdacMiniIF::test(int a)
 {
   return a;
 }

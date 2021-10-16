@@ -63,11 +63,11 @@ class RaspdacObserver : public IPipelineObserver
 
 
 #if 1
-class RaspdacMiniOledIF 
+class RaspdacMiniIF 
 {
    public:
-   RaspdacMiniOledIF(PipelineManager &pPipelineManager);
-   ~RaspdacMiniOledIF();
+   RaspdacMiniIF(PipelineManager &pPipelineManager);
+   ~RaspdacMiniIF();
    public : 
       int test(int a);
 
