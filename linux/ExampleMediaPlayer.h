@@ -10,7 +10,7 @@
 #include <OpenHome/Web/ConfigUi/FileResourceHandler.h>
 #include <OpenHome/Web/WebAppFramework.h>
 #include "Volume.h"
-#include "RaspdacMiniOledIF.h"
+#include "RaspdacMiniIF.h"
 
 namespace OpenHome {
     class Shell;

@@ -1,6 +1,6 @@
 #include <glib.h>
 #include <string>
-#include "RaspdacMiniOledIF.h"
+#include "RaspdacMiniIF.h"
 
 #include <OpenHome/Media/Codec/CodecFactory.h>
 #include <OpenHome/Media/Codec/ContainerFactory.h>
