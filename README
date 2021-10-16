@@ -1,5 +1,8 @@
-Forwked from main branch to include Audiophonics Raspdac Mini interface with Oled screen scripts (MDP status emulation)
-
+===========================
+Forwked from main branch to include Audiophonics Raspdac Mini interface (need couple of script in //, message me if interrested)
+ Init fork : adding support for Audiophonics Raspdac Mini Oled Screen
+ 20211016 : adding support for Audiophonics Raspdac Mini LCD https://www.audiophonics.fr/fr/lecteurs-reseau-open-source/audiophonics-raspdac-mini-lcd-kit-diy-lecteur-reseau-pour-raspberry-pi-4-dac-es9038q2m-p-15148.html
+ 
 
 OpenHome Sample Players (https://github.com/openhome/ohPlayer) for Mac
 Windows, Linux and Raspberry Pi.
