@@ -132,10 +132,10 @@ private:
     Sws<kWriteBufferBytes>* iWriteBuffer;
 
 };
-void OhMdpIF::setTime(TUint anElapsed, TUint aDuration)
+void OhMdpIF::setTime(TUint anElapsed)
 {
   iElapsed = anElapsed;
-  iDuration = aDuration;
+  iDuration = 0;
 }
 
 void OhMdpIF::setMode(Brn aMode)
@@ -180,7 +180,8 @@ OhMdpIF::OhMdpIF()
 {
 //    Net::UpnpLibrary::Initialise(aInitParams);
 //    Debug::SetLevel(Debug::kNetwork);
-    std::vector<NetworkAdapter*>* ifs = Os::NetworkListAdapters(*gEnv, Environment::ELoopbackUse, "OhMdp");
+    std::vector<NetworkAdapter*>* ifs = Os::NetworkListAdapters(*gEnv, Environment::ELoopbackUse, false, "OhMdp");
+
 
     ASSERT(ifs->size() > 0);
 

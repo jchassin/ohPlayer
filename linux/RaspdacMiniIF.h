@@ -48,9 +48,9 @@ class RaspdacObserver : public IPipelineObserver
     void NotifyPipelineState(EPipelineState aState) override;
     void NotifyMode(const Brx& aMode, const ModeInfo& aInfo,
                     const ModeTransportControls& aTransportControls) override;
-    void NotifyTrack(Track& aTrack, const Brx& aMode, TBool aStartOfStream) override;
+    void NotifyTrack(Track& aTrack, TBool aStartOfStream) override;
     void NotifyMetaText(const Brx& aText) override;
-    void NotifyTime(TUint aSeconds,  TUint aTrackDurationSeconds) override;
+    void NotifyTime(TUint aSeconds) override;
 
     void NotifyStreamInfo(const DecodedStreamInfo& aStreamInfo) override;
 

@@ -44,6 +44,7 @@ private: // from IPipelineAnimator
 									   TUint aBitDepth, TUint aNumChannels) const override;
     TUint PipelineAnimatorDsdBlockSizeWords() const override;
     TUint PipelineAnimatorMaxBitDepth() const override;
+    void  PipelineAnimatorGetMaxSampleRates(TUint& aPcm, TUint& aDsd) const override;
 private:
     class Pimpl;
     Pimpl* iPimpl;

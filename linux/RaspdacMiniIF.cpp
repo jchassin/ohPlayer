@@ -77,15 +77,15 @@ void RaspdacObserver::NotifyMetaText(const Brx& aText)
     Log::Print("MetaText :\n");
 }
 #endif    
-void RaspdacObserver::NotifyTime(TUint aSeconds,  TUint aTrackDurationSeconds)
+void RaspdacObserver::NotifyTime(TUint aSeconds)
 {
-        iOhMdpIF->setTime(aSeconds, aTrackDurationSeconds);
+        iOhMdpIF->setTime(aSeconds);
 	
         //Log::Print("Playing %02.02u:%02.02u/%02.02u:%02.02u\r",
 	//	 aSeconds/60, aSeconds%60, aTrackDurationSeconds/60, aTrackDurationSeconds%60);
 }
 
-void RaspdacObserver::NotifyTrack(Track& aTrack, const Brx& aMode, TBool aStartOfStream)
+void RaspdacObserver::NotifyTrack(Track& aTrack, TBool aStartOfStream)
 {
     Log::Print("Pipeline report property: TRACK {uri=%.*s; trackId=%u; startOfStream=%u}\n",
                PBUF(aTrack.Uri()), aTrack.Id(), aStartOfStream);
