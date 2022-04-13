@@ -1,10 +1,10 @@
 // Optional Features
 
 // Uncomment this line to enable MP3 support
-//#define ENABLE_MP3
+#define ENABLE_MP3
 
 // Uncomment this line to enable AAC support
-//#define ENABLE_AAC
+#define ENABLE_AAC
 
 // Uncomment this line to enable the Radio source
 //#define ENABLE_RADIO
