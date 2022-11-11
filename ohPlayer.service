@@ -11,5 +11,5 @@ User=jean
 Type=simple
 Restart=always
 KillSignal=SIGINT
-#[Install]
-#WantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
