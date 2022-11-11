@@ -1,15 +1,24 @@
 [Unit]
 Description=Startup Open Home Player
 #Wants=multi-user.target
-After=network-online.target
-Wants=network-online.target
+#After=graphical.target network.target sound.target
+#Requires=sound.target
+#
+#After=network-online.target sound.target multi-user.target graphical.target graphical-session.target
+#Wants=network-online.target sound.target multi-user.target graphical.target graphical-session.target
+After=network-online.target sound.target
+Wants=network-online.target sound.target 
+
+
 [Service]
-#ExecStartPre=/bin/sleep 10
+ExecStartPre=/bin/sleep 10
 ExecStart=openhome-player
-#StandardOutput=/tmp/ohp.log
+#StandardOutput=null
 User=jean
 Type=simple
-Restart=always
-KillSignal=SIGINT
-[Install]
-WantedBy=multi-user.target
+#Restart=always
+#KillSignal=SIGINT
+
+#[Install]
+#WantedBy=multi-user.target
+
