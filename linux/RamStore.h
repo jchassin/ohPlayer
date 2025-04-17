@@ -1,11 +1,17 @@
 #pragma once
 
 #include <OpenHome/Av/KvpStore.h>
+#include <OpenHome/Types.h>
+#include <OpenHome/Buffer.h>
+
+#include <map>
 
 namespace OpenHome {
 namespace Av {
 
-// Store for compile time static data properties.
+/**
+ * Helper class for test code.  Not intended for client use.
+ */
 class RamStore : public IStaticDataSource
 {
 public:
@@ -19,3 +25,4 @@ private:
 
 } // namespace Av
 } // namespace OpenHome
+

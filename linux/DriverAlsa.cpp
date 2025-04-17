@@ -955,7 +955,11 @@ DriverAlsa::~DriverAlsa()
     delete iThread;
     delete iPimpl;
 }
-
+void DriverAlsa::PipelineAnimatorGetMaxSampleRates(TUint& aPcm, TUint& aDsd) const
+{
+    aPcm = 192000;
+    aDsd = 5644800;
+}
 void DriverAlsa::AudioThread()
 {
     try
@@ -980,11 +984,6 @@ void DriverAlsa::AudioThread()
 TUint DriverAlsa::PipelineAnimatorBufferJiffies() const
 {
 	return 0;
-}
-void DriverAlsa::PipelineAnimatorGetMaxSampleRates(TUint& aPcm, TUint& aDsd) const
-{
-    aPcm = 0;
-    aDsd = 0;
 }
 
 TUint DriverAlsa::PipelineAnimatorDelayJiffies(AudioFormat aFormat,

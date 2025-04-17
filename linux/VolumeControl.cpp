@@ -4,86 +4,18 @@
 
 #include <alsa/asoundlib.h>
 #include <math.h>
-
-#include "Volume.h"
+#include <OpenHome/Private/Printer.h>
+#include "VolumeControl.h"
 
 using namespace OpenHome;
 using namespace OpenHome::Av;
 using namespace OpenHome::Media;
 
-// RebootLogger
-void RebootLogger::Reboot(const Brx& aReason)
-{
-    Log::Print("\n\n\nRebootLogger::Reboot. Reason:\n%.*s\n\n\n",
-               PBUF(aReason));
-}
-
-TUint VolumeProfile::VolumeMax() const
-{
-    return kVolumeMax;
-}
-
-TUint VolumeProfile::VolumeDefault() const
-{
-    return kVolumeDefault;
-}
-
-TUint VolumeProfile::VolumeUnity() const
-{
-    return kVolumeUnity;
-}
-
-TUint VolumeProfile::VolumeDefaultLimit() const
-{
-    return kVolumeDefaultLimit;
-}
-
-TUint VolumeProfile::VolumeStep() const
-{
-    return kVolumeStep;
-}
-
-TUint VolumeProfile::VolumeMilliDbPerStep() const
-{
-    return kVolumeMilliDbPerStep;
-}
-
-TUint VolumeProfile::ThreadPriority() const
-{
-	return kThreadPriority;
-}
-
-TUint VolumeProfile::BalanceMax() const
-{
-    return kBalanceMax;
-}
-
-TUint VolumeProfile::FadeMax() const
-{
-    return kFadeMax;
-}
-
-TUint VolumeProfile::OffsetMax() const
-{
-	return kOffsetMax;
-}
-
-TBool VolumeProfile::AlwaysOn() const
-{
-    return kAlwaysOn;
-}
-
-IVolumeProfile::StartupVolume VolumeProfile::StartupVolumeConfig() const
-{
-    return StartupVolume::LastUsed;
-}
-
-
 VolumeControl::VolumeControl()
 {
     const TChar *CARD          = "default";
     const TChar *SELEM_NAMES[] = {"Digital", "PCM", "Master"};
-
+    Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Get the mixer element for the default sound card.
     snd_mixer_open(&iHandle, 0);
     snd_mixer_attach(iHandle, CARD);
@@ -105,7 +37,7 @@ VolumeControl::VolumeControl()
         iElem = snd_mixer_find_selem(iHandle, iSid);
 
         // Quit the loop if control found.
-        if (iElem > NULL)
+        if (iElem != NULL)
         {
             break;
         }
@@ -137,7 +69,7 @@ void VolumeControl::SetVolume(TUint aVolume)
     {
         return;
     }
-
+    Log::Print("%s:%d\n", __FILE__, __LINE__);
     volume = double((aVolume / MILLI_DB_PER_STEP)/100.0f);
 
     // Use the dB range to map the volume to a scale more in tune
