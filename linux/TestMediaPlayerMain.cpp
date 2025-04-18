@@ -136,7 +136,8 @@ int CDECL main(int aArgc, char* aArgv[])
         _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
     }
 #endif // _WIN32
-    if (signal(SIGINT, sig_handler) == SIG_ERR) {}
+
+    //if (signal(SIGINT, sig_handler) == SIG_ERR) {}
     // Parse options.
     TestMediaPlayerOptions options;
     if (!options.Parse(aArgc, aArgv)) {

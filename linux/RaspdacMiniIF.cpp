@@ -32,6 +32,12 @@ RaspdacObserver::RaspdacObserver()
 {
 	iOhMdpIF = OhMdpIF::getInstance();
 }
+
+RaspdacObserver::~RaspdacObserver()
+{
+    delete(iOhMdpIF);
+}
+
 void RaspdacObserver::NotifyPipelineState(EPipelineState aState)
 {
     const TChar* state;
@@ -161,6 +167,7 @@ RaspdacMiniIF::RaspdacMiniIF(PipelineManager &pPipeline)
 }
 RaspdacMiniIF::~RaspdacMiniIF()
 {
+    delete (iOhMdpIF);
 }
 int RaspdacMiniIF::test(int a)
 {

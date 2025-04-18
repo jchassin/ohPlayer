@@ -41,7 +41,8 @@ class RaspdacObserver : public IPipelineObserver
 {
    public:
     RaspdacObserver();
-    //void NotifyTrack(OpenHome::Media::Track& aTrack, OpenHome::TBool aStartOfStream) override ;
+    ~RaspdacObserver();
+   //void NotifyTrack(OpenHome::Media::Track& aTrack, OpenHome::TBool aStartOfStream) override ;
 
    private: // from IPipelineObserver
     OhMdpIF * iOhMdpIF;

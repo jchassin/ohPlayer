@@ -19,12 +19,8 @@ using namespace OpenHome;
 
 //const Brn OhMdpIF::kMsgTerminator("\r\n");
 //const Brn OhMdpIF::kArgumentDelimiter(" ");
-class OhMdpIFSession : public SocketTcpSession
-{
-public:
-    OhMdpIF * iParentOhMdpIF;
  
-    OhMdpIFSession(OhMdpIF* OhMdpIF)
+OhMdpIFSession::OhMdpIFSession(OhMdpIF* OhMdpIF)
     {
         iParentOhMdpIF = OhMdpIF;
         iStream = new Srs<200>(*this);
@@ -32,12 +28,17 @@ public:
         this->iWriteBuffer = new Sws<kWriteBufferBytes>(*this);
     }
 
-    ~OhMdpIFSession()
+OhMdpIFSession::~OhMdpIFSession()
     {
+        //Log::Print("%s:%d - deleting \n",__FILE__, __LINE__);
         delete iReaderUntil;
+        //Log::Print("%s:%d - deleted \n",__FILE__, __LINE__);
         delete iStream;
+        //Log::Print("%s:%d - deleted \n",__FILE__, __LINE__);
+        //SocketTcpSession::~SocketTcpSession();
+        //Log::Print("%s:%d - deleted \n",__FILE__, __LINE__);
     }
-    void Run()
+void  OhMdpIFSession::Run()
     {
         const Brn exitUnix("exit");
         const Brn exitDos("exit\r"); // not that smart but for debug purpose
@@ -125,13 +126,7 @@ public:
             }
         }
     }
-private:
-    static const TUint kWriteBufferBytes = 4000;
-    Srx* iStream;
-    ReaderUntil* iReaderUntil;
-    Sws<kWriteBufferBytes>* iWriteBuffer;
 
-};
 void OhMdpIF::setTime(TUint anElapsed)
 {
   iElapsed = anElapsed;
@@ -175,6 +170,14 @@ OhMdpIF * OhMdpIF::getInstance()
   }
   return (OhMdpIF::instance);
 }
+OhMdpIF::~OhMdpIF()
+{
+   //Log::Print("%s:%d - deleting iServer\n",__FILE__, __LINE__);
+   //delete iServer;
+   //Log::Print("%s:%d - iServer deleted\n",__FILE__, __LINE__);
+   //delete iSession;
+   //Log::Print("%s:%d - iSession deleted\n",__FILE__, __LINE__);
+}
 
 OhMdpIF::OhMdpIF()
 {
@@ -194,6 +197,8 @@ OhMdpIF::OhMdpIF()
         (*ifs)[i]->RemoveRef("TestEcho");
     }
 #endif
+    //delete ifs;
+
     iDuration   = 0;
     iElapsed    = 0; 
     iBitRate    = 0;
@@ -203,10 +208,11 @@ OhMdpIF::OhMdpIF()
 
     iMode = Brn("stop");
     Semaphore sem("", 0);
-    SocketTcpServer* server = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
-    server->Add("OHMDP", new OhMdpIFSession(this));
+    iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
+    iSession = new OhMdpIFSession(this);
+    iServer->Add("OHMDP", iSession);
 
-//    sem.Wait();
+    //    sem.Wait();
     //delete ifs;
 
  //   Net::UpnpLibrary::Close();

@@ -79,9 +79,13 @@ else
     RESTRICTED_CODECS = -lCodecAacFdkAdts -lCodecAacFdkBase -lCodecMp3 -lCodecAacFdkMp4 -lCodecAacFdk
 endif
 
-LIBS         = $(OPTIONAL_LIBS) -lasound -lConfigUiTestUtils -lConfigUi -lSourcePlaylist -lPodcast -lSourceSongcast -lSourceUpnpAv -lSourceRadio -lohMediaPlayer -lWebAppFramework -lohNetGeneratedProxies -lohNetCore $(RESTRICTED_CODECS) -lCodecAifc -lCodecAlacApple -lCodecAlacAppleBase -lCodecPcm -lCodecAiff -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav -lohPipeline -lpthread -lssl -lcrypto -ldl -lm
+LIBS         = $(OPTIONAL_IBS) -lnotify -lasound -lConfigUiTestUtils -lConfigUi -lSourcePlaylist -lSourceSongcast -lSourceUpnpAv -lPodcast -lSourceRadio -lSourceScd -lohMediaPlayer -lWebAppFramework  -lohNetGeneratedProxies -lohNetCore $(RESTRICTED_CODECS) -lCodecAifc -lCodecAlacApple -lCodecAlacAppleBase -lCodecPcm -lCodecAiff -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav -lCodecDsdDsf -lCodecDsdDff -lCodecDsdRaw -lSourceRaop -lohPipeline -lpthread -lssl -lcrypto -ldl -lm -lOdp
 
-INCLUDES     = -I../dependencies/$(TARG_ARCH)/ohMediaPlayer/include -I../dependencies/$(TARG_ARCH)/ohNetmon/include -I../dependencies/$(TARG_ARCH)/openssl/include -I../dependencies/$(TARG_ARCH)/ohNetGenerated-$(TARG_ARCH)-$(BUILD_TYPE)/include/ohnet/OpenHome/Net/Core
+#LIBS         = $(OPTIONAL_LIBS) -lasound -lConfigUiTestUtils -lConfigUi -lSourcePlaylist -lPodcast -lSourceSongcast -lSourceUpnpAv -lSourceRadio -lohMediaPlayer -lWebAppFramework -lohNetGeneratedProxies -lohNetCore $(RESTRICTED_CODECS) -lCodecAifc -lCodecAlacApple -lCodecAlacAppleBase -lCodecPcm -lCodecAiff -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav -lohPipeline -lpthread -lssl -lcrypto -ldl -lm
+
+INCLUDES     = -I../dependencies/$(TARG_ARCH)/ohMediaPlayer/include -I../dependencies/$(TARG_ARCH)/ohNetmon/include -I../dependencies/$(TARG_ARCH)/openssl/include -I../dependencies/$(TARG_ARCH)/ohNetGenerated-$(TARG_ARCH)-$(BUILD_TYPE)/include/ohnet/OpenHome/Net/Core -I../dependencies/$(TARG_ARCH)
+
+#INCLUDES     = -I../dependencies/$(TARG_ARCH)/ohMediaPlayer/include -I../dependencies/$(TARG_ARCH)/ohNetmon/include -I../dependencies/$(TARG_ARCH)/openssl/include -I../dependencies/$(TARG_ARCH)/ohNetGenerated-$(TARG_ARCH)-$(BUILD_TYPE)/include/ohnet/OpenHome/Net/Core
 
 LIBS += -L../dependencies/$(TARG_ARCH)/ohMediaPlayer/lib -L../dependencies/$(TARG_ARCH)/ohNetmon/lib -L../dependencies/$(TARG_ARCH)/openssl/lib
 

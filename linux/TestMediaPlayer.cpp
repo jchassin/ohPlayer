@@ -1,4 +1,5 @@
 #include "TestMediaPlayer.h"
+#include "RaspdacMiniIF.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
 #include <OpenHome/Av/MediaPlayer.h>
@@ -288,6 +289,10 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     IPowerManager& powerManager = iMediaPlayer->PowerManager();
     iPowerObserver = powerManager.RegisterPowerHandler(*this, kPowerPriorityLowest, "TestMediaPlayer");
     Log::Print("%s:%d\n", __FILE__, __LINE__);
+    // Register Raspdac interface notification
+    iRaspdacObserver = new RaspdacObserver();
+    iMediaPlayer->Pipeline().AddObserver(*iRaspdacObserver);
+
     // Set up config app.
     WebAppFrameworkInitParams* initParams = new WebAppFrameworkInitParams();
     initParams->SetServerPort(aWebUiPort);
@@ -324,6 +329,7 @@ TestMediaPlayer::~TestMediaPlayer()
     }
     delete iConfigRamStore;
     delete iDriver;
+    delete iRaspdacObserver;
 }
 
 void TestMediaPlayer::SetPullableClock(Media::IPullableClock& aPullableClock)
