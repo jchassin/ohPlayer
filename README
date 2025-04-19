@@ -1,8 +1,9 @@
 
 #History : 
+
 Forwked from main branch to include Audiophonics Raspdac Mini interface (need couple of script in //, message me if interrested)
- Init fork : adding support for Audiophonics Raspdac Mini Oled Screen
- 20211016 : adding support for Audiophonics Raspdac Mini LCD https://www.audiophonics.fr/fr/lecteurs-reseau-open-source/audiophonics-raspdac-mini-lcd-kit-diy-lecteur-reseau-pour-raspberry-pi-4-dac-es9038q2m-p-15148.html
+ 20250419 : As ohPlayer is not maintained aligned with the rest of the stack, redesign based on the ohPipeline/TestMediaPlayer. Some detail to build can be found here :  https://github.com/jchassin/ohContainerBuilder (build in ubuntu container or directly on rpi) => open a ticket for support
+ 20211016 : adding support for Audiophonics Raspdac Mini LCD https://www.audiophonics.fr/fr/lecteurs-reseau-open-source/audiophonics-raspdac-mini-lcd-kit-diy-lecteur-reseau-pour-raspberry-pi-4-dac-es9038q2m-p-15148.html Init fork : adding support for Audiophonics Raspdac Mini Oled Screen
  
 OpenHome Sample Players (https://github.com/openhome/ohPlayer) for Mac
 Windows, Linux and Raspberry Pi.
