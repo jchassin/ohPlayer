@@ -40,6 +40,7 @@ else
     CXX         = g++
     TARG_ARCH   = Linux-rpi
 endif
+TARG_ARCH = Linux-armhf
 
 TARGET    = $(OSPLATFORM)/openhome-player
 
@@ -58,7 +59,7 @@ RESDIR = $(PREFIX)/share/openhome-player
 DOCDIR = $(PREFIX)/share/doc/openhome-player
 
 CFLAGS = -c -Wall -std=c++0x $(OPTIONAL_CFLAGS) -DTARG_ARCH=$(TARG_ARCH) \
-         -fstack-protector -fstack-check -DDEFINE_LITTLE_ENDIAN
+         -fstack-protector -fstack-check -DDEFINE_LITTLE_ENDIAN -fpermissive
 
 # If 'DEBUG=0 is specified on the command line build a debug biuld.
 ifdef DEBUG

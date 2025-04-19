@@ -1,3 +1,4 @@
+#include "OhLog.h"
 #include <OpenHome/Private/Printer.h>
 #include <OpenHome/Net/Private/Globals.h>
 #include <OpenHome/OsWrapper.h>
@@ -693,7 +694,7 @@ void DriverAlsa::Pimpl::ProcessDrain()
         auto err = snd_pcm_drain(iHandle);
         if (err < 0)
         {
-            Log::Print("DriverAlsa: snd_pcm_drain() error : %s\n",
+            OhLog::PrintError("DriverAlsa: snd_pcm_drain() error : %s\n",
                        snd_strerror(err));
             ASSERTS();
         }
@@ -703,7 +704,7 @@ void DriverAlsa::Pimpl::ProcessDrain()
 
         if (err < 0)
         {
-            Log::Print("DriverAlsa: snd_pcm_prepare() error : %s\n",
+            OhLog::PrintError("DriverAlsa: snd_pcm_prepare() error : %s\n",
                        snd_strerror(err));
             ASSERTS();
         }
@@ -722,7 +723,7 @@ void DriverAlsa::Pimpl::Write(const Brx& aData)
 
         if (err < 0)
         {
-            Log::Print("DriverAlsa: failed to snd_pcm_recover with %s\n",
+            OhLog::PrintError("DriverAlsa: failed to snd_pcm_recover with %s\n",
                        snd_strerror(err));
             ASSERTS();
         }
@@ -735,7 +736,7 @@ void DriverAlsa::Pimpl::Write(const Brx& aData)
 
     if (err < 0)
     {
-        Log::Print("DriverAlsa: snd_pcm_writei() got error %s\n",
+        OhLog::PrintError("DriverAlsa: snd_pcm_writei() got error %s\n",
                    snd_strerror(err));
     }
     else
@@ -791,7 +792,7 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
         auto err = snd_pcm_drain(iHandle);
         if (err < 0)
         {
-            Log::Print("DriverAlsa: snd_pcm_drain() error : %s\n",
+            OhLog::PrintError("DriverAlsa: snd_pcm_drain() error : %s\n",
                        snd_strerror(err));
             ASSERTS();
         }
@@ -854,7 +855,7 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
         }
     }
 
-    Log::Print("DriverAlsa: Could not find a PcmProcessor for stream! "
+    OhLog::PrintWarning("DriverAlsa: Could not find a PcmProcessor for stream! "
                "BitDepth = %d, SampleRate = %d, Channels = %d\n",
                decodedStreamInfo.BitDepth(), decodedStreamInfo.SampleRate(),
                decodedStreamInfo.NumChannels());
@@ -903,7 +904,7 @@ TUint DriverAlsa::Pimpl::DriverDelayJiffies(TUint aSampleRate)
     err = snd_pcm_hw_params_any(iHandle, hwParams);
     if (err < 0)
     {
-        Log::Print("DriverAlsa: Cannot get hardware parameters: %s\n",
+        OhLog::PrintError("DriverAlsa: Cannot get hardware parameters: %s\n",
                    snd_strerror(err));
 
         THROW(SampleRateUnsupported);
@@ -916,7 +917,7 @@ TUint DriverAlsa::Pimpl::DriverDelayJiffies(TUint aSampleRate)
 
     ret = snd_pcm_delay(iHandle, &dp);
     if (ret < 0) {
-        Log::Print("DriverAlsa: snd_pcm_delay() error : %s\n",
+        OhLog::PrintError("DriverAlsa: snd_pcm_delay() error : %s\n",
                    snd_strerror(ret));
         return 0;
     }

@@ -1,3 +1,4 @@
+#include "OhLog.h"
 #include "TestMediaPlayer.h"
 #include "RaspdacMiniIF.h"
 #include <OpenHome/Types.h>
