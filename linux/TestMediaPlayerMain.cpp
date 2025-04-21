@@ -54,6 +54,7 @@ void TestMediaPlayerThread::Run()
     delete th;
 }
 TestMediaPlayer* tmp;
+
 void TestMediaPlayerThread::RunInThread()
 {
     const TChar* cookie ="TestMediaPlayerMain";

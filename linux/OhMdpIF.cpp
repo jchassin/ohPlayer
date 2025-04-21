@@ -181,20 +181,25 @@ OhMdpIF::~OhMdpIF()
 
 OhMdpIF::OhMdpIF()
 {
-//    Net::UpnpLibrary::Initialise(aInitParams);
-//    Debug::SetLevel(Debug::kNetwork);
+    //Net::UpnpLibrary::Initialise(aInitParams);
+    //Debug::SetLevel(Debug::kNetwork);
     std::vector<NetworkAdapter*>* ifs = Os::NetworkListAdapters(*gEnv, Environment::ELoopbackUse, false, "OhMdp");
 
 
     ASSERT(ifs->size() > 0);
 
-    TIpAddress addr = (*ifs)[0]->Address();
+    TIpAddress addr = (*ifs)[1]->Address();
     Endpoint endpt(0, addr);
     Endpoint::AddressBuf buf;
     endpt.AppendAddress(buf);
-#if 0
+
+    Endpoint::AddressBuf myBuf;
+    TIpAddressUtils::ToString(addr, myBuf);
+    Log::Print("Using network interface %.*s\n\n", PBUF(myBuf));
+
+#if 1
     for (TUint i=0; i<ifs->size(); i++) {
-        (*ifs)[i]->RemoveRef("TestEcho");
+        (*ifs)[i]->RemoveRef("OhMdp");
     }
 #endif
     //delete ifs;
@@ -208,11 +213,12 @@ OhMdpIF::OhMdpIF()
 
     iMode = Brn("stop");
     Semaphore sem("", 0);
+
     iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
     iSession = new OhMdpIFSession(this);
     iServer->Add("OHMDP", iSession);
 
-    //    sem.Wait();
+    //sem.Wait();
     //delete ifs;
 
  //   Net::UpnpLibrary::Close();

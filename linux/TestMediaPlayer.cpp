@@ -767,7 +767,6 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     initParams->SetDvNumLpecThreads(4);
     initParams->SetDvLpecServerPort(2324);
 #endif
-
     Debug::SetLevel(Debug::kPipeline);
     Debug::AddLevel(Debug::kSources);
     Debug::AddLevel(Debug::kMedia);
