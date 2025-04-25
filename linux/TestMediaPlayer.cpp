@@ -107,7 +107,8 @@ TBool VolumeProfile::AlwaysOn() const
 
 IVolumeProfile::StartupVolume VolumeProfile::StartupVolumeConfig() const
 {
-    return IVolumeProfile::StartupVolume::Both;
+    return StartupVolume::LastUsed;
+    //return IVolumeProfile::StartupVolume::Both;
 }
 
 
@@ -668,7 +669,7 @@ void TestMediaPlayer::AddConfigApp()
         sourcesBufs.push_back(new Brh(systemName));
     }
     // FIXME - take resource dir as param or copy res dir to build dir
-    auto configUi = CreateConfigApp(sourcesBufs, Brn("res/"), iMinWebUiResourceThreads, iMaxWebUiTabs, iUiSendQueueSize, iUiMsgBufCount, iUiMsgBufBytes);
+    auto configUi = CreateConfigApp(sourcesBufs, Brn("/usr/share/openhome-player/res/"), iMinWebUiResourceThreads, iMaxWebUiTabs, iUiSendQueueSize, iUiMsgBufCount, iUiMsgBufBytes);
     iAppFramework->Add(configUi, MakeFunctorGeneric(*this, &TestMediaPlayer::PresentationUrlChanged));
     iAppFramework->SetDefaultApp(configUi->ResourcePrefix());
     for (TUint i=0;i<sourcesBufs.size(); i++) {

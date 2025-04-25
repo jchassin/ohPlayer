@@ -93,17 +93,16 @@ void RaspdacObserver::NotifyTime(TUint aSeconds)
 
 void RaspdacObserver::NotifyTrack(Track& aTrack, TBool aStartOfStream)
 {
-    Log::Print("Pipeline report property: TRACK {uri=%.*s; trackId=%u; startOfStream=%u}\n",
-               PBUF(aTrack.Uri()), aTrack.Id(), aStartOfStream);
-
 #ifdef DEBUG_IF
-        Log::Print("Track MetaData : %.*s\n", PBUF(aTrack.MetaData()));
-	
-	const TByte* src = aTrack.MetaData();
-        for (TUint i=0; i<PBUF(aTrack.MetaData())->Bytes(); i++) {
-            Log::Print("%02.02X ", src[i]);
-        }
-        Log::Print("MetaText :\n");
+    Log::Print("Pipeline report property: TRACK {uri=%.*s; trackId=%u; startOfStream=%u}\n",
+    PBUF(aTrack.Uri()), aTrack.Id(), aStartOfStream);
+
+    Log::Print("Track MetaData : %.*s\n", PBUF(aTrack.MetaData()));
+    const TByte* src = aTrack.MetaData();
+    for (TUint i=0; i<PBUF(aTrack.MetaData())->Bytes(); i++) {
+      Log::Print("%02.02X ", src[i]);
+    }
+    Log::Print("MetaText :\n");
 #endif
 
 Brn xmlBuffer(aTrack.MetaData()) ;

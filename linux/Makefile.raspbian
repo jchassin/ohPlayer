@@ -59,7 +59,7 @@ RESDIR = $(PREFIX)/share/openhome-player
 DOCDIR = $(PREFIX)/share/doc/openhome-player
 
 CFLAGS = -c -Wall -std=c++0x $(OPTIONAL_CFLAGS) -DTARG_ARCH=$(TARG_ARCH) \
-         -fstack-protector -fstack-check -DDEFINE_LITTLE_ENDIAN -fpermissive
+         -fstack-protector -fstack-check -DDEFINE_LITTLE_ENDIAN -fpermissive -Wl,--build-id
 
 # If 'DEBUG=0 is specified on the command line build a debug biuld.
 ifdef DEBUG
@@ -80,7 +80,7 @@ else
     RESTRICTED_CODECS = -lCodecAacFdkAdts -lCodecAacFdkBase -lCodecMp3 -lCodecAacFdkMp4 -lCodecAacFdk
 endif
 
-LIBS         = $(OPTIONAL_IBS) -lnotify -lasound -lConfigUiTestUtils -lConfigUi -lSourcePlaylist -lSourceSongcast -lSourceUpnpAv -lPodcast -lSourceRadio -lSourceScd -lohMediaPlayer -lWebAppFramework  -lohNetGeneratedProxies -lohNetCore $(RESTRICTED_CODECS) -lCodecAifc -lCodecAlacApple -lCodecAlacAppleBase -lCodecPcm -lCodecAiff -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav -lCodecDsdDsf -lCodecDsdDff -lCodecDsdRaw -lSourceRaop -lohPipeline -lpthread -lssl -lcrypto -ldl -lm -lOdp
+LIBS         = $(OPTIONAL_LIBS) -lnotify -lasound -lConfigUiTestUtils -lConfigUi -lSourcePlaylist -lSourceSongcast -lSourceUpnpAv -lPodcast -lSourceRadio -lSourceScd -lohMediaPlayer -lWebAppFramework  -lohNetGeneratedProxies -lohNetCore $(RESTRICTED_CODECS) -lCodecAifc -lCodecAlacApple -lCodecAlacAppleBase -lCodecPcm -lCodecAiff -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav -lCodecDsdDsf -lCodecDsdDff -lCodecDsdRaw -lSourceRaop -lohPipeline -lpthread -lssl -lcrypto -ldl -lm -lOdp
 
 #LIBS         = $(OPTIONAL_LIBS) -lasound -lConfigUiTestUtils -lConfigUi -lSourcePlaylist -lPodcast -lSourceSongcast -lSourceUpnpAv -lSourceRadio -lohMediaPlayer -lWebAppFramework -lohNetGeneratedProxies -lohNetCore $(RESTRICTED_CODECS) -lCodecAifc -lCodecAlacApple -lCodecAlacAppleBase -lCodecPcm -lCodecAiff -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav -lohPipeline -lpthread -lssl -lcrypto -ldl -lm
 

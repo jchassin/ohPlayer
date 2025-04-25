@@ -6,9 +6,9 @@
 using namespace OpenHome;
 using namespace OpenHome::TestFramework;
 using namespace OpenHome::Av::Test;
-
+    //, iOptionUdn("-u", "--udn", Brn("TestMediaPlayer-0123456789"), "Udn (optional - one will be generated if this is left blank)")
 TestMediaPlayerOptions::TestMediaPlayerOptions()
-    : iOptionRoom("-r", "--room", Brn("hostname"), "room the Product service will report")
+    : iOptionRoom("-r", "--room", Brn("TestMediaPlayer"), "room the Product service will report")
     , iOptionName("-n", "--name", Brn("SoftPlayer"), "Product name")
     , iOptionUdn("-u", "--udn", Brn(""), "Udn (optional - one will be generated if this is left blank)")
     , iOptionChannel("-c", "--channel", 0, "[0..65535] sender channel")

@@ -69,7 +69,7 @@ void VolumeControl::SetVolume(TUint aVolume)
     {
         return;
     }
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
+    Log::Print("Volume : %u\n", aVolume );
     volume = double((aVolume / MILLI_DB_PER_STEP)/100.0f);
 
     // Use the dB range to map the volume to a scale more in tune

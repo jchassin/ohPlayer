@@ -1,3 +1,4 @@
+#include "OpenHomePlayer.h"
 #include "TestMediaPlayer.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Media/Tests/Cdecl.h>
@@ -84,6 +85,8 @@ void TestMediaPlayerThread::RunInThread()
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.StoreFile().CString());
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.OptionOdp().Value());
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.OptionWebUi().Value());
+
+
     // Create TestMediaPlayer.
     tmp = new TestMediaPlayer(*dvStack, *cpStack, udn, iOptions.Room().CString(), iOptions.Name().CString(),
         iOptions.TuneIn().Value(), iOptions.Tidal().Value(), iOptions.Qobuz().Value(),
@@ -128,7 +131,7 @@ void TestMediaPlayerThread::RunInThread()
 #include<signal.h>
 #include<unistd.h>
 void CDECL sig_handler(int signo);
-
+const gchar        *g_appName   = "OpenHomePlayer";
 int CDECL main(int aArgc, char* aArgv[])
 {
 #ifdef _WIN32
@@ -137,7 +140,6 @@ int CDECL main(int aArgc, char* aArgv[])
         _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
     }
 #endif // _WIN32
-
     //if (signal(SIGINT, sig_handler) == SIG_ERR) {}
     // Parse options.
     TestMediaPlayerOptions options;
