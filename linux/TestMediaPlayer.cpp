@@ -203,7 +203,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     iDevice->SetAttribute("Upnp.Domain", "av.openhome.org");
     iDevice->SetAttribute("Upnp.Type", "Source");
     iDevice->SetAttribute("Upnp.Version", "1");
-    iDevice->SetAttribute("Upnp.Manufacturer", "Delescluze");
+    iDevice->SetAttribute("Upnp.Manufacturer", "OpenHome");
     iDevice->SetAttribute("Upnp.ModelName", "ohPlayer");
 #ifdef LPEC_ENABLE
     iDevice->SetAttribute("Lpec.Name", "ohPipeline");
@@ -218,7 +218,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     iDeviceUpnpAv->SetAttribute("Upnp.Domain", "upnp.org");
     iDeviceUpnpAv->SetAttribute("Upnp.Type", "MediaRenderer");
     iDeviceUpnpAv->SetAttribute("Upnp.Version", "1");
-    iDeviceUpnpAv->SetAttribute("Upnp.Manufacturer", "Delescluze");
+    iDeviceUpnpAv->SetAttribute("Upnp.Manufacturer", "OpenHome");
     iDeviceUpnpAv->SetAttribute("Upnp.ModelName", "ohPlayer");
 #ifdef LPEC_ENABLE
     iDeviceUpnpAv->SetAttribute("Lpec.Name", "MediaRenderer");

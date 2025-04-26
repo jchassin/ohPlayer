@@ -25,7 +25,7 @@ RamStore::~RamStore() {}
 
 void RamStore::LoadStaticData(IStoreLoaderStatic& aLoader)
 {
-    aLoader.AddStaticItem(StaticDataKey::kBufManufacturerName, "Delescluze");
+    aLoader.AddStaticItem(StaticDataKey::kBufManufacturerName, "OpenHome");
     aLoader.AddStaticItem(StaticDataKey::kBufManufacturerInfo, "delescluze.vjf");
     aLoader.AddStaticItem(StaticDataKey::kBufManufacturerUrl, "http://www.openhome.org");
     aLoader.AddStaticItem(StaticDataKey::kBufManufacturerImageUrl, "http://wiki.openhome.org/mediawiki/skins/openhome/images/logo.png");

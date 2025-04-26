@@ -8,14 +8,15 @@
 use Cwd;
 use File::Path qw(remove_tree);
 use Getopt::Long;
-use POSIX qw(tmpnam);
+use File::Temp qw(tempdir);
+#use POSIX qw(tmpnam);
 
 BEGIN
 {
     # Create a temporary directory for package creation.
     do
     {
-        $scratchDir = tmpnam();
+        $scratchDir = tempdir();
     } while (-e "$scratchDir");
 
     die "Cannot temporary directory $scratchDir\n"
