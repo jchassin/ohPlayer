@@ -406,7 +406,7 @@ void TestMediaPlayer::Run()
     Log::Print("Press CTRL+C to quit:\n");
     Log::Print("\n");
 #if 1
-    while ( getchar() != 'q' );
+    iSemShutdown.Wait();
 #else    
     while (iExitRequested==0)    // getchar catches stdin, getch does not
     {
