@@ -15,7 +15,7 @@
 
 using namespace OpenHome;
 
-static TInt OhLog::PrintError(const TChar* aFormat, ...)
+TInt OhLog::PrintError(const TChar* aFormat, ...)
 {
     TInt ret;
     va_list arg;
@@ -27,7 +27,7 @@ static TInt OhLog::PrintError(const TChar* aFormat, ...)
    va_end(arg);
    return (ret);
 }
-static TInt OhLog::PrintWarning(const TChar* aFormat, ...)
+TInt OhLog::PrintWarning(const TChar* aFormat, ...)
 {
     TInt ret;
     va_list arg;

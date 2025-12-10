@@ -223,6 +223,7 @@ private:
     TUint iUiMsgBufBytes;
     OpenHome::Media::DriverAlsa     *iDriver  = NULL;
     Media::IPipelineObserver        *iRaspdacObserver;
+    IVolumeObserver         *iRaspdacVolumeObserver;
 };
 
 class TestMediaPlayerOptions

@@ -294,6 +294,9 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Register Raspdac interface notification
     iRaspdacObserver = new RaspdacObserver();
     iMediaPlayer->Pipeline().AddObserver(*iRaspdacObserver);
+    iRaspdacVolumeObserver = new RaspdacVolumeObserver();
+    iMediaPlayer->VolumeManager().AddVolumeObserver(*iRaspdacVolumeObserver);
+
 
     // Set up config app.
     WebAppFrameworkInitParams* initParams = new WebAppFrameworkInitParams();
