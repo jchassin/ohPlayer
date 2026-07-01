@@ -710,7 +710,51 @@ void DriverAlsa::Pimpl::ProcessDrain()
         }
     }
 }
+#if 1
+void DriverAlsa::Pimpl::Write(const Brx& aData)
+{
+    if (iSampleBytes == 0) {
+        OhLog::PrintError("DriverAlsa: invalid sample size\n");
+        return;
+    }
 
+    const TByte* ptr = aData.Ptr();
+    snd_pcm_uframes_t framesRemaining = aData.Bytes() / iSampleBytes;
+
+    while (framesRemaining > 0) {
+        snd_pcm_sframes_t framesWritten =
+            snd_pcm_writei(iHandle, ptr, framesRemaining);
+
+        if (framesWritten < 0) {
+            const int err = snd_pcm_recover(iHandle, framesWritten, 1);
+
+            if (err < 0) {
+                OhLog::PrintError("DriverAlsa: snd_pcm_writei() unrecoverable error: %s\n",
+                                  snd_strerror(err));
+                return;
+            }
+
+            continue;
+        }
+
+        if (framesWritten == 0) {
+            const int err = snd_pcm_wait(iHandle, 1000);
+
+            if (err < 0) {
+                OhLog::PrintError("DriverAlsa: snd_pcm_wait() error: %s\n",
+                                  snd_strerror(err));
+                return;
+            }
+
+            continue;
+        }
+
+        ptr += framesWritten * iSampleBytes;
+        framesRemaining -= framesWritten;
+        iBytesSent += framesWritten * iSampleBytes;
+    }
+}
+#else
 void DriverAlsa::Pimpl::Write(const Brx& aData)
 {
     int err;
@@ -744,7 +788,7 @@ void DriverAlsa::Pimpl::Write(const Brx& aData)
         iBytesSent += aData.Bytes();
     }
 }
-
+#endif
 #ifdef DEBUG
 void DriverAlsa::Pimpl::LogPCMState()
 {
