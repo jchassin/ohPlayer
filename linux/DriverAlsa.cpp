@@ -1003,43 +1003,33 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
 }
 TUint DriverAlsa::Pimpl::DriverDelayJiffies(TUint aSampleRate)
 {
-    snd_pcm_sframes_t dp;
-    int ret;
-
-    if (!aSampleRate) {
+    if (!aSampleRate || iProfileIndex == -1) {
         return 0;
     }
 
-    // Verify the supplied sample rate is supported.
-    snd_pcm_hw_params_t *hwParams;
-    TUint                err;
+    snd_pcm_sframes_t delayFrames = 0;
+    int ret = snd_pcm_delay(iHandle, &delayFrames);
 
-    snd_pcm_hw_params_alloca(&hwParams);
-    err = snd_pcm_hw_params_any(iHandle, hwParams);
-    if (err < 0)
-    {
-        OhLog::PrintError("DriverAlsa: Cannot get hardware parameters: %s\n",
-                   snd_strerror(err));
-
-        THROW(SampleRateUnsupported);
-    }
-
-    if (snd_pcm_hw_params_test_rate(iHandle, hwParams, aSampleRate, 0) < 0)
-    {
-        THROW(SampleRateUnsupported);
-    }
-
-    ret = snd_pcm_delay(iHandle, &dp);
     if (ret < 0) {
-        OhLog::PrintError("DriverAlsa: snd_pcm_delay() error : %s\n",
-                   snd_strerror(ret));
-        return 0;
+        ret = snd_pcm_recover(iHandle, ret, 1);
+        if (ret < 0) {
+            OhLog::PrintError("DriverAlsa: snd_pcm_delay() error: %s\n",
+                              snd_strerror(ret));
+            return 0;
+        }
+
+        ret = snd_pcm_delay(iHandle, &delayFrames);
+        if (ret < 0) {
+            return 0;
+        }
     }
 
-    Log::Print("DriverAlsa: snd_pcm_delay() : %u\n", dp);
-    return dp * Jiffies::PerSample(aSampleRate);
-}
+    if (delayFrames < 0) {
+        delayFrames = 0;
+    }
 
+    return (TUint)delayFrames * Jiffies::PerSample(aSampleRate);
+}
 
 // DriverAlsa
 
