@@ -907,30 +907,100 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
     iDitch = true;
     iProfileIndex = -1;
 }
-
-TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile, TUint aBitDepth,
-                                    TUint aNumChannels, TUint aSampleRate,
+TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
+                                    TUint aBitDepth,
+                                    TUint aNumChannels,
+                                    TUint aSampleRate,
                                     TUint aBufferUs)
 {
     auto outputFormat = aProfile.GetFormat(aBitDepth);
 
-    if (iDuplicateChannel)
-    {
-        // We are manually converting a mono input to stereo.
-        // Configure the stream for stereo.
+    if (iDuplicateChannel) {
         aNumChannels *= 2;
     }
 
-    auto err = snd_pcm_set_params(iHandle,
-                                  outputFormat.first,
-                                  SND_PCM_ACCESS_RW_INTERLEAVED,
-                                  aNumChannels,
-                                  aSampleRate,
-                                  0,             // no soft-resample
-                                  aBufferUs);
-    return err == 0;
-}
+    snd_pcm_hw_params_t* hwParams;
+    snd_pcm_sw_params_t* swParams;
+    snd_pcm_hw_params_alloca(&hwParams);
+    snd_pcm_sw_params_alloca(&swParams);
 
+    int err = snd_pcm_hw_params_any(iHandle, hwParams);
+    if (err < 0) return false;
+
+    err = snd_pcm_hw_params_set_access(iHandle, hwParams,
+                                       SND_PCM_ACCESS_RW_INTERLEAVED);
+    if (err < 0) return false;
+
+    err = snd_pcm_hw_params_set_format(iHandle, hwParams,
+                                       outputFormat.first);
+    if (err < 0) return false;
+
+    err = snd_pcm_hw_params_set_channels(iHandle, hwParams,
+                                         aNumChannels);
+    if (err < 0) return false;
+
+    unsigned int rate = aSampleRate;
+    err = snd_pcm_hw_params_set_rate_near(iHandle, hwParams, &rate, nullptr);
+    if (err < 0 || rate != aSampleRate) return false;
+
+    unsigned int bufferTime = aBufferUs;
+    err = snd_pcm_hw_params_set_buffer_time_near(iHandle,
+                                                 hwParams,
+                                                 &bufferTime,
+                                                 nullptr);
+    if (err < 0) return false;
+
+    // Réglage plus adapté SPI / embarqué :
+    // plusieurs petites périodes dans un buffer assez confortable.
+    unsigned int periodTime = bufferTime / 8;
+    if (periodTime < 10000) {
+        periodTime = 10000; // 10 ms minimum
+    }
+
+    err = snd_pcm_hw_params_set_period_time_near(iHandle,
+                                                 hwParams,
+                                                 &periodTime,
+                                                 nullptr);
+    if (err < 0) return false;
+
+    err = snd_pcm_hw_params(iHandle, hwParams);
+    if (err < 0) return false;
+
+    snd_pcm_uframes_t bufferSize = 0;
+    snd_pcm_uframes_t periodSize = 0;
+
+    snd_pcm_hw_params_get_buffer_size(hwParams, &bufferSize);
+    snd_pcm_hw_params_get_period_size(hwParams, &periodSize, nullptr);
+
+    err = snd_pcm_sw_params_current(iHandle, swParams);
+    if (err < 0) return false;
+
+    err = snd_pcm_sw_params_set_start_threshold(iHandle,
+                                                swParams,
+                                                periodSize);
+    if (err < 0) return false;
+
+    err = snd_pcm_sw_params_set_avail_min(iHandle,
+                                          swParams,
+                                          periodSize);
+    if (err < 0) return false;
+
+    err = snd_pcm_sw_params(iHandle, swParams);
+    if (err < 0) return false;
+
+    err = snd_pcm_prepare(iHandle);
+    if (err < 0) return false;
+
+    Log::Print("DriverAlsa: configured ALSA: rate=%u channels=%u "
+               "format=%d buffer=%lu frames period=%lu frames\n",
+               rate,
+               aNumChannels,
+               outputFormat.first,
+               bufferSize,
+               periodSize);
+
+    return true;
+}
 TUint DriverAlsa::Pimpl::DriverDelayJiffies(TUint aSampleRate)
 {
     snd_pcm_sframes_t dp;
