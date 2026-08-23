@@ -182,13 +182,14 @@ private:
     TBool TryDisable(Net::DvDevice& aDevice);
     void Disabled();
 protected:
+    std::unique_ptr<Net::DvDeviceStandard> iDevice;
+    std::unique_ptr<Net::DvDevice> iDeviceUpnpAv;
+
     std::unique_ptr<MediaPlayer> iMediaPlayer;
     std::unique_ptr<Web::WebAppFramework> iAppFramework;    // FIXME - add getter to IMediaPlayer and make private
     RebootLogger iRebootHandler;
     Media::IPullableClock* iPullableClock;
     std::unique_ptr<Media::AllocatorInfoLogger> iInfoLogger;
-    std::unique_ptr<Net::DvDeviceStandard> iDevice;
-    std::unique_ptr<Net::DvDevice> iDeviceUpnpAv;
     std::unique_ptr<IPlaylistLoader> iPlaylistLoader;
     std::unique_ptr<IRaatSignalPathObservable> iRaatSignalPathObservable;
 private:
@@ -222,7 +223,7 @@ private:
     TUint iUiMsgBufCount;
     TUint iUiMsgBufBytes;
 
-    std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver  = NULL;
+    std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver;
     std::unique_ptr<Media::IPipelineObserver>    iRaspdacObserver;
     std::unique_ptr<IVolumeObserver>         iRaspdacVolumeObserver;
 };
