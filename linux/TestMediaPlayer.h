@@ -182,15 +182,15 @@ private:
     TBool TryDisable(Net::DvDevice& aDevice);
     void Disabled();
 protected:
-    MediaPlayer* iMediaPlayer;
-    Web::WebAppFramework* iAppFramework;    // FIXME - add getter to IMediaPlayer and make private
+    std::unique_ptr<MediaPlayer> iMediaPlayer;
+    std::unique_ptr<Web::WebAppFramework> iAppFramework;    // FIXME - add getter to IMediaPlayer and make private
     RebootLogger iRebootHandler;
     Media::IPullableClock* iPullableClock;
-    Media::AllocatorInfoLogger* iInfoLogger;
-    Net::DvDeviceStandard* iDevice;
-    Net::DvDevice* iDeviceUpnpAv;
-    IPlaylistLoader* iPlaylistLoader;
-    IRaatSignalPathObservable* iRaatSignalPathObservable;
+    std::unique_ptr<Media::AllocatorInfoLogger> iInfoLogger;
+    std::unique_ptr<Net::DvDeviceStandard> iDevice;
+    std::unique_ptr<Net::DvDevice> iDeviceUpnpAv;
+    std::unique_ptr<IPlaylistLoader> iPlaylistLoader;
+    std::unique_ptr<IRaatSignalPathObservable> iRaatSignalPathObservable;
 private:
     Semaphore iSemShutdown;
     Semaphore iDisabled;
@@ -203,27 +203,28 @@ private:
     IOhmTimestamper* iRxTimestamper;
     //VolumeSinkLogger iVolumeLogger;
     VolumeControl    iVolumeLogger;
-    Media::AudioTimeCpu* iAudioTime;
+    std::unique_ptr<Media::AudioTimeCpu> iAudioTime;
     Bws<Uri::kMaxUriBytes+1> iPresentationUrl;
-    Media::LoggingPipelineObserver* iPipelineObserver;
-    Av::FriendlyNameAttributeUpdater* iFnUpdaterStandard;
-    FriendlyNameManagerUpnpAv* iFnManagerUpnpAv;
-    Av::FriendlyNameAttributeUpdater* iFnUpdaterUpnpAv;
-    FsFlushPeriodic* iFsFlushPeriodic;
-    RamStore* iRamStore;
-    Configuration::ConfigRamStore* iConfigRamStore;
-    Configuration::StoreFileWriterJson* iStoreFileWriter;
+    std::unique_ptr<Media::LoggingPipelineObserver> iPipelineObserver;
+    std::unique_ptr<Av::FriendlyNameAttributeUpdater> iFnUpdaterStandard;
+    std::unique_ptr<FriendlyNameManagerUpnpAv> iFnManagerUpnpAv;
+    std::unique_ptr<Av::FriendlyNameAttributeUpdater> iFnUpdaterUpnpAv;
+    std::unique_ptr<FsFlushPeriodic> iFsFlushPeriodic;
+    std::unique_ptr<RamStore> iRamStore;
+    std::unique_ptr<Configuration::ConfigRamStore> iConfigRamStore;
+    std::unique_ptr<Configuration::StoreFileWriterJson> iStoreFileWriter;
     TUint iOdpPort;
-    OpenHome::Net::OdpZeroConf* iOdpZeroConf;
-    OpenHome::Net::DviServerOdp* iServerOdp;
+    std::unique_ptr<OpenHome::Net::OdpZeroConf> iOdpZeroConf;
+    std::unique_ptr<OpenHome::Net::DviServerOdp> iServerOdp;
     TUint iMinWebUiResourceThreads;
     TUint iMaxWebUiTabs;
     TUint iUiSendQueueSize;
     TUint iUiMsgBufCount;
     TUint iUiMsgBufBytes;
-    OpenHome::Media::DriverAlsa     *iDriver  = NULL;
-    Media::IPipelineObserver        *iRaspdacObserver;
-    IVolumeObserver         *iRaspdacVolumeObserver;
+
+    std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver  = NULL;
+    std::unique_ptr<Media::IPipelineObserver>    iRaspdacObserver;
+    std::unique_ptr<IVolumeObserver>         iRaspdacVolumeObserver;
 };
 
 class TestMediaPlayerOptions

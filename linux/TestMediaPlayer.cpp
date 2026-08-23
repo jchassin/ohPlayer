@@ -18,6 +18,7 @@
 #include <OpenHome/Av/KvpStore.h>
 //#include "RamStore.h"
 #include <OpenHome/Av/UpnpAv/UpnpAv.h>
+#include <OpenHome/Av/Playlist/Playlist.h>
 #include <OpenHome/Configuration/ConfigManager.h>
 #include <OpenHome/Configuration/Tests/ConfigRamStore.h>
 #include <OpenHome/Av/Utils/IconDriverSongcastSender.h>
@@ -190,7 +191,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     , iUiMsgBufBytes(aUiMsgBufBytes)
 {
     Log::Print("Shell running on port %u\n", aDvStack.Env().Shell()->Port());
-    iInfoLogger = new Media::AllocatorInfoLogger();
+    iInfoLogger = std::make_unique<Media::AllocatorInfoLogger>();
 
     // Do NOT set UPnP friendly name attributes at this stage.
     // (Wait until MediaPlayer is created so that friendly name can be observed.)
@@ -199,7 +200,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     // Create UPnP device.
     // Friendly name not set here.
-    iDevice = new DvDeviceStandard(aDvStack, aUdn, *this);
+    iDevice = std::make_unique<DvDeviceStandard>(aDvStack, aUdn, static_cast<Net::IResourceManager&>(*this));
     iDevice->SetAttribute("Upnp.Domain", "av.openhome.org");
     iDevice->SetAttribute("Upnp.Type", "Source");
     iDevice->SetAttribute("Upnp.Version", "1");
@@ -213,7 +214,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Create separate UPnP device for standard MediaRenderer.
     Bws<256> buf(aUdn);
     buf.Append("-MediaRenderer");
-    iDeviceUpnpAv = new DvDeviceStandard(aDvStack, buf);
+    iDeviceUpnpAv = std::make_unique<DvDeviceStandard>(aDvStack, buf);
     // Friendly name not set here.
     iDeviceUpnpAv->SetAttribute("Upnp.Domain", "upnp.org");
     iDeviceUpnpAv->SetAttribute("Upnp.Type", "MediaRenderer");
@@ -226,15 +227,15 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     iDeviceUpnpAv->SetAttribute("Odp.Name", "MediaRenderer");
 
     // create read/write store.  This creates a number of static (constant) entries automatically
-    iRamStore = new RamStore(kSongcastSenderIconFileName);
+    iRamStore = std::make_unique<RamStore>(kSongcastSenderIconFileName);
 
     // create a read/write store using the new config framework
-    iConfigRamStore = new ConfigRamStore();
+    iConfigRamStore = std::make_unique<ConfigRamStore>();
     if (Brn(aStoreFile).Bytes() > 0) {
         StoreFileReaderJson storeFileReader(aStoreFile);
         storeFileReader.Read(*iConfigRamStore);
 
-        iStoreFileWriter = new StoreFileWriterJson(aStoreFile);
+        iStoreFileWriter = std::make_unique<StoreFileWriterJson>(aStoreFile);
         iConfigRamStore->AddStoreObserver(*iStoreFileWriter);
     }
     else {
@@ -257,18 +258,18 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     pipelineInit->SetDsdMaxSampleRate(kDsdMaxSampleRate);
     pipelineInit->SetSupportElements(Media::EPipelineSupportElementsValidatorMinimal | Media::EPipelineSupportElementsDecodedAudioValidator | Media::EPipelineSupportElementsRampValidator);
     const Brn kFriendlyNamePrefix("OpenHome ");
-    iAudioTime = new AudioTimeCpu(aDvStack.Env());
+    iAudioTime = std::make_unique<AudioTimeCpu>(aDvStack.Env());
     auto mpInit = MediaPlayerInitParams::New(Brn(aRoom), Brn(aProductName), kFriendlyNamePrefix);
     mpInit->EnableConfigApp();
     mpInit->EnablePins(kMaxPinsDevice);
-    iMediaPlayer = new MediaPlayer(aDvStack, aCpStack, *iDevice, *iRamStore,
+    iMediaPlayer = std::make_unique<MediaPlayer>(aDvStack, aCpStack, *iDevice, *iRamStore,
                                    *iConfigRamStore, pipelineInit, *iAudioTime,
                                    volumeInit, volumeProfile,
                                    *iInfoLogger,
                                    aUdn, mpInit);
     delete mpInit;
     
-    iDriver = new DriverAlsa(iMediaPlayer->Pipeline(), 22052);
+    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
 #if 1
     if (iDriver == NULL)
     {
@@ -279,22 +280,22 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
         Log::Print("%s:%d - DriverAlsa started !\n", __FILE__, __LINE__);
     }
 #endif
-    iPipelineObserver = new LoggingPipelineObserver();
+    iPipelineObserver = std::make_unique<LoggingPipelineObserver>();
     iMediaPlayer->Pipeline().AddObserver(*iPipelineObserver);
     Log::Print("%s:%d\n", __FILE__, __LINE__);
-    iFnUpdaterStandard = new FriendlyNameAttributeUpdater(iMediaPlayer->FriendlyNameObservable(), iMediaPlayer->ThreadPool(), *iDevice);
-    iFnManagerUpnpAv = new FriendlyNameManagerUpnpAv(kFriendlyNamePrefix, iMediaPlayer->Product());
-    iFnUpdaterUpnpAv = new FriendlyNameAttributeUpdater(*iFnManagerUpnpAv, iMediaPlayer->ThreadPool(), *iDeviceUpnpAv);
-    iFsFlushPeriodic = new FsFlushPeriodic(iMediaPlayer->Env(), iMediaPlayer->PowerManager(), iMediaPlayer->ThreadPool(), kFsFlushFreqMs);
+    iFnUpdaterStandard = std::make_unique<FriendlyNameAttributeUpdater>(iMediaPlayer->FriendlyNameObservable(), iMediaPlayer->ThreadPool(), *iDevice);
+    iFnManagerUpnpAv =  std::make_unique<FriendlyNameManagerUpnpAv>(kFriendlyNamePrefix, iMediaPlayer->Product());
+    iFnUpdaterUpnpAv = std::make_unique<FriendlyNameAttributeUpdater>(*iFnManagerUpnpAv, iMediaPlayer->ThreadPool(), *iDeviceUpnpAv);
+    iFsFlushPeriodic = std::make_unique<FsFlushPeriodic>(iMediaPlayer->Env(), iMediaPlayer->PowerManager(), iMediaPlayer->ThreadPool(), kFsFlushFreqMs);
     Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Register with the PowerManager
     IPowerManager& powerManager = iMediaPlayer->PowerManager();
     iPowerObserver = powerManager.RegisterPowerHandler(*this, kPowerPriorityLowest, "TestMediaPlayer");
     Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Register Raspdac interface notification
-    iRaspdacObserver = new RaspdacObserver();
+    iRaspdacObserver = std::make_unique<RaspdacObserver>();
     iMediaPlayer->Pipeline().AddObserver(*iRaspdacObserver);
-    iRaspdacVolumeObserver = new RaspdacVolumeObserver();
+    iRaspdacVolumeObserver = std::make_unique<RaspdacVolumeObserver>();
     iMediaPlayer->VolumeManager().AddVolumeObserver(*iRaspdacVolumeObserver);
 
 
@@ -304,37 +305,18 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     initParams->SetMinServerThreadsResources(aMinWebUiResourceThreads);
     initParams->SetMaxServerThreadsLongPoll(aMaxWebUiTabs);
     initParams->SetSendQueueSize(aUiSendQueueSize);
-    iAppFramework = new WebAppFramework(aDvStack.Env(), initParams, iMediaPlayer->ThreadPool());
+    iAppFramework = std::make_unique<WebAppFramework>(aDvStack.Env(), initParams, iMediaPlayer->ThreadPool());
     Log::Print("%s:%d\n", __FILE__, __LINE__);
 }
 
 TestMediaPlayer::~TestMediaPlayer()
 {
-    delete iAppFramework;
-    delete iPowerObserver;
+    //delete iPowerObserver;
     ASSERT(!iDevice->Enabled());
-    delete iServerOdp;
-    delete iOdpZeroConf;
-    delete iFnUpdaterStandard;
-    delete iFnUpdaterUpnpAv;
-    delete iFnManagerUpnpAv;
-    delete iFsFlushPeriodic;
-    delete iMediaPlayer;
-    delete iPipelineObserver;
-    delete iInfoLogger;
-    delete iAudioTime;
-    delete iDevice;
-    delete iDeviceUpnpAv;
-    delete iRaatSignalPathObservable;
-    delete iRamStore;
     if (iStoreFileWriter != nullptr) {
         // Store writer will not have been created if store file param not specified.
         iConfigRamStore->RemoveStoreObserver(*iStoreFileWriter);
-        delete iStoreFileWriter;
     }
-    delete iConfigRamStore;
-    delete iDriver;
-    delete iRaspdacObserver;
 }
 
 void TestMediaPlayer::SetPullableClock(Media::IPullableClock& aPullableClock)
@@ -390,10 +372,10 @@ void TestMediaPlayer::Run()
 
     iAppFramework->Start();
 
-    iServerOdp = new DviServerOdp(iMediaPlayer->DvStack(), kNumOdpSessions, iOdpPort);
+    iServerOdp = std::make_unique<DviServerOdp>(iMediaPlayer->DvStack(), kNumOdpSessions, iOdpPort);
     iServerOdp->Start();
     Log::Print("ODP server running on port %u\n", iServerOdp->Port()); // don't use iOdpPort here - if it is 0, iServerOdp->Port() tells us the host assigned port
-    iOdpZeroConf = new OdpZeroConf(iMediaPlayer->Env(), *iServerOdp, iMediaPlayer->FriendlyNameObservable());
+    iOdpZeroConf =std::make_unique<OdpZeroConf>(iMediaPlayer->Env(), *iServerOdp, iMediaPlayer->FriendlyNameObservable());
     iOdpZeroConf->SetZeroConfEnabled(true);
 
     iMediaPlayer->PowerManager().StandbyDisable(StandbyDisableReason::Boot);
@@ -454,7 +436,7 @@ PipelineManager& TestMediaPlayer::Pipeline()
 
 DvDeviceStandard* TestMediaPlayer::Device()
 {
-    return iDevice;
+    return iDevice.get();
 }
 
 TUint TestMediaPlayer::DsdMaxSampleRate() const
@@ -551,7 +533,7 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
     iMediaPlayer->Add(ProtocolFactory::NewCalmRadio(aEnv, ssl, iUserAgent, *iMediaPlayer));
 
     // Add sources
-    iMediaPlayer->Add(SourceFactory::NewPlaylist(*iMediaPlayer, Optional<IPlaylistLoader>(iPlaylistLoader)));
+    iMediaPlayer->Add(SourceFactory::NewPlaylist(*iMediaPlayer, Optional<IPlaylistLoader>(iPlaylistLoader.get())));
     if (iTuneInPartnerId.Bytes() == 0) {
         iMediaPlayer->Add(SourceFactory::NewRadio(*iMediaPlayer));
     }
@@ -623,8 +605,7 @@ void TestMediaPlayer::EnableDevices()
 
 void TestMediaPlayer::DestroyAppFramework()
 {
-    delete iAppFramework;
-    iAppFramework = nullptr;
+    iAppFramework.reset();
 }
 
 void TestMediaPlayer::WriteResource(const Brx& aUriTail, const TIpAddress& /*aInterface*/, std::vector<char*>& /*aLanguageList*/, IResourceWriter& aResourceWriter)
