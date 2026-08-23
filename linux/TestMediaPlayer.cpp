@@ -311,7 +311,6 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
 TestMediaPlayer::~TestMediaPlayer()
 {
-    //delete iPowerObserver;
     ASSERT(!iDevice->Enabled());
     if (iStoreFileWriter != nullptr) {
         // Store writer will not have been created if store file param not specified.
@@ -642,15 +641,16 @@ void TestMediaPlayer::PowerDown()
 
 void TestMediaPlayer::AddConfigApp()
 {
-    std::vector<const Brx*> sourcesBufs;
     Product& product = iMediaPlayer->Product();
-    for (TUint i=0; i<product.SourceCount(); i++) {
+    const auto sourceCount=product.SourceCount();
+    std::vector<const Brx*> sourcesBufs(sourceCount);
+    for (TUint i=0; i<sourceCount; i++) {
         Bws<ISource::kMaxSystemNameBytes> systemName;
         Bws<ISource::kMaxSourceNameBytes> name;
         Bws<ISource::kMaxSourceTypeBytes> type;
         TBool visible;
         product.GetSourceDetails(i, systemName, type, name, visible);
-        sourcesBufs.push_back(new Brh(systemName));
+        sourcesBufs[i] = new Brh(systemName));
     }
     // FIXME - take resource dir as param or copy res dir to build dir
     auto configUi = CreateConfigApp(sourcesBufs, Brn("/usr/share/openhome-player/res/"), iMinWebUiResourceThreads, iMaxWebUiTabs, iUiSendQueueSize, iUiMsgBufCount, iUiMsgBufBytes);
