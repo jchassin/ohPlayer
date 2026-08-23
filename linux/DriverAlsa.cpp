@@ -51,11 +51,11 @@ class PcmProcessorBase : public IPcmProcessor
 protected:
     PcmProcessorBase(IDataSink& aDataSink, Bwx& aBuffer);
 public: // IPcmProcessor
-    virtual void BeginBlock();
+    virtual void BeginBlock() override;
     void ProcessFragment(const Brx& aData, TUint aNumChannels, TUint aSubsampleBytes) override;
     void ProcessSilence(const Brx& aData, TUint aNumChannels, TUint aSubsampleBytes) override;
-    virtual void EndBlock();
-    virtual void Flush();
+    virtual void EndBlock() override;
+    virtual void Flush() override;
 public:
     void SetDuplicateChannel(TBool duplicateChannel);
     void SetBitDepth(TUint bitDepth);
@@ -1102,9 +1102,8 @@ TUint DriverAlsa::PipelineAnimatorDelayJiffies(AudioFormat aFormat,
     return iPimpl->DriverDelayJiffies(aSampleRate);
 }
 
-TUint DriverAlsa::PipelineAnimatorDsdBlockSizeWords() const
+void DriverAlsa::PipelineAnimatorDsdBlockConfiguration(TUint& aSampleBlockWords, TUint& aPadBytesPerChunk) const
 {
-	return 0;
 }
 
 TUint DriverAlsa::PipelineAnimatorMaxBitDepth() const

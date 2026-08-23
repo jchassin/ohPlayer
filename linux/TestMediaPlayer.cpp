@@ -481,7 +481,7 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
 {
     // Add containers
     iMediaPlayer->Add(Codec::ContainerFactory::NewId3v2());
-    iMediaPlayer->Add(Codec::ContainerFactory::NewMpeg4(iMediaPlayer->MimeTypes()));
+    iMediaPlayer->Add(Codec::ContainerFactory::NewMpeg4(iMediaPlayer->MimeTypes(), Optional<Codec::IMpegDRMProvider>()));
     iMediaPlayer->Add(Codec::ContainerFactory::NewMpegTs(iMediaPlayer->MimeTypes()));
 
     // Add codecs
@@ -534,7 +534,7 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
             Log::Print("    App: ID: %.*s - ClientId = %.*s, Secret = %.*s\n", PBUF(v.AppId()), PBUF(v.ClientId()), PBUF(v.ClientSecret()));
         }
 
-        iMediaPlayer->Add(ProtocolFactory::NewTidal(aEnv, ssl, clientId, clientSecret, apps, *iMediaPlayer));
+        iMediaPlayer->Add(ProtocolFactory::NewTidal(ssl, clientId, clientSecret, apps, *iMediaPlayer));
     }
     // ...likewise, only add Qobuz if we have ids for login
     if (iQobuzIdSecret.Bytes() > 0) {

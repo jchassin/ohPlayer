@@ -1,41 +1,89 @@
-# Makefile
- 
-#
-# Command Line Options:
-#   USE_LIBAVCODEC=0:
-#            Use the platform libavcodecs for MP3/AAC instead of the embedded,
-#            license restricted variants. 
-#   DEBUG=0: Debug build.
-#            Glibc mtrace will be enabled. MALLOC_TRACE must be defined in the
-#            environment to activate.
-#   NVWA_DIR=<source location>:
-#            Integrate a cross platform new/delete leak detector.
-#            Downloadable from http://wyw.dcweb.cn/leakage.htm
-#                     
+# ============================================================================
+# Minimalist Makefile for ohPlayer
+# ============================================================================
 
-.PHONY: default all clean ubuntu raspbian ubuntu-install ubuntu-uninstall raspbian-install raspbian-uninstall
+OSPLATFORM = raspbian
+TARGET     = $(OSPLATFORM)/openhome-player
+CXX        = clang++
 
-all: ubuntu raspbian 
+# Architecture Target Definitions
+TARG_ARCH  = aarch64-scarthgap-linux
+BUILD_TYPE = Release
+OBJ_DIR    = $(OSPLATFORM)/objs
+
+# Core Compiler Optimization and Assembly Flags
+CFLAGS = -c -Wall -std=c++17 -O0 -g -DTARG_ARCH=$(TARG_ARCH) \
+         -fstack-protector -fstack-check -DDEFINE_LITTLE_ENDIAN -fpermissive \
+         $(shell pkg-config --cflags glib-2.0)
+
+# Native Installation Path Configurations
+PREFIX      = /usr
+BINDIR      = $(PREFIX)/bin
+RESDIR      = $(PREFIX)/share/openhome-player
+DOCDIR      = $(PREFIX)/share/doc/openhome-player
+RESOURCEDIR = ../dependencies/$(TARG_ARCH)/ohMediaPlayer/res
+
+LIBS = $(shell pkg-config --libs glib-2.0) \
+       -lConfigUiTestUtils -lConfigUi -lSourcePlaylist -lSourceSongcast \
+       -lSourceUpnpAv -lPodcast -lSourceRadio -lSourceScd -lohMediaPlayer \
+       -lWebAppFramework $(DEPS_DIR)/ohNet/lib/libohNetCore.a \
+       -lCodecAifc \
+       -lCodecAlacApple -lCodecAlacAppleBase -lCodecPcm -lCodecAiff \
+       -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav \
+       -lCodecDsdDsf -lCodecDsdDff -lCodecDsdRaw -lSourceRaop -lohPipeline \
+       -lCodecAacFdkAdts -lCodecAacFdkBase -lCodecMp3 -lCodecAacFdkMp4 -lCodecAacFdk \
+       -lpthread -lasound -lsoxr -ldl -lm -lOdp -lssl -lcrypto
+
+# Static Search Path Directories
+DEPS_DIR = ../dependencies/$(TARG_ARCH)
+INCLUDES = -I$(DEPS_DIR)/ohMediaPlayer/include \
+           -I$(DEPS_DIR)/ohNetmon/include \
+           -I$(DEPS_DIR)/ohNetGenerated-$(TARG_ARCH)-$(BUILD_TYPE)/include/ohnet/OpenHome/Net/Core \
+           -I$(DEPS_DIR)/ohNet/include/ohnet \
+           -I$(DEPS_DIR)
+
+LDFLAGS  = -L$(DEPS_DIR)/ohMediaPlayer/lib \
+           -L$(DEPS_DIR)/ohNetmon/lib \
+           -L$(DEPS_DIR)/ohNet/lib \
+           -L$(DEPS_DIR)/ohNetGenerated-$(TARG_ARCH)-$(BUILD_TYPE)/lib
+
+# Workspace Source Track Aggregations
+OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
+HEADERS  = $(wildcard *.h)
+
+# ============================================================================
+# Compilation Build Automation Targets
+# ============================================================================
+
+.PHONY: default all clean build install uninstall
+
+default: build $(TARGET)
+all: default
+
+$(OBJ_DIR)/%.o: %.cpp $(HEADERS)
+	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+.PRECIOUS: $(TARGET) $(OBJECTS)
+
+$(TARGET): $(OBJECTS)
+	$(CXX) -Wall $(LDFLAGS) -Wl,--start-group $(OBJECTS) $(LIBS) -Wl,--end-group -o $@
+
+build:
+	@mkdir -p $(OBJ_DIR)
 
 clean:
-	-$(MAKE) -f Makefile.ubuntu clean
-	$(MAKE) -f Makefile.raspbian clean
+	rm -rf $(OSPLATFORM)/objs
+	rm -f $(TARGET)
 
-ubuntu:
-	$(MAKE) -f Makefile.ubuntu
-    
-raspbian:
-	$(MAKE) -f Makefile.raspbian
+install:
+	install -m 755 -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(DOCDIR) $(DESTDIR)$(RESDIR) $(DESTDIR)$(RESDIR)/res
+	install -m 755 $(TARGET) $(DESTDIR)$(BINDIR)
+	install -m 644 OpenHome-48x48.png $(DESTDIR)$(RESDIR)
+	install -m 644 copyright $(DESTDIR)$(DOCDIR)
+	cp -R $(RESOURCEDIR) $(DESTDIR)$(RESDIR)
+	cp $(RESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/res/lang
 
-ubuntu-install:
-	$(MAKE) -f Makefile.ubuntu install
-
-ubuntu-uninstall:
-	$(MAKE) -f Makefile.ubuntu uninstall
-
-raspbian-install:
-	$(MAKE) -f Makefile.raspbian install
-
-raspbian-uninstall:
-	$(MAKE) -f Makefile.raspbian uninstall
-
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/openhome-player
+	rm -rf $(DESTDIR)$(DOCDIR)
+	rm -rf $(DESTDIR)$(RESDIR)

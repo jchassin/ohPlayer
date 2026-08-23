@@ -14,7 +14,7 @@ using namespace OpenHome::Media;
 #include <OpenHome/Buffer.h>
 #include <OpenHome/Media/Pipeline/Msg.h>
 #include <OpenHome/Private/Printer.h>
-#include <OpenHome/Av/OhMetadata.h>
+#include <OpenHome/OhMetadata.h>
 #include <OpenHome/Net/Private/XmlParser.h>
 
 #include <map>
