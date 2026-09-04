@@ -4,6 +4,7 @@
 #include <OpenHome/OsWrapper.h>
 #include <alsa/asoundlib.h>
 #include <memory>
+#include <vector>
 
 #include "DriverAlsa.h"
 
@@ -61,6 +62,7 @@ public:
     void SetBitDepth(TUint bitDepth);
 protected:
     void Append(const TByte* aData, TUint aBytes);
+    TByte* ConversionBuffer(TUint aBytes);
 
     virtual void ProcessFragment8(const Brx& aData, TUint aNumChannels) = 0;
     virtual void ProcessFragment16(const Brx& aData, TUint aNumChannels) = 0;
@@ -69,6 +71,7 @@ protected:
 protected:
     IDataSink& iSink;
     Bwx&       iBuffer;
+    std::vector<TByte> iConversionBuffer;
     TBool      iDuplicateChannel;
     TUint      iBitDepth;
 };
@@ -89,6 +92,14 @@ void PcmProcessorBase::SetDuplicateChannel(TBool duplicateChannel)
 void PcmProcessorBase::SetBitDepth(TUint bitDepth)
 {
     iBitDepth = bitDepth;
+}
+
+TByte* PcmProcessorBase::ConversionBuffer(TUint aBytes)
+{
+    if (iConversionBuffer.size() < aBytes) {
+        iConversionBuffer.resize(aBytes);
+    }
+    return iConversionBuffer.data();
 }
 
 void PcmProcessorBase::Append(const TByte* aData, TUint aBytes)
@@ -192,8 +203,7 @@ void PcmProcessorLe::ProcessFragment8(const Brx& aData, TUint aNumChannels)
         bytes *= 2;
     }
 
-    nData = new TByte[bytes];
-    ASSERT(nData != NULL);
+    nData = ConversionBuffer(bytes);
 
     TByte *ptr  = (TByte *)(aData.Ptr() + 0);
     TByte *ptr1 = (TByte *)nData;
@@ -217,7 +227,6 @@ void PcmProcessorLe::ProcessFragment8(const Brx& aData, TUint aNumChannels)
     Brn fragment(nData, bytes);
     Flush();
     iSink.Write(fragment);
-    delete[] nData;
 }
 
 void PcmProcessorLe::ProcessFragment16(const Brx& aData, TUint aNumChannels)
@@ -233,8 +242,7 @@ void PcmProcessorLe::ProcessFragment16(const Brx& aData, TUint aNumChannels)
         bytes *= 2;
     }
 
-    nData = new TByte[bytes];
-    ASSERT(nData != NULL);
+    nData = ConversionBuffer(bytes);
 
     TByte *ptr  = (TByte *)(aData.Ptr() + 0);
     TByte *ptr1 = (TByte *)nData;
@@ -260,7 +268,6 @@ void PcmProcessorLe::ProcessFragment16(const Brx& aData, TUint aNumChannels)
     Brn fragment(nData, bytes);
     Flush();
     iSink.Write(fragment);
-    delete[] nData;
 }
 
 void PcmProcessorLe::ProcessFragment24(const Brx& aData, TUint aNumChannels)
@@ -280,8 +287,7 @@ void PcmProcessorLe::ProcessFragment24(const Brx& aData, TUint aNumChannels)
         bytes *= 2;
     }
 
-    nData = new TByte[bytes];
-    ASSERT(nData != NULL);
+    nData = ConversionBuffer(bytes);
 
     TByte *ptr  = (TByte *)(aData.Ptr() + 0);
     TByte *ptr1 = (TByte *)nData;
@@ -307,7 +313,6 @@ void PcmProcessorLe::ProcessFragment24(const Brx& aData, TUint aNumChannels)
     Brn fragment(nData, bytes);
     Flush();
     iSink.Write(fragment);
-    delete[] nData;
 }
 
 void PcmProcessorLe::ProcessFragment32(const Brx& aData, TUint aNumChannels)
@@ -331,8 +336,7 @@ void PcmProcessorLe::ProcessFragment32(const Brx& aData, TUint aNumChannels)
         bytes *= 2;
     }
 
-    nData = new TByte[bytes];
-    ASSERT(nData != NULL);
+    nData = ConversionBuffer(bytes);
 
     TByte *ptr  = (TByte *)(aData.Ptr() + 0);
     TByte *endp = ptr + aData.Bytes();
@@ -389,7 +393,6 @@ void PcmProcessorLe::ProcessFragment32(const Brx& aData, TUint aNumChannels)
     Brn fragment(nData, outBytes);
     Flush();
     iSink.Write(fragment);
-    delete[] nData;
 }
 
 // PcmProcessorLe32
@@ -425,8 +428,7 @@ void PcmProcessorLe32::ProcessFragment24(const Brx& aData, TUint aNumChannels)
         bytes *= 2;
     }
 
-    nData = new TByte[bytes];
-    ASSERT(nData != NULL);
+    nData = ConversionBuffer(bytes);
 
     TByte *ptr  = (TByte *)(aData.Ptr() + 0);
     TByte *ptr1 = (TByte *)nData;
@@ -456,7 +458,6 @@ void PcmProcessorLe32::ProcessFragment24(const Brx& aData, TUint aNumChannels)
     Brn fragment(nData, bytes);
     Flush();
     iSink.Write(fragment);
-    delete[] nData;
 }
 
 void PcmProcessorLe32::ProcessFragment32(const Brx& aData, TUint aNumChannels)
@@ -480,8 +481,7 @@ void PcmProcessorLe32::ProcessFragment32(const Brx& aData, TUint aNumChannels)
         bytes *= 2;
     }
 
-    nData = new TByte[bytes];
-    ASSERT(nData != NULL);
+    nData = ConversionBuffer(bytes);
 
     TByte *ptr  = (TByte *)(aData.Ptr() + 0);
     TByte *endp = ptr + aData.Bytes();
@@ -555,7 +555,6 @@ void PcmProcessorLe32::ProcessFragment32(const Brx& aData, TUint aNumChannels)
     Brn fragment(nData, outBytes);
     Flush();
     iSink.Write(fragment);
-    delete[] nData;
 }
 
 typedef std::pair<snd_pcm_format_t, TUint> OutputFormat;
@@ -640,6 +639,9 @@ private:
     TInt iProfileIndex;
     TBool iDitch;
     TUint iBytesSent;
+    TUint iXrunCount;
+    TUint iRecoverCount;
+    TUint iWaitCount;
     TUint iBufferUs;
 
     static const TUint kSampleBufSize = 16 * 1024;
@@ -653,6 +655,9 @@ DriverAlsa::Pimpl::Pimpl(const TChar* aAlsaDevice, TUint aBufferUs)
 , iProfileIndex(-1)
 , iDitch(false)
 , iBytesSent(0)
+, iXrunCount(0)
+, iRecoverCount(0)
+, iWaitCount(0)
 , iBufferUs(aBufferUs)
 {
     auto err = snd_pcm_open(&iHandle, aAlsaDevice, SND_PCM_STREAM_PLAYBACK, 0);
@@ -714,7 +719,17 @@ void DriverAlsa::Pimpl::ProcessDrain()
 void DriverAlsa::Pimpl::Write(const Brx& aData)
 {
     if (iSampleBytes == 0) {
-        OhLog::PrintError("DriverAlsa: invalid sample size\n");
+        OhLog::PrintError("DriverAlsa: invalid sample size");
+        return;
+    }
+
+    if ((aData.Bytes() % iSampleBytes) != 0) {
+        OhLog::PrintError("DriverAlsa: PCM buffer is not frame aligned: "
+                          "bytes=%u frameBytes=%u remainder=%u",
+                          aData.Bytes(),
+                          iSampleBytes,
+                          aData.Bytes() % iSampleBytes);
+        ASSERTS();
         return;
     }
 
@@ -726,22 +741,35 @@ void DriverAlsa::Pimpl::Write(const Brx& aData)
             snd_pcm_writei(iHandle, ptr, framesRemaining);
 
         if (framesWritten < 0) {
-            const int err = snd_pcm_recover(iHandle, framesWritten, 1);
+            const int writeError = static_cast<int>(framesWritten);
+
+            if (writeError == -EPIPE) {
+                ++iXrunCount;
+                OhLog::PrintWarning("DriverAlsa: XRUN detected (count=%u)",
+                                    iXrunCount);
+            }
+
+            const int err = snd_pcm_recover(iHandle, writeError, 1);
 
             if (err < 0) {
-                OhLog::PrintError("DriverAlsa: snd_pcm_writei() unrecoverable error: %s\n",
+                OhLog::PrintError("DriverAlsa: snd_pcm_writei() unrecoverable error: %s",
                                   snd_strerror(err));
                 return;
             }
 
+            ++iRecoverCount;
+            Log::Print("DriverAlsa: recovered from %s (recoveries=%u)",
+                       snd_strerror(writeError),
+                       iRecoverCount);
             continue;
         }
 
         if (framesWritten == 0) {
+            ++iWaitCount;
             const int err = snd_pcm_wait(iHandle, 1000);
 
             if (err < 0) {
-                OhLog::PrintError("DriverAlsa: snd_pcm_wait() error: %s\n",
+                OhLog::PrintError("DriverAlsa: snd_pcm_wait() error: %s",
                                   snd_strerror(err));
                 return;
             }
@@ -842,12 +870,19 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
         }
     }
 
-    auto decodedStreamInfo = aMsg->StreamInfo();
-
-    Log::Print("DriverAlsa: Bytes Sent since last MsgDecodedStream = %d\n",
-               iBytesSent);
+    Log::Print("DriverAlsa: previous stream stats: "
+               "bytes=%u xruns=%u recoveries=%u waits=%u\n",
+               iBytesSent,
+               iXrunCount,
+               iRecoverCount,
+               iWaitCount);
 
     iBytesSent = 0;
+    iXrunCount = 0;
+    iRecoverCount = 0;
+    iWaitCount = 0;
+
+    auto decodedStreamInfo = aMsg->StreamInfo();
 
     Log::Print("DriverAlsa: Finding PcmProcessor for stream: BitDepth = %d, "
                "SampleRate = %d, Channels = %d\n",
@@ -988,16 +1023,27 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     err = snd_pcm_sw_params(iHandle, swParams);
     if (err < 0) return false;
 
+    snd_pcm_uframes_t startThreshold = 0;
+    snd_pcm_uframes_t availMin = 0;
+    snd_pcm_sw_params_get_start_threshold(swParams, &startThreshold);
+    snd_pcm_sw_params_get_avail_min(swParams, &availMin);
+
     err = snd_pcm_prepare(iHandle);
     if (err < 0) return false;
 
     Log::Print("DriverAlsa: configured ALSA: rate=%u channels=%u "
-               "format=%d buffer=%lu frames period=%lu frames\n",
+               "format=%d buffer=%lu frames/%u us "
+               "period=%lu frames/%u us "
+               "startThreshold=%lu availMin=%lu\n",
                rate,
                aNumChannels,
                outputFormat.first,
                bufferSize,
-               periodSize);
+               bufferTime,
+               periodSize,
+               periodTime,
+               startThreshold,
+               availMin);
 
     return true;
 }
