@@ -1,3 +1,4 @@
+#include "OhLog.h"
 #include <OpenHome/Media/Pipeline/Msg.h>
 #include <OpenHome/Av/VolumeManager.h>
 #include <OpenHome/Private/Printer.h>
@@ -42,6 +43,10 @@ VolumeControl::VolumeControl()
             break;
         }
     }
+    if (snd_mixer_selem_has_playback_switch(iElem)) {
+	Log::Print("VolumeControl snd_mixer_selem_set_playback_switch_all\n");
+        snd_mixer_selem_set_playback_switch_all(iElem, 1);
+    }
 
 }
 
@@ -67,6 +72,7 @@ void VolumeControl::SetVolume(TUint aVolume)
     // Sanity Check
     if (! IsVolumeSupported())
     {
+        OhLog::PrintError("SetVolume : %d\n", __LINE__);
         return;
     }
     Log::Print("Volume : %u\n", aVolume );
@@ -81,12 +87,14 @@ void VolumeControl::SetVolume(TUint aVolume)
         err = snd_mixer_selem_get_playback_volume_range(iElem, &min, &max);
         if (err < 0)
         {
+            OhLog::PrintError("SetVolume : %d\n", __LINE__);
             return;
         }
 
         value = lrint(floor(volume * (max - min))) + min;
         snd_mixer_selem_set_playback_volume_all(iElem, value);
 
+        OhLog::PrintError("SetVolume : %d\n", __LINE__);
         return;
     }
 
@@ -95,7 +103,7 @@ void VolumeControl::SetVolume(TUint aVolume)
         // dB range less than 24 dB, use a linear mapping
         value = lrint(floor(volume * (max - min))) + min;
         snd_mixer_selem_set_playback_dB_all(iElem, value, -1);
-
+        OhLog::PrintError("SetVolume : %d\n", __LINE__);
         return;
     }
 
@@ -104,6 +112,7 @@ void VolumeControl::SetVolume(TUint aVolume)
         volume = volume * (1 - min_norm) + min_norm;
     }
     value = lrint(floor(6000.0 * log10(volume))) + max;
+    snd_mixer_selem_set_playback_switch_all(iElem, 1);
     snd_mixer_selem_set_playback_dB_all(iElem, value, -1);
 
     return;
