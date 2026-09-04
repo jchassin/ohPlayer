@@ -269,7 +269,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                    aUdn, mpInit);
     delete mpInit;
     
-    //iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
+    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
 #if 1
     if (iDriver == NULL)
     {

@@ -32,7 +32,7 @@ LIBS = $(shell pkg-config --libs glib-2.0) \
        -lCodecAiffBase -lCodecVorbis -llibOgg -lCodecFlac -lCodecWav \
        -lCodecDsdDsf -lCodecDsdDff -lCodecDsdRaw -lSourceRaop -lohPipeline \
        -lCodecAacFdkAdts -lCodecAacFdkBase -lCodecMp3 -lCodecAacFdkMp4 -lCodecAacFdk \
-       -lpthread -lasound -lsoxr -ldl -lm -lOdp -lssl -lcrypto
+       -lpthread -lasound -ldl -lm -lOdp -lssl -lcrypto
 
 # Static Search Path Directories
 DEPS_DIR = ../dependencies/$(TARG_ARCH)
