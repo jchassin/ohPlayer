@@ -380,7 +380,6 @@ void TestMediaPlayer::Run()
     iOdpZeroConf =std::make_unique<OdpZeroConf>(iMediaPlayer->Env(), *iServerOdp, iMediaPlayer->FriendlyNameObservable());
     iOdpZeroConf->SetZeroConfEnabled(true);
 
-    iMediaPlayer->PowerManager().StandbyDisable(StandbyDisableReason::Boot);
     EnableDevices();
     iFsFlushPeriodic->Start();
 
@@ -627,6 +626,7 @@ void TestMediaPlayer::PowerUp()
     //  - registering with IPowerManager in Run() call
     //iDevice->SetEnabled();
     //iDeviceUpnpAv->SetEnabled();
+    Log::Print("TestMediaPlayer::PowerUp\n");
 }
 
 void TestMediaPlayer::PowerDown()
