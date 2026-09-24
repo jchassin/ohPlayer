@@ -374,12 +374,15 @@ void PcmProcessorLe::ProcessFragment32(const Brx& aData, TUint aNumChannels)
             // The platform is configured for 8 bit. Convert.
             case 8:
             {
-                *ptr1++ = *(ptr+0);
+                // Convert S32 to S8 by taking the most significant 8 bits
+                TInt32 sample = *reinterpret_cast<TInt32*>(ptr);
+                sample = sample >> 24;
+                *ptr1++ = static_cast<TByte>(sample);
                 outBytes += 1;
 
                 if (iDuplicateChannel && (aNumChannels != 2))
                 {
-                    *ptr1++ = *(ptr+0);
+                    *ptr1++ = static_cast<TByte>(sample);
                     outBytes += 1;
                 }
 
@@ -534,15 +537,16 @@ void PcmProcessorLe32::ProcessFragment32(const Brx& aData, TUint aNumChannels)
             // The platform is configured for 8 bit. Convert.
             case 8:
             {
-                *ptr1++ = *(ptr+1);
-                *ptr1++ = *(ptr+0);
-                outBytes += 2;
+                // Convert S32 to S8 by taking the most significant 8 bits
+                TInt32 sample = *reinterpret_cast<TInt32*>(ptr);
+                sample = sample >> 24;
+                *ptr1++ = static_cast<TByte>(sample);
+                outBytes += 1;
 
                 if (iDuplicateChannel && (aNumChannels != 2))
                 {
-                    *ptr1++ = *(ptr+1);
-                    *ptr1++ = *(ptr+0);
-                    outBytes += 2;
+                    *ptr1++ = static_cast<TByte>(sample);
+                    outBytes += 1;
                 }
 
                 break;
@@ -729,7 +733,6 @@ void DriverAlsa::Pimpl::Write(const Brx& aData)
                           aData.Bytes(),
                           iSampleBytes,
                           aData.Bytes() % iSampleBytes);
-        ASSERTS();
         return;
     }
 

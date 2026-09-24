@@ -44,7 +44,6 @@ Install the required packages with:
 ```bash
 sudo apt update
 sudo apt install build-essential clang libglib2.0-dev libssl-dev libasound2-dev
-
 ```
 
 ## Build
