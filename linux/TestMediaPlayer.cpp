@@ -166,7 +166,7 @@ const TUint TestMediaPlayer::kDsdPadBytesPerChunk;
 
 TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack, const Brx& aUdn, const TChar* aRoom, const TChar* aProductName,
                                  const Brx& aTuneInPartnerId, const Brx& aTidalId, const Brx& aQobuzIdSecret, const Brx& aUserAgent,
-                                 const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort,
+                                 const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort, TUint aUpnpPort,
                                  TUint aMinWebUiResourceThreads, TUint aMaxWebUiTabs, TUint aUiSendQueueSize,
                                  TUint aUiMsgBufCount, TUint aUiMsgBufBytes)
     : iPullableClock(nullptr)
@@ -182,6 +182,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     , iRxTimestamper(nullptr)
     , iStoreFileWriter(nullptr)
     , iOdpPort(aOdpPort)
+    , iUpnpPort(aUpnpPort)
     , iOdpZeroConf(nullptr)
     , iServerOdp(nullptr)
     , iMinWebUiResourceThreads(aMinWebUiResourceThreads)
@@ -237,6 +238,15 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
         iStoreFileWriter = std::make_unique<StoreFileWriterJson>(aStoreFile);
         iConfigRamStore->AddStoreObserver(*iStoreFileWriter);
+        
+        // Save UDN and port to the existing config store for persistence
+        if (aUdn.Bytes() > 0 && aUpnpPort > 0) {
+            iConfigRamStore->Write(Brn("Device.Udn"), aUdn);
+            Bws<32> portStr;
+            Ascii::AppendDec(portStr, aUpnpPort);
+            iConfigRamStore->Write(Brn("Device.Port"), portStr);
+            Log::Print("Saved UDN to store: %.*s (port %u)\n", PBUF(aUdn), aUpnpPort);
+        }
     }
     else {
         Log::Print("No store file parameter specified - will not attempt to load store values from file, and changes to store values will not be persisted.\n");

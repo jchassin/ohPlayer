@@ -8,6 +8,9 @@
 #include <OpenHome/Media/PipelineManager.h>
 #include <OpenHome/Private/Thread.h>
 #include <OpenHome/Functor.h>
+#include <OpenHome/Configuration/ConfigManager.h>
+#include <OpenHome/Configuration/Tests/ConfigRamStore.h>
+#include <OpenHome/Private/Ascii.h>
 //#include "DriverAlsa.h"
 #include <stdlib.h>
 
@@ -15,6 +18,7 @@ using namespace OpenHome;
 using namespace OpenHome::Av;
 using namespace OpenHome::Av::Test;
 using namespace OpenHome::Net;
+using namespace OpenHome::Configuration;
 //using namespace OpenHome::Media;
 
 class TestMediaPlayerThread
@@ -68,13 +72,54 @@ void TestMediaPlayerThread::RunInThread()
 
     // Seed random number generator.
     TestMediaPlayerInit::SeedRandomNumberGenerator(dvStack->Env(), iOptions.Room().Value(), adapter->Address(), dvStack->ServerUpnp());
+    
+    // Get the port that was assigned to the UPnP server
+    TUint upnpPort = dvStack->ServerUpnp().Port(adapter->Address());
+    
     adapter->RemoveRef(cookie);
 
     // Set/construct UDN.
     Bwh udn;
     // Note: prefix udn with 4c494e4e- to get older versions of Linn Konfig to recognise our devices
-    TestMediaPlayerInit::AppendUniqueId(dvStack->Env(), iOptions.Udn().Value(), Brn("TestMediaPlayer"), udn);
-    Log::Print("UDN is %.*s\n", PBUF(udn));
+    
+    // Check if we have a saved UDN and port in the store
+    if (iOptions.StoreFile().Value().Bytes() > 0) {
+        ConfigRamStore tempStore;
+        StoreFileReaderJson storeFileReader(iOptions.StoreFile().CString());
+        storeFileReader.Read(tempStore);
+        
+        Bws<256> savedUdn;
+        try {
+            tempStore.Read(Brn("Device.Udn"), savedUdn);
+        } catch (StoreKeyNotFound&) {
+            savedUdn.Replace(Brn(""));
+        }
+        
+        Bws<32> savedPortBuf;
+        try {
+            tempStore.Read(Brn("Device.Port"), savedPortBuf);
+        } catch (StoreKeyNotFound&) {
+            savedPortBuf.Replace(Brn(""));
+        }
+        
+        TUint savedPort = 0;
+        if (savedPortBuf.Bytes() > 0) {
+            savedPort = Ascii::Uint(savedPortBuf);
+        }
+        
+        if (savedUdn.Bytes() > 0 && savedPort > 0 && savedPort == upnpPort) {
+            // Use saved UDN if port matches
+            udn.Replace(savedUdn);
+            Log::Print("Loaded UDN from store: %.*s (port %u matches)\n", PBUF(udn), upnpPort);
+        } else {
+            // Generate new UDN
+            TestMediaPlayerInit::AppendUniqueId(dvStack->Env(), iOptions.Udn().Value(), Brn("TestMediaPlayer"), udn);
+            Log::Print("Generated new UDN: %.*s (port %u)\n", PBUF(udn), upnpPort);
+        }
+    } else {
+        TestMediaPlayerInit::AppendUniqueId(dvStack->Env(), iOptions.Udn().Value(), Brn("TestMediaPlayer"), udn);
+        Log::Print("UDN is %.*s (no store file)\n", PBUF(udn));
+    }
 
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.Room().CString());
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.Name().CString());
@@ -90,7 +135,7 @@ void TestMediaPlayerThread::RunInThread()
     // Create TestMediaPlayer.
     tmp = new TestMediaPlayer(*dvStack, *cpStack, udn, iOptions.Room().CString(), iOptions.Name().CString(),
         iOptions.TuneIn().Value(), iOptions.Tidal().Value(), iOptions.Qobuz().Value(),
-        iOptions.UserAgent().Value(), iOptions.StoreFile().CString(), iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value());
+        iOptions.UserAgent().Value(), iOptions.StoreFile().CString(), iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value(), upnpPort);
     Log::Print("%s:%d\n", __FILE__, __LINE__);
 #if 0
     // Add the audio driver to the pipeline.

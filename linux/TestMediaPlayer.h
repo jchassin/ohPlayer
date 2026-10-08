@@ -140,7 +140,7 @@ private:
 public:
     TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack, const Brx& aUdn, const TChar* aRoom, const TChar* aProductName,
                     const Brx& aTuneInPartnerId, const Brx& aTidalId, const Brx& aQobuzIdSecret, const Brx& aUserAgent,
-                    const TChar* aStoreFile, TUint aOdpPort=0, TUint aWebUiPort=0,
+                    const TChar* aStoreFile, TUint aOdpPort=0, TUint aWebUiPort=0, TUint aUpnpPort=0,
                     TUint aMinWebUiResourceThreads=kMinWebUiResourceThreads, TUint aMaxWebUiTabs=kMaxWebUiTabs, TUint aUiSendQueueSize=kUiSendQueueSize, TUint aUiMsgBufCount=kUiMsgBufCount, TUint aUiMsgBufBytes=kUiMsgBufBytes);
     virtual ~TestMediaPlayer();
     void RequestExit();
@@ -215,6 +215,7 @@ private:
     std::unique_ptr<Configuration::ConfigRamStore> iConfigRamStore;
     std::unique_ptr<Configuration::StoreFileWriterJson> iStoreFileWriter;
     TUint iOdpPort;
+    TUint iUpnpPort;
     std::unique_ptr<OpenHome::Net::OdpZeroConf> iOdpZeroConf;
     std::unique_ptr<OpenHome::Net::DviServerOdp> iServerOdp;
     TUint iMinWebUiResourceThreads;
