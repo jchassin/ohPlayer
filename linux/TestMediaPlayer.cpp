@@ -654,12 +654,18 @@ void TestMediaPlayer::PowerUp()
     //  - registering with IPowerManager in Run() call
     //iDevice->SetEnabled();
     //iDeviceUpnpAv->SetEnabled();
+    if (iLinnAmpVolume != nullptr) {
+        iLinnAmpVolume->SetStandby(false);
+    }
     Log::Print("TestMediaPlayer::PowerUp\n");
 }
 
 void TestMediaPlayer::PowerDown()
 {
     Log::Print("TestMediaPlayer::PowerDown\n");
+    if (iLinnAmpVolume != nullptr) {
+        iLinnAmpVolume->SetStandby(true);
+    }
     PowerDownDisable(*iDevice);
     PowerDownDisable(*iDeviceUpnpAv);
 }

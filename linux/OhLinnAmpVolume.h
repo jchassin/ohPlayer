@@ -14,6 +14,7 @@ public:
     ~OhLinnAmpVolume();
 
     TBool IsVolumeSupported() const;
+    void SetStandby(TBool aOn);
 
 private: // from IVolume
     void SetVolume(TUint aVolume) override;

@@ -10,6 +10,8 @@ const char* const kCmdBalance = "BAL = ";
 const char* const kCmdVolumeQuery = "VOL ?";
 const char* const kCmdListen = "LISTEN ";
 const int kDefaultListenSource = 1;
+const char* const kCmdStandbyOn = "STANDBY ON";
+const char* const kCmdStandbyOff = "STANDBY OFF";
 const OpenHome::TUint kResponseTimeoutMs = 500;
 const OpenHome::TUint kMaxLinnVolume = 100;
 // OpenHome volume is in milli-dB: 100 steps of 1024 (see VolumeControl.cpp)
@@ -91,6 +93,21 @@ void OhLinnAmpVolume::SetFade(TInt /*aFade*/) {
 
 TBool OhLinnAmpVolume::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse) {
     return iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs);
+}
+
+void OhLinnAmpVolume::SetStandby(TBool aOn) {
+    if (!IsVolumeSupported()) {
+        return;
+    }
+
+    const char* command = aOn ? kCmdStandbyOn : kCmdStandbyOff;
+    Brn cmd(reinterpret_cast<const TByte*>(command), strlen(command));
+    Bws<32> response;
+    if (SendCommandAndWaitResponse(cmd, response)) {
+        Log::Print("OhLinnAmpVolume: Standby %s\n", aOn ? "ON" : "OFF");
+    } else {
+        Log::Print("OhLinnAmpVolume: Failed to set standby %s\n", aOn ? "ON" : "OFF");
+    }
 }
 
 void OhLinnAmpVolume::SelectInput(int aSource) {
