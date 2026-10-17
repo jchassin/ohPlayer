@@ -22,7 +22,7 @@ OhLinnAmpVolume::~OhLinnAmpVolume() {
     delete iSerialPort;
 }
 
-TBool OhLinnAmpVolume::IsVolumeSupported() {
+TBool OhLinnAmpVolume::IsVolumeSupported() const {
     return iSerialPort->IsOpen();
 }
 
@@ -38,7 +38,7 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
     }
 
     std::string command = "VOLUME " + std::to_string(linnVolume) + "\r";
-    if (SendCommand(command)) {
+    if (SendCommand(command.c_str())) {
         iCurrentVolume = linnVolume;
         Log::Print("OhLinnAmpVolume: Set volume to %u (Linn: %u)\n", aVolume, linnVolume);
     } else {
@@ -52,7 +52,7 @@ void OhLinnAmpVolume::SetBalance(TInt aBalance) {
     }
 
     std::string command = "BALANCE " + std::to_string(aBalance) + "\r";
-    if (!SendCommand(command)) {
+    if (!SendCommand(command.c_str())) {
         Log::Print("OhLinnAmpVolume: Failed to send balance command\n");
     }
 }
@@ -63,13 +63,13 @@ void OhLinnAmpVolume::SetFade(TInt aFade) {
     }
 
     std::string command = "FADE " + std::to_string(aFade) + "\r";
-    if (!SendCommand(command)) {
+    if (!SendCommand(command.c_str())) {
         Log::Print("OhLinnAmpVolume: Failed to send fade command\n");
     }
 }
 
-TBool OhLinnAmpVolume::SendCommand(const std::string& aCommand) {
-    Brn cmd(aCommand.c_str(), aCommand.length());
+TBool OhLinnAmpVolume::SendCommand(const char* aCommand) {
+    Brn cmd(reinterpret_cast<const TByte*>(aCommand), strlen(aCommand));
     if (!iSerialPort->Write(cmd)) {
         return false;
     }
@@ -81,18 +81,19 @@ TBool OhLinnAmpVolume::QueryCurrentVolume() {
         return false;
     }
 
-    std::string command = "VOLUME?\r";
-    if (iSerialPort->Write(Brn(command.c_str(), command.length()))) {
+    const char* command = "VOLUME?\r";
+    if (iSerialPort->Write(Brn(reinterpret_cast<const TByte*>(command), strlen(command)))) {
         Bws<32> response;
         if (iSerialPort->Read(response, 500)) {
-            std::string respStr(response.Ptr(), response.Bytes());
+            // Convert TByte* to char* for string operations
+            std::string respStr(reinterpret_cast<const char*>(response.Ptr()), response.Bytes());
             if (respStr.find("VOLUME ") == 0) {
                 try {
                     iCurrentVolume = std::stoi(respStr.substr(7));
                     Log::Print("OhLinnAmpVolume: Current volume: %u\n", iCurrentVolume);
                     return true;
                 } catch (...) {
-                    Log::Print("OhLinnAmpVolume: Invalid volume response: %s\n", respStr.c_str());
+                    Log::Print("OhLinnAmpVolume: Invalid volume response\n");
                 }
             }
         }

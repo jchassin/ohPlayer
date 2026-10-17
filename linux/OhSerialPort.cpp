@@ -118,10 +118,10 @@ TBool OhSerialPort::Read(Bwx& aBuffer, TUint aTimeoutMs) {
         return false;
     }
 
-    char buf[256];
+    unsigned char buf[256];
     ssize_t bytesRead = read(iFd, buf, sizeof(buf) - 1);
     if (bytesRead > 0) {
-        aBuffer.Replace(Brn(buf, bytesRead));
+        aBuffer.Replace(Brn(buf, static_cast<TUint>(bytesRead)));
         return true;
     }
     return false;

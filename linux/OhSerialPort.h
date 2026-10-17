@@ -3,6 +3,7 @@
 #include <OpenHome/Types.h>
 #include <OpenHome/Buffer.h>
 #include <string>
+#include <termios.h>
 
 namespace OpenHome {
 namespace Av {

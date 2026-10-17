@@ -2,6 +2,7 @@
 
 #include <OpenHome/Av/VolumeManager.h>
 #include <OpenHome/Media/MuteManager.h>
+#include <string>
 #include "OhSerialPort.h"
 
 namespace OpenHome {
@@ -12,7 +13,7 @@ public:
     OhLinnAmpVolume(const std::string& aSerialPortPath);
     ~OhLinnAmpVolume();
 
-    TBool IsVolumeSupported() override;
+    TBool IsVolumeSupported() const;
 
 private: // from IVolume
     void SetVolume(TUint aVolume) override;
@@ -24,7 +25,7 @@ private: // from IFade
     void SetFade(TInt aFade) override;
 
 private:
-    TBool SendCommand(const std::string& aCommand);
+    TBool SendCommand(const char* aCommand);
     TBool QueryCurrentVolume();
 
 private:
