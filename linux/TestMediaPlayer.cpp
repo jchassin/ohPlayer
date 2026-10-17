@@ -314,6 +314,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Register with the PowerManager
     IPowerManager& powerManager = iMediaPlayer->PowerManager();
     iPowerObserver = powerManager.RegisterPowerHandler(*this, kPowerPriorityLowest, "TestMediaPlayer");
+    iStandbyObserver = powerManager.RegisterStandbyHandler(*this, kStandbyHandlerPriorityNormal, "TestMediaPlayer");
     Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Register Raspdac interface notification
     iRaspdacObserver = std::make_unique<RaspdacObserver>();
@@ -654,18 +655,32 @@ void TestMediaPlayer::PowerUp()
     //  - registering with IPowerManager in Run() call
     //iDevice->SetEnabled();
     //iDeviceUpnpAv->SetEnabled();
+    Log::Print("TestMediaPlayer::PowerUp\n");
+}
+
+void TestMediaPlayer::StandbyEnabled()
+{
+    Log::Print("TestMediaPlayer::StandbyEnabled\n");
+    if (iLinnAmpVolume != nullptr) {
+        iLinnAmpVolume->SetStandby(true);
+    }
+}
+
+void TestMediaPlayer::StandbyTransitioning()
+{
+}
+
+void TestMediaPlayer::StandbyDisabled(StandbyDisableReason /*aReason*/)
+{
+    Log::Print("TestMediaPlayer::StandbyDisabled\n");
     if (iLinnAmpVolume != nullptr) {
         iLinnAmpVolume->SetStandby(false);
     }
-    Log::Print("TestMediaPlayer::PowerUp\n");
 }
 
 void TestMediaPlayer::PowerDown()
 {
     Log::Print("TestMediaPlayer::PowerDown\n");
-    if (iLinnAmpVolume != nullptr) {
-        iLinnAmpVolume->SetStandby(true);
-    }
     PowerDownDisable(*iDevice);
     PowerDownDisable(*iDeviceUpnpAv);
 }
