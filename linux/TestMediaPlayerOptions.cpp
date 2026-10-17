@@ -23,6 +23,8 @@ TestMediaPlayerOptions::TestMediaPlayerOptions()
     , iOptionOdp("", "--odp", 0, "Port for ODP server")
     , iOptionWebUi("", "--webui", 0, "Port for Web UI server")
     , iOptionShell("", "--shell", 0, "Port for shell")
+    , iOptionSerial("", "--serial", Brn(""), "Serial port for Linn Amp (e.g., /dev/ttyS0)")
+    , iOptionLinnAmp("", "--linnamp", "Use Linn Amp volume control")
 {
     iParser.AddOption(&iOptionRoom);
     iParser.AddOption(&iOptionName);
@@ -39,6 +41,8 @@ TestMediaPlayerOptions::TestMediaPlayerOptions()
     iParser.AddOption(&iOptionOdp);
     iParser.AddOption(&iOptionWebUi);
     iParser.AddOption(&iOptionShell);
+    iParser.AddOption(&iOptionSerial);
+    iParser.AddOption(&iOptionLinnAmp);
 }
 
 void TestMediaPlayerOptions::AddOption(Option* aOption)
@@ -124,4 +128,14 @@ const OptionUint& TestMediaPlayerOptions::OptionWebUi() const
 const OptionUint& TestMediaPlayerOptions::Shell() const
 {
     return iOptionShell;
+}
+
+const OptionString& TestMediaPlayerOptions::Serial() const
+{
+    return iOptionSerial;
+}
+
+const OptionBool& TestMediaPlayerOptions::LinnAmp() const
+{
+    return iOptionLinnAmp;
 }

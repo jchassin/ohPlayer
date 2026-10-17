@@ -1,6 +1,7 @@
 #include "OhLog.h"
 #include "TestMediaPlayer.h"
 #include "RaspdacMiniIF.h"
+#include "OhLinnAmpVolume.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
 #include <OpenHome/Av/MediaPlayer.h>
@@ -168,7 +169,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                  const Brx& aTuneInPartnerId, const Brx& aTidalId, const Brx& aQobuzIdSecret, const Brx& aUserAgent,
                                  const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort,
                                  TUint aMinWebUiResourceThreads, TUint aMaxWebUiTabs, TUint aUiSendQueueSize,
-                                 TUint aUiMsgBufCount, TUint aUiMsgBufBytes)
+                                 TUint aUiMsgBufCount, TUint aUiMsgBufBytes,
+                                 const TChar* aSerialPort = nullptr, TBool aUseLinnAmp = false)
     : iPullableClock(nullptr)
     , iPlaylistLoader(nullptr)
     , iRaatSignalPathObservable(nullptr)
@@ -189,6 +191,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     , iUiSendQueueSize(aUiSendQueueSize)
     , iUiMsgBufCount(aUiMsgBufCount)
     , iUiMsgBufBytes(aUiMsgBufBytes)
+    , iLinnAmpVolume(nullptr)
 {
     Log::Print("Shell running on port %u\n", aDvStack.Env().Shell()->Port());
     iInfoLogger = std::make_unique<Media::AllocatorInfoLogger>();
@@ -244,9 +247,28 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     VolumeProfile volumeProfile;
     VolumeConsumer volumeInit;
-    volumeInit.SetVolume(iVolumeLogger);
-    volumeInit.SetBalance(iVolumeLogger);
-    volumeInit.SetFade(iVolumeLogger);
+    
+    // Use Linn Amp volume control if requested and serial port is provided
+    if (aUseLinnAmp && aSerialPort != nullptr && strlen(aSerialPort) > 0) {
+        iLinnAmpVolume = new OhLinnAmpVolume(aSerialPort);
+        if (iLinnAmpVolume->IsVolumeSupported()) {
+            volumeInit.SetVolume(*iLinnAmpVolume);
+            volumeInit.SetBalance(*iLinnAmpVolume);
+            volumeInit.SetFade(*iLinnAmpVolume);
+            Log::Print("Using Linn Amp volume control on %s\n", aSerialPort);
+        } else {
+            delete iLinnAmpVolume;
+            iLinnAmpVolume = nullptr;
+            volumeInit.SetVolume(iVolumeLogger);
+            volumeInit.SetBalance(iVolumeLogger);
+            volumeInit.SetFade(iVolumeLogger);
+            Log::Print("Linn Amp volume control failed, falling back to ALSA\n");
+        }
+    } else {
+        volumeInit.SetVolume(iVolumeLogger);
+        volumeInit.SetBalance(iVolumeLogger);
+        volumeInit.SetFade(iVolumeLogger);
+    }
 
     // Create MediaPlayer.
     // NOTE: If values for Room.Name and Product.Name already exist in the Store,
@@ -313,6 +335,11 @@ TestMediaPlayer::~TestMediaPlayer()
 {
     if (iDevice) {
         ASSERT(!iDevice->Enabled());
+    }
+
+    // Clean up Linn Amp volume control
+    if (iLinnAmpVolume != nullptr) {
+        delete iLinnAmpVolume;
     }
 
     // 2. Clean up dependencies before iStoreFileWriter and iConfigRamStore drop

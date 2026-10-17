@@ -3,6 +3,7 @@
 #include <OpenHome/Types.h>
 #include <OpenHome/Buffer.h>
 #include "VolumeControl.h"
+#include "OhLinnAmpVolume.h"
 
 #include <OpenHome/Av/MediaPlayer.h>
 #include <OpenHome/Net/Core/DvDevice.h>
@@ -204,6 +205,7 @@ private:
     IOhmTimestamper* iRxTimestamper;
     //VolumeSinkLogger iVolumeLogger;
     VolumeControl    iVolumeLogger;
+    OhLinnAmpVolume* iLinnAmpVolume;
     std::unique_ptr<Media::AudioTimeCpu> iAudioTime;
     Bws<Uri::kMaxUriBytes+1> iPresentationUrl;
     std::unique_ptr<Media::LoggingPipelineObserver> iPipelineObserver;
@@ -249,6 +251,8 @@ public:
     const TestFramework::OptionUint& OptionOdp() const;
     const TestFramework::OptionUint& OptionWebUi() const;
     const TestFramework::OptionUint& Shell() const;
+    const TestFramework::OptionString& Serial() const;
+    const TestFramework::OptionBool& LinnAmp() const;
 private:
     TestFramework::OptionParser iParser;
     TestFramework::OptionString iOptionRoom;
@@ -266,6 +270,8 @@ private:
     TestFramework::OptionUint iOptionOdp;
     TestFramework::OptionUint iOptionWebUi;
     TestFramework::OptionUint iOptionShell;
+    TestFramework::OptionString iOptionSerial;
+    TestFramework::OptionBool iOptionLinnAmp;
 };
 
 // Not very nice, but only to allow reusable test functions.
