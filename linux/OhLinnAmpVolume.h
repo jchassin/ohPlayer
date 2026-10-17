@@ -28,6 +28,7 @@ private: // from IFade
 private:
     TBool SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse);
     TBool QueryCurrentVolume();
+    void QueryId();
     void SelectInput(int aSource);
 
 private:

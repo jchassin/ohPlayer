@@ -8,6 +8,7 @@ namespace {
 const char* const kCmdVolume = "VOL = ";
 const char* const kCmdBalance = "BAL = ";
 const char* const kCmdVolumeQuery = "VOL ?";
+const char* const kCmdIdQuery = "ID ?";
 const char* const kCmdListen = "LISTEN ";
 const int kDefaultListenSource = 1;
 const char* const kCmdStandbyOn = "STANDBY ON";
@@ -36,6 +37,7 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath)
         Log::Print("OhLinnAmpVolume: Failed to open serial port %s\n", aSerialPortPath.c_str());
     } else {
         Log::Print("OhLinnAmpVolume: Connected to %s\n", aSerialPortPath.c_str());
+        QueryId();
         SelectInput(kDefaultListenSource);
         QueryCurrentVolume();
     }
@@ -93,6 +95,21 @@ void OhLinnAmpVolume::SetFade(TInt /*aFade*/) {
 
 TBool OhLinnAmpVolume::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse) {
     return iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs);
+}
+
+void OhLinnAmpVolume::QueryId() {
+    if (!IsVolumeSupported()) {
+        return;
+    }
+
+    Brn cmd(reinterpret_cast<const TByte*>(kCmdIdQuery), strlen(kCmdIdQuery));
+    Bws<64> response;
+    if (SendCommandAndWaitResponse(cmd, response)) {
+        std::string respStr(reinterpret_cast<const char*>(response.Ptr()), response.Bytes());
+        Log::Print("OhLinnAmpVolume: Device ID: %s\n", respStr.c_str());
+    } else {
+        Log::Print("OhLinnAmpVolume: Failed to query device ID\n");
+    }
 }
 
 void OhLinnAmpVolume::SetStandby(TBool aOn) {
