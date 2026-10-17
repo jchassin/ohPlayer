@@ -1,17 +1,22 @@
 #include "OhSerialPort.h"
 #include <OpenHome/Private/Printer.h>
 #include <OpenHome/Private/Thread.h>
-#include <OpenHome/Net/Private/Globals.h>
-#include <OpenHome/OsWrapper.h>
 #include <sys/ioctl.h>
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <ctime>
 
 namespace OpenHome {
 namespace Av {
+
+static TUint NowMs() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return static_cast<TUint>(ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
+}
 
 OhSerialPort::OhSerialPort(const std::string& aDevicePath, TUint aBaudRate)
     : iFd(-1)
@@ -152,11 +157,11 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
 
     // Wait for response with timeout
     // Response format: !COMMAND result\r\n
-    TUint startTime = Os::TimeInMs(nullptr);
+    TUint startTime = NowMs();
     Bws<256> responseBuffer;
     TBool foundCrlf = false;
 
-    while (Os::TimeInMs(nullptr) - startTime < aTimeoutMs) {
+    while (NowMs() - startTime < aTimeoutMs) {
         unsigned char buf[16];
         ssize_t bytesRead = read(iFd, buf, sizeof(buf));
         
@@ -182,7 +187,7 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         }
         
         // Small delay to avoid busy waiting
-        Thread::Sleep(10);
+        usleep(10000);
     }
 
     if (!foundCrlf) {
@@ -206,10 +211,10 @@ void OhSerialPort::FlushInputBuffer() {
 
     // Read and discard all data until CRLF or timeout
     unsigned char buf[64];
-    TUint startTime = Os::TimeInMs(nullptr);
+    TUint startTime = NowMs();
     TBool foundCrlf = false;
 
-    while (Os::TimeInMs(nullptr) - startTime < 100) { // 100ms timeout for flush
+    while (NowMs() - startTime < 100) { // 100ms timeout for flush
         ssize_t bytesRead = read(iFd, buf, sizeof(buf));
         
         if (bytesRead > 0) {
@@ -228,7 +233,7 @@ void OhSerialPort::FlushInputBuffer() {
             break;
         }
         
-        Thread::Sleep(10);
+        usleep(10000);
     }
 }
 
