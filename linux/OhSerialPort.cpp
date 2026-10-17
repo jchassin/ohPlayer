@@ -164,11 +164,13 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         return false;
     }
 
-    // Wait for response with timeout
-    // Response format: !COMMAND result\r\n
+    // Wait for responses with timeout
+    // LR2 protocol (spec section 1.4.2): an initial response '!' CRLF is issued
+    // on receipt of a valid command, followed by the final response '!$RESULT$' CRLF
     TUint startTime = NowMs();
     Bws<256> responseBuffer;
     TBool foundEnd = false;
+    TUint linesSeen = 0;
 
     while (NowMs() - startTime < aTimeoutMs) {
         unsigned char buf[16];
@@ -184,11 +186,20 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
             Log::Print("OhSerialPort: Read %d bytes: %s\n", static_cast<int>(bytesRead), hex.c_str());
             for (ssize_t i = 0; i < bytesRead; i++) {
                 if (buf[i] == '\r' || buf[i] == '\n') {
-                    // CR or LF terminates the response (accept CR-only, LF-only or CRLF)
-                    foundEnd = true;
-                    break;
+                    // End of a response line
+                    if (responseBuffer.Bytes() > 0) {
+                        linesSeen++;
+                        // First non-empty line is the initial response '!',
+                        // the second is the final response '!$RESULT$'
+                        if (linesSeen >= 2) {
+                            foundEnd = true;
+                            break;
+                        }
+                        responseBuffer.SetBytes(0);
+                    }
+                } else {
+                    responseBuffer.Append(buf[i]);
                 }
-                responseBuffer.Append(buf[i]);
             }
             
             if (foundEnd) {
