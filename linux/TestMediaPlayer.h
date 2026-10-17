@@ -141,9 +141,8 @@ private:
 public:
     TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack, const Brx& aUdn, const TChar* aRoom, const TChar* aProductName,
                     const Brx& aTuneInPartnerId, const Brx& aTidalId, const Brx& aQobuzIdSecret, const Brx& aUserAgent,
-                    const TChar* aStoreFile, TUint aOdpPort=0, TUint aWebUiPort=0,
-                    TUint aMinWebUiResourceThreads=kMinWebUiResourceThreads, TUint aMaxWebUiTabs=kMaxWebUiTabs, TUint aUiSendQueueSize=kUiSendQueueSize, TUint aUiMsgBufCount=kUiMsgBufCount, TUint aUiMsgBufBytes=kUiMsgBufBytes,
-                    const TChar* aSerialPort = nullptr, TBool aUseLinnAmp = false);
+                    const TChar* aStoreFile, TUint aOdpPort=0, TUint aWebUiPort=0,const TChar* aSerialPort = nullptr, TBool aUseLinnAmp = false,
+                    TUint aMinWebUiResourceThreads=kMinWebUiResourceThreads, TUint aMaxWebUiTabs=kMaxWebUiTabs, TUint aUiSendQueueSize=kUiSendQueueSize, TUint aUiMsgBufCount=kUiMsgBufCount, TUint aUiMsgBufBytes=kUiMsgBufBytes );
     virtual ~TestMediaPlayer();
     void RequestExit();
     void SetPullableClock(Media::IPullableClock& aPullableClock);
@@ -206,7 +205,6 @@ private:
     IOhmTimestamper* iRxTimestamper;
     //VolumeSinkLogger iVolumeLogger;
     VolumeControl    iVolumeLogger;
-    OhLinnAmpVolume* iLinnAmpVolume;
     std::unique_ptr<Media::AudioTimeCpu> iAudioTime;
     Bws<Uri::kMaxUriBytes+1> iPresentationUrl;
     std::unique_ptr<Media::LoggingPipelineObserver> iPipelineObserver;
@@ -225,6 +223,7 @@ private:
     TUint iUiSendQueueSize;
     TUint iUiMsgBufCount;
     TUint iUiMsgBufBytes;
+    OhLinnAmpVolume* iLinnAmpVolume;
 
     std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver;
     std::unique_ptr<Media::IPipelineObserver>    iRaspdacObserver;

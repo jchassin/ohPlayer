@@ -1,4 +1,5 @@
-#include <OpenHome/Av/Tests/TestMediaPlayer.h>
+/*#include <OpenHome/Av/Tests/TestMediaPlayer.h>*/
+#include "TestMediaPlayer.h"
 #include <OpenHome/Private/OptionParser.h>
 #include <OpenHome/Types.h>
 #include <OpenHome/Buffer.h>

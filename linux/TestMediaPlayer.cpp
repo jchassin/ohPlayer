@@ -167,10 +167,9 @@ const TUint TestMediaPlayer::kDsdPadBytesPerChunk;
 
 TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack, const Brx& aUdn, const TChar* aRoom, const TChar* aProductName,
                                  const Brx& aTuneInPartnerId, const Brx& aTidalId, const Brx& aQobuzIdSecret, const Brx& aUserAgent,
-                                 const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort,
+                                 const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort, const TChar* aSerialPort, TBool aUseLinnAmp, 
                                  TUint aMinWebUiResourceThreads, TUint aMaxWebUiTabs, TUint aUiSendQueueSize,
-                                 TUint aUiMsgBufCount, TUint aUiMsgBufBytes,
-                    const TChar* aSerialPort = nullptr, TBool aUseLinnAmp = false)
+                                 TUint aUiMsgBufCount, TUint aUiMsgBufBytes)
     : iPullableClock(nullptr)
     , iPlaylistLoader(nullptr)
     , iRaatSignalPathObservable(nullptr)
