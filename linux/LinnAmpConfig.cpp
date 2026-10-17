@@ -63,5 +63,22 @@ TBool LinnAmpConfig::ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& 
     return aUseLinnAmp;
 }
 
+TUint LinnAmpConfig::ReadVolumeLimitFromStore(Configuration::IStoreReadWrite& aStore, TUint aDefault)
+{
+    // Key defined by ohPipeline (VolumeConfig::kKeyLimit), persisted as big-endian int32
+    static const Brn kKeyVolumeLimit("Volume.Limit");
+    Bws<sizeof(TInt)> buf;
+    try {
+        aStore.Read(kKeyVolumeLimit, buf);
+        TInt limit = static_cast<TInt>(Converter::BeUint32At(buf, 0));
+        if (limit >= 0 && limit <= 100) {
+            return static_cast<TUint>(limit);
+        }
+    }
+    catch (StoreKeyNotFound&) {
+    }
+    return aDefault;
+}
+
 } // namespace Av
 } // namespace OpenHome

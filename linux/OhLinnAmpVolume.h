@@ -11,7 +11,8 @@ namespace Av {
 
 class OhLinnAmpVolume : public IVolume, public IBalance, public IFade {
 public:
-    OhLinnAmpVolume(const std::string& aSerialPortPath);
+    // aVolumeLimit: max Linn volume (from Volume.Limit), 0-100
+    OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolumeLimit = 100);
     ~OhLinnAmpVolume();
 
     TBool IsVolumeSupported() const;
@@ -39,6 +40,7 @@ private:
 private:
     OhSerialPort* iSerialPort;
     TUint iCurrentVolume;
+    TUint iVolumeLimit;
     Bwh iDeviceId;
     Bwh iDeviceModel;
 };

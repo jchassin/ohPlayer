@@ -257,7 +257,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Use Linn Amp volume control if requested and serial port is provided
     if (useLinnAmp && serialPortBuf.Bytes() > 0) {
         std::string serialPortStr(reinterpret_cast<const char*>(serialPortBuf.Ptr()), serialPortBuf.Bytes());
-        iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr);
+        const TUint volumeLimit = LinnAmpConfig::ReadVolumeLimitFromStore(*iConfigRamStore, 100);
+        iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr, volumeLimit);
         if (iLinnAmpVolume->IsVolumeSupported()) {
             // Set the ALSA output to full scale: attenuation is handled by the Linn amp
             iVolumeLogger.SetVolumeFixed(100 * 1024);

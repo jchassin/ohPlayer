@@ -15,7 +15,6 @@ const int kDefaultListenSource = 1;
 const char* const kCmdStandbyOn = "STANDBY ON";
 const char* const kCmdStandbyOff = "STANDBY OFF";
 const OpenHome::TUint kResponseTimeoutMs = 500;
-const OpenHome::TUint kMaxLinnVolume = 100;
 // OpenHome volume is in milli-dB: 100 steps of 1024 (see VolumeControl.cpp)
 const OpenHome::TUint kMilliDbPerStep = 1024;
 
@@ -30,9 +29,10 @@ std::string BuildCommand(const char* aPrefix, int aValue) {
 namespace OpenHome {
 namespace Av {
 
-OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath)
+OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolumeLimit)
     : iSerialPort(new OhSerialPort(aSerialPortPath, 9600))
     , iCurrentVolume(0)
+    , iVolumeLimit(aVolumeLimit)
     , iDeviceId(64)
     , iDeviceModel(16)
 {
@@ -71,8 +71,8 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
     }
 
     TUint linnVolume = aVolume / kMilliDbPerStep;
-    if (linnVolume > kMaxLinnVolume) {
-        linnVolume = kMaxLinnVolume;
+    if (linnVolume > iVolumeLimit) {
+        linnVolume = iVolumeLimit;
     }
 
     std::string command = BuildCommand(kCmdVolume, static_cast<int>(linnVolume));

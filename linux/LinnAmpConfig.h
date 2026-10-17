@@ -27,6 +27,10 @@ public:
     static TBool ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& aSerialPort,
                                TBool& aUseLinnAmp);
 
+    // Reads Volume.Limit (max volume in OpenHome steps) from the store.
+    // Returns aDefault if not set.
+    static TUint ReadVolumeLimitFromStore(Configuration::IStoreReadWrite& aStore, TUint aDefault);
+
 private:
     std::unique_ptr<Configuration::ConfigChoice> iConfigVolumeControl;
     std::unique_ptr<Configuration::ConfigText> iConfigSerialPort;
