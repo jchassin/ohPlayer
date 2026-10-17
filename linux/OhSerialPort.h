@@ -2,9 +2,9 @@
 
 #include <OpenHome/Types.h>
 #include <OpenHome/Buffer.h>
+#include <OpenHome/Private/Thread.h>
 #include <string>
 #include <termios.h>
-#include <mutex>
 
 namespace OpenHome {
 namespace Av {
@@ -34,7 +34,7 @@ private:
     TUint iBaudRate;
     struct termios iOldTermios;
     TBool iIsOpen;
-    std::mutex iMutex;
+    Mutex iMutex;
 };
 
 } // namespace Av
