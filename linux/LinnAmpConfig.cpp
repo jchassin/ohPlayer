@@ -9,12 +9,26 @@ const Brn LinnAmpConfig::kKeySerialPort("LinnAmp.SerialPort");
 const TUint LinnAmpConfig::kVolumeControlAlsa = 0;
 const TUint LinnAmpConfig::kVolumeControlLinnAmp = 1;
 
+// Maps choice values to human-readable labels for the web config UI
+class VolumeControlMapper : public Configuration::IConfigChoiceMapper
+{
+public:
+    void Write(IWriter& aWriter, Configuration::IConfigChoiceMappingWriter& aMappingWriter) override
+    {
+        aMappingWriter.Write(aWriter, LinnAmpConfig::kVolumeControlAlsa, Brn("Volume ALSA"));
+        aMappingWriter.Write(aWriter, LinnAmpConfig::kVolumeControlLinnAmp, Brn("Amplificateur Linn"));
+        aMappingWriter.WriteComplete(aWriter);
+    }
+};
+
+static VolumeControlMapper gVolumeControlMapper;
+
 LinnAmpConfig::LinnAmpConfig(Configuration::IConfigInitialiser& aConfigInit)
 {
     // Registering a ConfigVal with the ConfigInitialiser makes it appear in the web config app
     std::vector<TUint> choices = { kVolumeControlAlsa, kVolumeControlLinnAmp };
     iConfigVolumeControl = std::make_unique<Configuration::ConfigChoice>(
-        aConfigInit, kKeyVolumeControl, choices, kVolumeControlAlsa,
+        aConfigInit, kKeyVolumeControl, choices, kVolumeControlAlsa, gVolumeControlMapper,
         true /* aRebootRequired: applied at next start */);
     iConfigSerialPort = std::make_unique<Configuration::ConfigText>(
         aConfigInit, kKeySerialPort, 0 /* aMinLength */, kMaxSerialPortBytes, Brx::Empty(),
