@@ -8,6 +8,7 @@ const Brn LinnAmpConfig::kKeyVolumeControl("LinnAmp.VolumeControl");
 const Brn LinnAmpConfig::kKeySerialPort("LinnAmp.SerialPort");
 const TUint LinnAmpConfig::kVolumeControlAlsa = 0;
 const TUint LinnAmpConfig::kVolumeControlLinnAmp = 1;
+const TUint LinnAmpConfig::kMaxSerialPortBytes;
 
 // Maps choice values to human-readable labels for the web config UI
 class VolumeControlMapper : public Configuration::IConfigChoiceMapper
