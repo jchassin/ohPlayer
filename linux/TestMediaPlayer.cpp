@@ -251,6 +251,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     if (aUseLinnAmp && aSerialPort != nullptr && strlen(aSerialPort) > 0) {
         iLinnAmpVolume = new OhLinnAmpVolume(aSerialPort);
         if (iLinnAmpVolume->IsVolumeSupported()) {
+            // Set the ALSA output to full scale: attenuation is handled by the Linn amp
+            iVolumeLogger.SetVolume(100 * 1024);
             volumeInit.SetVolume(*iLinnAmpVolume);
             volumeInit.SetBalance(*iLinnAmpVolume);
             volumeInit.SetFade(*iLinnAmpVolume);
