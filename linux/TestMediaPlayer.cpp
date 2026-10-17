@@ -170,7 +170,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                  const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort,
                                  TUint aMinWebUiResourceThreads, TUint aMaxWebUiTabs, TUint aUiSendQueueSize,
                                  TUint aUiMsgBufCount, TUint aUiMsgBufBytes,
-                                 const TChar* aSerialPort = nullptr, TBool aUseLinnAmp = false)
+                    const TChar* aSerialPort = nullptr, TBool aUseLinnAmp = false)
     : iPullableClock(nullptr)
     , iPlaylistLoader(nullptr)
     , iRaatSignalPathObservable(nullptr)
