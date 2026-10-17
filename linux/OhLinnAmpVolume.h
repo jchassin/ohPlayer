@@ -2,6 +2,7 @@
 
 #include <OpenHome/Av/VolumeManager.h>
 #include <OpenHome/Media/MuteManager.h>
+#include <OpenHome/Buffer.h>
 #include <string>
 #include "OhSerialPort.h"
 
@@ -15,6 +16,10 @@ public:
 
     TBool IsVolumeSupported() const;
     void SetStandby(TBool aOn);
+
+    // Info from the $ID ?$ query, empty if not detected
+    const Brx& DeviceId() const;
+    const Brx& DeviceModel() const;
 
 private: // from IVolume
     void SetVolume(TUint aVolume) override;
@@ -34,6 +39,8 @@ private:
 private:
     OhSerialPort* iSerialPort;
     TUint iCurrentVolume;
+    Bwh iDeviceId;
+    Bwh iDeviceModel;
 };
 
 } // namespace Av

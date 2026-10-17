@@ -626,11 +626,14 @@ void TestMediaPlayer::InitialiseSubsystems()
 IWebApp* TestMediaPlayer::CreateConfigApp(const std::vector<const Brx*>& aSources, const Brx& aResourceDir, TUint aMinWebUiResourceThreads, TUint aMaxWebUiTabs, TUint aMaxSendQueueSize, TUint aMsgBufCount, TUint aMsgBufBytes)
 {
     FileResourceHandlerFactory resourceHandlerFactory;
+    Brn linnAmpModel(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceModel() : Brx::Empty());
+    Brn linnAmpSerial(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceId() : Brx::Empty());
     return new ConfigAppPlayerLinn(*iInfoLogger, iMediaPlayer->Env(), iMediaPlayer->Product(),
                                    iMediaPlayer->ConfigManager(), resourceHandlerFactory, aSources,
                                    Brn("Softplayer"), aResourceDir,
                                    aMinWebUiResourceThreads, aMaxWebUiTabs, aMaxSendQueueSize,
-                                   aMsgBufCount, aMsgBufBytes, iRebootHandler);
+                                   aMsgBufCount, aMsgBufBytes, iRebootHandler,
+                                   linnAmpModel, linnAmpSerial);
 }
 
 void TestMediaPlayer::InitialiseLogger()

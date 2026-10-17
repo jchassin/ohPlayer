@@ -6,7 +6,8 @@
 namespace OpenHome {
 namespace Av {
 
-// Extends the standard ohPipeline config web app with Linn Amp settings.
+// Extends the standard ohPipeline config web app with Linn Amp settings
+// and read-only info fields (detected amp model and serial).
 class ConfigAppPlayerLinn : public Web::ConfigAppMediaPlayer
 {
 public:
@@ -19,7 +20,8 @@ public:
                         const Brx& aResourcePrefix, const Brx& aResourceDir,
                         TUint aResourceHandlerCount, TUint aMaxTabs, TUint aSendQueueSize,
                         TUint aMsgBufCount, TUint aMsgBufBytes,
-                        IRebootHandler& aRebootHandler);
+                        IRebootHandler& aRebootHandler,
+                        const Brx& aLinnAmpModel, const Brx& aLinnAmpSerial);
 };
 
 } // namespace Av

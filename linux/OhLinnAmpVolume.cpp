@@ -33,6 +33,8 @@ namespace Av {
 OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath)
     : iSerialPort(new OhSerialPort(aSerialPortPath, 9600))
     , iCurrentVolume(0)
+    , iDeviceId(64)
+    , iDeviceModel(16)
 {
     if (!iSerialPort->Open()) {
         Log::Print("OhLinnAmpVolume: Failed to open serial port %s\n", aSerialPortPath.c_str());
@@ -52,6 +54,14 @@ OhLinnAmpVolume::~OhLinnAmpVolume() {
 
 TBool OhLinnAmpVolume::IsVolumeSupported() const {
     return iSerialPort->IsOpen();
+}
+
+const Brx& OhLinnAmpVolume::DeviceId() const {
+    return iDeviceId;
+}
+
+const Brx& OhLinnAmpVolume::DeviceModel() const {
+    return iDeviceModel;
 }
 
 void OhLinnAmpVolume::SetVolume(TUint aVolume) {
@@ -126,6 +136,8 @@ void OhLinnAmpVolume::QueryId() {
             }
             std::string model = id.substr(0, 3);
             std::string serial = id.substr(3);
+            iDeviceId.Replace(Brn(serial.c_str()));
+            iDeviceModel.Replace(Brn(model.c_str()));
             Log::Print("OhLinnAmpVolume: Linn %s detected (serial %s)\n", model.c_str(), serial.c_str());
         } else {
             Log::Print("OhLinnAmpVolume: Device ID: %s\n", respStr.c_str());
