@@ -16,6 +16,7 @@ public:
     VolumeControl();
     ~VolumeControl();
     TBool IsVolumeSupported();
+    void SetVolumeFixed(TUint aVolume);
 private:
     snd_mixer_t          *iHandle;    // ALSA mixer handle.
     snd_mixer_elem_t     *iElem;      // PCM mixer element

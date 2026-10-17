@@ -60,6 +60,11 @@ TBool VolumeControl::IsVolumeSupported()
     return (iElem != NULL);
 }
 
+void VolumeControl::SetVolumeFixed(TUint aVolume)
+{
+    SetVolume(aVolume);
+}
+
 void VolumeControl::SetVolume(TUint aVolume)
 {
     const long  MAX_LINEAR_DB_SCALE = 24;
