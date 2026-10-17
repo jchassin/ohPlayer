@@ -10,6 +10,8 @@ const char* const kCmdBalance = "BAL = ";
 const char* const kCmdVolumeQuery = "VOL ?";
 const OpenHome::TUint kResponseTimeoutMs = 500;
 const OpenHome::TUint kMaxLinnVolume = 100;
+// OpenHome volume is in milli-dB: 100 steps of 1024 (see VolumeControl.cpp)
+const OpenHome::TUint kMilliDbPerStep = 1024;
 
 std::string BuildCommand(const char* aPrefix, int aValue) {
     std::ostringstream oss;
@@ -48,7 +50,7 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
         return;
     }
 
-    TUint linnVolume = (aVolume * 100) / 10000;
+    TUint linnVolume = aVolume / kMilliDbPerStep;
     if (linnVolume > kMaxLinnVolume) {
         linnVolume = kMaxLinnVolume;
     }
