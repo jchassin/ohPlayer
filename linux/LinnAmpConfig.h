@@ -24,10 +24,8 @@ public:
     ~LinnAmpConfig();
 
     // Reads startup values from the store (before MediaPlayer creation).
-    // Command line arguments are used as fallback/override.
     static TBool ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& aSerialPort,
-                               TBool& aUseLinnAmp,
-                               const Brx& aCommandLineSerialPort, TBool aCommandLineUseLinnAmp);
+                               TBool& aUseLinnAmp);
 
 private:
     std::unique_ptr<Configuration::ConfigChoice> iConfigVolumeControl;

@@ -40,8 +40,7 @@ LinnAmpConfig::~LinnAmpConfig()
 }
 
 TBool LinnAmpConfig::ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& aSerialPort,
-                                   TBool& aUseLinnAmp,
-                                   const Brx& aCommandLineSerialPort, TBool aCommandLineUseLinnAmp)
+                                   TBool& aUseLinnAmp)
 {
     // Choice values are persisted as big-endian uint32
     Bws<sizeof(TUint)> choiceBuf;
@@ -58,15 +57,6 @@ TBool LinnAmpConfig::ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& 
     }
     catch (Configuration::StoreKeyNotFound&) {
         aSerialPort.Replace(Brx::Empty());
-    }
-
-    // Command line takes precedence when it explicitly requests the Linn amp
-    if (aCommandLineUseLinnAmp) {
-        aUseLinnAmp = true;
-    }
-    // Fall back to command line serial port if web config port is not set
-    if (aSerialPort.Bytes() == 0 && aCommandLineSerialPort.Bytes() > 0) {
-        aSerialPort.Replace(aCommandLineSerialPort);
     }
 
     return aUseLinnAmp;

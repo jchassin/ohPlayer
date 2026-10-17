@@ -168,7 +168,7 @@ const TUint TestMediaPlayer::kDsdPadBytesPerChunk;
 
 TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack, const Brx& aUdn, const TChar* aRoom, const TChar* aProductName,
                                  const Brx& aTuneInPartnerId, const Brx& aTidalId, const Brx& aQobuzIdSecret, const Brx& aUserAgent,
-                                 const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort, const TChar* aSerialPort, TBool aUseLinnAmp, 
+                                 const TChar* aStoreFile, TUint aOdpPort, TUint aWebUiPort,
                                  TUint aMinWebUiResourceThreads, TUint aMaxWebUiTabs, TUint aUiSendQueueSize,
                                  TUint aUiMsgBufCount, TUint aUiMsgBufBytes)
     : iPullableClock(nullptr)
@@ -248,11 +248,10 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     VolumeProfile volumeProfile;
     VolumeConsumer volumeInit;
 
-    // Read Linn Amp settings from the config store (web config), falling back to command line args
+    // Read Linn Amp settings from the config store (web config)
     Bws<LinnAmpConfig::kMaxSerialPortBytes> serialPortBuf;
     TBool useLinnAmp = false;
-    LinnAmpConfig::ReadFromStore(*iConfigRamStore, serialPortBuf, useLinnAmp,
-                                 Brn(aSerialPort != nullptr ? aSerialPort : ""), aUseLinnAmp);
+    LinnAmpConfig::ReadFromStore(*iConfigRamStore, serialPortBuf, useLinnAmp);
     
     // Use Linn Amp volume control if requested and serial port is provided
     if (useLinnAmp && serialPortBuf.Bytes() > 0) {

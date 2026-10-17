@@ -130,13 +130,3 @@ const OptionUint& TestMediaPlayerOptions::Shell() const
 {
     return iOptionShell;
 }
-
-const OptionString& TestMediaPlayerOptions::Serial() const
-{
-    return iOptionSerial;
-}
-
-const OptionBool& TestMediaPlayerOptions::LinnAmp() const
-{
-    return iOptionLinnAmp;
-}
