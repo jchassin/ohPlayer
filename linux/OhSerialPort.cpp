@@ -144,6 +144,9 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         return false;
     }
 
+    // Serialize command/response exchanges: flush, write and read must be atomic
+    std::lock_guard<std::mutex> lock(iMutex);
+
     // Flush input buffer by reading until CRLF or timeout
     FlushInputBuffer();
 

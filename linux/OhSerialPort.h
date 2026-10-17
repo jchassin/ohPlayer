@@ -4,6 +4,7 @@
 #include <OpenHome/Buffer.h>
 #include <string>
 #include <termios.h>
+#include <mutex>
 
 namespace OpenHome {
 namespace Av {
@@ -33,6 +34,7 @@ private:
     TUint iBaudRate;
     struct termios iOldTermios;
     TBool iIsOpen;
+    std::mutex iMutex;
 };
 
 } // namespace Av
