@@ -2,6 +2,7 @@
 #include "TestMediaPlayer.h"
 #include "RaspdacMiniIF.h"
 #include "OhLinnAmpVolume.h"
+#include "LinnAmpConfig.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
 #include <OpenHome/Av/MediaPlayer.h>
@@ -246,17 +247,24 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     VolumeProfile volumeProfile;
     VolumeConsumer volumeInit;
+
+    // Read Linn Amp settings from the config store (web config), falling back to command line args
+    Bws<LinnAmpConfig::kMaxSerialPortBytes> serialPortBuf;
+    TBool useLinnAmp = false;
+    LinnAmpConfig::ReadFromStore(*iConfigRamStore, serialPortBuf, useLinnAmp,
+                                 Brn(aSerialPort != nullptr ? aSerialPort : ""), aUseLinnAmp);
     
     // Use Linn Amp volume control if requested and serial port is provided
-    if (aUseLinnAmp && aSerialPort != nullptr && strlen(aSerialPort) > 0) {
-        iLinnAmpVolume = new OhLinnAmpVolume(aSerialPort);
+    if (useLinnAmp && serialPortBuf.Bytes() > 0) {
+        std::string serialPortStr(reinterpret_cast<const char*>(serialPortBuf.Ptr()), serialPortBuf.Bytes());
+        iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr);
         if (iLinnAmpVolume->IsVolumeSupported()) {
             // Set the ALSA output to full scale: attenuation is handled by the Linn amp
             iVolumeLogger.SetVolumeFixed(100 * 1024);
             volumeInit.SetVolume(*iLinnAmpVolume);
             volumeInit.SetBalance(*iLinnAmpVolume);
             volumeInit.SetFade(*iLinnAmpVolume);
-            Log::Print("Using Linn Amp volume control on %s\n", aSerialPort);
+            Log::Print("Using Linn Amp volume control on %s\n", serialPortStr.c_str());
         } else {
             delete iLinnAmpVolume;
             iLinnAmpVolume = nullptr;
@@ -291,6 +299,9 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                    *iInfoLogger,
                                    aUdn, mpInit);
     delete mpInit;
+
+    // Register Linn Amp web config parameters (volume control choice and serial port)
+    iLinnAmpConfig = std::make_unique<LinnAmpConfig>(iMediaPlayer->ConfigInitialiser());
     
     iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
 #if 1
