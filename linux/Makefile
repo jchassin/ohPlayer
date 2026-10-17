@@ -82,6 +82,7 @@ install:
 	install -m 644 copyright $(DESTDIR)$(DOCDIR)
 	cp -R $(RESOURCEDIR) $(DESTDIR)$(RESDIR)
 	cp $(RESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/res/lang
+	cp -R res/SoftPlayer $(DESTDIR)$(RESDIR)/res/SoftPlayer
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/openhome-player

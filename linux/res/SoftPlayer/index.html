@@ -1,0 +1,38 @@
+<!DOCTYPE html
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<script type="text/javascript" src="lib/jquery-3.7.1.min.js"></script>
+		<script type="text/javascript" src="lib/jquery-ui-1.14.1.custom/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="lib/css.escape.js"></script>
+    <script type="text/javascript" src="lib/underscore-min.js"></script>
+		<script type="text/javascript" src="scripts/helpers.js"></script>
+    <script type="text/javascript" src="scripts/controller.js"></script>
+    <script type="text/javascript" src="scripts/views.js"></script>
+    <script type="text/javascript" src="scripts/dialogs.js"></script>
+    <script type="text/javascript" src="scripts/converters.js"></script>
+		<script type="text/javascript" src="lp.js"></script>
+		<script type="text/javascript" src="config.js"></script>
+    <script type="text/javascript" src="viewmodel.js"></script>
+    <link rel="stylesheet" type="text/css" href="lib/jquery-ui-1.14.1.custom/jquery-ui.min.css"></link>
+    <link rel="stylesheet" type="text/css" href="lib/jquery-ui-1.14.1.custom/jquery-ui.structure.min.css"></link>
+    <link rel="stylesheet" type="text/css" href="lib/jquery-ui-1.14.1.custom/jquery-ui.theme.min.css"></link>
+    <link rel="stylesheet" type="text/css" href="styles/application.css"></link>
+    <link rel="stylesheet" type="text/css" href="themes/light/theme.css"></link>
+    <link rel="icon" href="images/favicon.png"></link>
+    <title>
+			Web Config
+		</title>
+	</head>
+  <body onload="Controller.StartLongPolling()" onunload="Controller.EndLongPolling()">
+      <div id="container">
+          <div id='header' class="ui-state-default">
+  			    <h1 id="headertitle"></h1>
+            <div class="clear"></div>
+  		    </div>
+          <div id='tabs'></div>
+      </div>
+      <div id="spinner"></div>
+  </body>
+</html>

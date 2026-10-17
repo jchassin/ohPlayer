@@ -1,0 +1,443 @@
+body, html
+{
+	margin:0;
+	padding:0;
+	width:100%;
+	height:100%;
+	font-family: Segoe UI, Arial, sans-serif;
+    font-size:medium;
+}
+
+h1#headertitle
+{
+	margin-top: 3px;
+	float: left;
+	font-size: 1.3em;
+	margin: 10px;
+}
+
+button.ui-button{
+	background-image:none;
+}
+
+input,
+select
+{
+		border-style:solid;
+		border-width: 1px;
+		width:220px;
+		height:20px;
+		padding:0px;
+		box-sizing: border-box;
+}
+
+input
+{
+	padding-left:5px;
+}
+
+.ui-dialog .ui-button-text-only .ui-button-text
+{
+	  padding: .2em .8em;
+		font-size:12px;
+}
+
+.ui-widget-header {
+    font-weight: normal!important;
+    font-size: smaller;
+}
+
+.Parameter{
+	position:relative;
+}
+
+.ui-button.reboot-button
+{
+	float: right;
+	margin-right: 15px;
+	margin-top: 6px;
+	font-size: 12px;
+}
+
+.reboot-button span {
+    display: inline-block!important;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    line-height: 16px;
+    margin-right: 5px;
+}
+.ui-dialog .ui-dialog-titlebar {
+	webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+
+.HelpTextTitle
+{
+	width: 100px;
+  display: inline-block;
+}
+
+.HelpTextDescription,
+.HelpTextTitle,
+.HelpTextOption
+{
+	font-size:14px;
+}
+
+.HelpTextReboot
+{
+	font-size:12px;
+}
+
+.clear {
+	clear:both;
+}
+
+.ModelIcon
+{
+    text-align:left;
+    position:relative;
+    width: 120px;
+    height: 50px;
+    border:none;
+}
+
+.SectionHeader
+{
+	border-bottom-style:solid;
+	border-bottom-width: 1px;
+	margin-bottom:15px;
+	font-size: 15px;
+}
+
+a.SectionHeader
+{
+	border-style:none;
+}
+
+.SectionFooter
+{
+	margin-bottom:30px;
+}
+
+.ElementEditor.ModelIcon
+{
+	display:table;
+}
+
+.ModelIcon img
+{
+    border:none;
+}
+
+.ModelIcon span
+{
+    width:24px;
+    height:24px;
+    position:absolute;
+    top:50%;
+		left:50%;
+		margin-top:-12px;
+		margin-left:-12px;
+		background-repeat: no-repeat;
+}
+
+#container
+{
+    /* max-width handled in code depending on target device */
+    margin:auto;
+}
+
+#logo
+{
+    display:inline-block;
+    float:right;
+		max-width: 80px;
+	  max-height: 80px;
+}
+
+#logo a
+{
+	max-width: 50px;
+  max-height: 50px;
+  display: inline-block;
+  margin-top: 12px;
+  margin-right: 12px;
+}
+
+#logo a img
+{
+	width:100%;
+}
+
+#logo img
+{
+    border:none;
+}
+
+.ui-dialog .ui-dialog-buttonpane.ui-widget-content
+{
+	border-style:none;
+	padding: 0px;
+  padding-right: 12px;
+}
+
+.rebootbutton
+{
+	float:right;
+}
+
+.reboot-button .ui-button-text
+{
+	margin-top: 2px;
+}
+
+.RebootIcon,
+.ToggleIcon,
+.RebootIconHelp,
+.ToggleIconHelp,
+.HelpIcon
+{
+    border:none;
+		background-repeat: no-repeat;
+		background-position: center;
+}
+
+.RebootIcon,
+.ToggleIcon,
+.HelpIcon
+{
+	width:24px;
+	height:24px;
+	margin-top: -2px;
+}
+
+.RebootIconHelp,
+.ToggleIconHelp
+{
+	width:16px;
+	height:16px;
+}
+
+.RebootIcon,
+.ToggleIcon
+{
+	margin-left:15px;
+}
+
+.SmallIcon
+{
+    display: inline-block;
+    vertical-align: top;
+		margin-top:4px;
+}
+
+a:active,
+:focus
+{
+    outline:none;
+}
+
+#tabs
+{
+    min-height:600px;
+}
+
+.ElementDescription,
+.AboutDescription,
+.AboutDescriptionTitle,
+.ElementEditor,
+.ElementInfo,
+.ElementInfoTitle,
+.AboutInfoLeft
+{
+    display:inline-block;
+    margin-top:6px;
+    margin-bottom:8px;
+		vertical-align: top;
+		font-size:14px;
+}
+
+.ElementDescription,
+.AboutDescription,
+.AboutDescriptionTitle,
+.AboutInfoLeft
+{
+    width:45%;
+    padding-right:5px;
+}
+
+.AboutDescription,
+.AboutDescriptionTitle,
+.AboutInfoLeft
+{
+    margin-left:20px
+}
+
+h3 a
+{
+	text-decoration:none;
+}
+
+.ElementLink
+{
+    text-decoration:underline;
+}
+
+.AboutDescriptionTitle,
+.ElementInfoTitle
+{
+    padding-top:15px;
+    font-style:italic;
+}
+
+.ReadOnlyList
+{
+	border-collapse:collapse;
+}
+
+.ReadOnlyList th
+{
+	font-style:italic;
+	text-align: left;
+	padding: 5px;
+}
+
+.ReadOnlyList td
+{
+		padding: 5px;
+    padding-bottom: 0px;
+    padding-right: 20px;
+}
+
+.ReadOnlyList
+{
+	width:100%;
+	float:left;
+}
+
+input.uri
+{
+    width:520px;
+}
+
+#tabs
+{
+    padding-top:5px;
+}
+
+div.body
+{
+    display:block;
+    float:right;
+    width:72%;
+}
+
+ul {
+	margin:0 !important;
+	padding:0;
+    display:inline-block;
+    vertical-align:bottom;
+}
+
+ul li {
+	float:left;
+	padding:0;
+	margin:0;
+	list-style-type:none;
+    height:100%;
+}
+
+ul.header
+{
+    float:left;
+    display:block;
+    width:22%;
+}
+
+ul.header li
+{
+    clear:left;
+    width:100%;
+	overflow: hidden;
+}
+
+ul.header a
+{
+    width:100%;
+	-moz-border-radius:4px 4px 4px 4px;
+	-webkit-border-radius:4px 4px 4px 4px;
+    margin-left:1px;
+    margin-bottom:2px;
+}
+
+ul.mainTabs a
+{
+    border-bottom:0px;
+}
+
+ul.mainTabs li
+{
+    margin-top:10px;
+}
+
+ul.header a {
+	float:left;
+	font-size:15px;
+	display:inline-block;
+	text-decoration:none;
+    padding-top:9px;
+    padding-bottom:9px;
+    padding-left:10px;
+    padding-right:10px;
+    margin-right:2px;
+	outline:0;
+	-moz-border-radius:0;
+	-webkit-border-radius:0;
+    height:100%;
+    font-weight:bold;
+}
+
+ul.header a:hover {
+	font-weight:bold;
+}
+
+/* selected tab */
+ul.header a.current
+{
+    cursor:default;
+}
+
+h3
+{
+    font-size:medium;
+    line-height:0px;
+}
+
+.Expandable
+{
+    /* expandable elements collapsed by default */
+    display: none;
+}
+
+.HiddenField
+{
+	display: none!important;
+}
+
+#tabDs
+{
+	border: none;
+}
+
+.ui-state-active
+{
+	background-color: #A1958A;
+} 
+
+.header {
+	border: 0;
+    padding: 0!important;
+    border-bottom: solid 1px #ddd;
+}

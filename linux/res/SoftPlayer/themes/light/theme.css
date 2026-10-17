@@ -1,0 +1,121 @@
+body,html{
+	color:#000;
+  background:#FFF;
+}
+
+#spinner{
+	background-image: url('images/spinner.gif');
+	background-size: 20px;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	width: 100%;
+	height: 100%;
+}
+
+#header
+{
+  background:#A1958A;
+  color:#FFF;
+}
+
+.ui-button
+{
+	background: #ddd!important;
+}
+
+.ui-button:hover
+{
+	background:#eee!important;
+}
+
+.ui-dialog-titlebar {
+    background-color: #A1958A;
+    background-image: none;
+    color: #FFF;
+}
+
+.SectionHeader
+{
+	border-bottom-color:#aaa;
+}
+
+
+input,
+select
+{
+		border-color: #666;
+}
+
+.ToggleIcon,
+.ToggleIconHelp
+{
+	background-image:url('images/toggle.png');
+}
+
+.RebootIcon,
+.RebootIconHelp
+{
+	background-image:url('images/reboot.png');
+}
+
+.HelpIcon
+{
+	background-image:url('images/help.png');
+}
+
+h3 a,
+.ElementLink
+{
+    color:#233A46;
+}
+
+.AboutDescriptionTitle,
+.ElementInfoTitle
+{
+  color:#4E5C6B;
+}
+
+.ReadOnlyList th
+{
+	color:#666;
+	background-color: #eee;
+}
+
+.SectionHeader
+{
+	color:#666;
+}
+
+.Invalid
+{
+    border: solid red 2px;
+}
+
+.ui-state-highlight
+{
+    background-color:#000;
+}
+
+ul.header a{
+  color: #111;
+}
+
+ul.header a.current
+{
+	background-color:#E2DEDB;
+}
+
+.HelpTextTitle
+{
+    color:#233A46;
+}
+
+.HelpTextOption
+{
+    color:#233A46;
+}
+
+.HelpTextInvalid
+{
+    color: red;
+}
