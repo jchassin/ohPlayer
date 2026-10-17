@@ -38,6 +38,8 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath)
     } else {
         Log::Print("OhLinnAmpVolume: Connected to %s\n", aSerialPortPath.c_str());
         QueryId();
+        // Align amp with OpenHome product initial state (standby at boot)
+        SetStandby(true);
         SelectInput(kDefaultListenSource);
         QueryCurrentVolume();
     }
