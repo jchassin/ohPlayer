@@ -48,14 +48,14 @@ TBool LinnAmpConfig::ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& 
         aStore.Read(kKeyVolumeControl, choiceBuf);
         aUseLinnAmp = (Converter::BeUint32At(choiceBuf, 0) == kVolumeControlLinnAmp);
     }
-    catch (Configuration::StoreKeyNotFound&) {
+    catch (StoreKeyNotFound&) {
         aUseLinnAmp = false;
     }
 
     try {
         aStore.Read(kKeySerialPort, aSerialPort);
     }
-    catch (Configuration::StoreKeyNotFound&) {
+    catch (StoreKeyNotFound&) {
         aSerialPort.Replace(Brx::Empty());
     }
 
