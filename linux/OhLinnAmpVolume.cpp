@@ -9,8 +9,8 @@ const char* const kCmdVolume = "VOLUME ";
 const char* const kCmdBalance = "BALANCE ";
 const char* const kCmdFade = "FADE ";
 const char* const kCmdVolumeQuery = "VOLUME?";
-const TUint kResponseTimeoutMs = 500;
-const TUint kMaxLinnVolume = 100;
+const OpenHome::TUint kResponseTimeoutMs = 500;
+const OpenHome::TUint kMaxLinnVolume = 100;
 
 std::string BuildCommand(const char* aPrefix, int aValue) {
     std::ostringstream oss;
