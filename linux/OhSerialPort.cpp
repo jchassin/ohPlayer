@@ -25,6 +25,7 @@ OhSerialPort::OhSerialPort(const std::string& aDevicePath, TUint aBaudRate)
     , iDevicePath(aDevicePath)
     , iBaudRate(aBaudRate)
     , iIsOpen(false)
+    , iMutex("OHSP")
 {
 }
 
