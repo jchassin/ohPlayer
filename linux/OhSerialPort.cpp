@@ -160,6 +160,7 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     TUint startTime = NowMs();
     Bws<256> responseBuffer;
     TBool foundCrlf = false;
+    TBool lastWasCr = false;
 
     while (NowMs() - startTime < aTimeoutMs) {
         unsigned char buf[16];
@@ -167,14 +168,17 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         
         if (bytesRead > 0) {
             for (ssize_t i = 0; i < bytesRead; i++) {
-                if (buf[i] == '\r' || buf[i] == '\n') {
-                    // Check if we have a complete response ending with CRLF
-                    if (responseBuffer.Bytes() > 0 && buf[i] == '\n' && i > 0 && buf[i-1] == '\r') {
-                        foundCrlf = true;
-                        break;
-                    }
+                if (buf[i] == '\n' && lastWasCr) {
+                    // Complete response ending with CRLF
+                    foundCrlf = true;
+                    break;
+                } else if (buf[i] == '\r') {
+                    lastWasCr = true;
                 } else {
-                    responseBuffer.Append(buf[i]);
+                    lastWasCr = false;
+                    if (buf[i] != '\n') {
+                        responseBuffer.Append(buf[i]);
+                    }
                 }
             }
             
