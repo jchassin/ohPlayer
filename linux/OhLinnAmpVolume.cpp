@@ -5,10 +5,10 @@
 
 namespace {
 
-const char* const kCmdVolume = "VOLUME ";
-const char* const kCmdBalance = "BALANCE ";
+const char* const kCmdVolume = "VOL ";
+const char* const kCmdBalance = "BAL ";
 const char* const kCmdFade = "FADE ";
-const char* const kCmdVolumeQuery = "VOLUME?";
+const char* const kCmdVolumeQuery = "VOL?";
 const OpenHome::TUint kResponseTimeoutMs = 500;
 const OpenHome::TUint kMaxLinnVolume = 100;
 
