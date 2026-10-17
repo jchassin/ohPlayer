@@ -19,11 +19,13 @@ public:
 
     TBool Write(const Brx& aData, TUint aTimeoutMs = 1000);
     TBool Read(Bwx& aBuffer, TUint aTimeoutMs = 1000);
+    TBool SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse, TUint aTimeoutMs = 1000);
 
     void SetBaudRate(TUint aBaudRate);
 
 private:
     speed_t GetBaudRateFlag(TUint aBaudRate);
+    void FlushInputBuffer();
 
 private:
     int iFd;

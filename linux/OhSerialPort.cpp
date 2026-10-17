@@ -1,5 +1,8 @@
 #include "OhSerialPort.h"
 #include <OpenHome/Private/Printer.h>
+#include <OpenHome/Private/Thread.h>
+#include <OpenHome/Net/Private/Globals.h>
+#include <OpenHome/OsWrapper.h>
 #include <sys/ioctl.h>
 #include <cerrno>
 #include <cstring>
@@ -125,6 +128,108 @@ TBool OhSerialPort::Read(Bwx& aBuffer, TUint aTimeoutMs) {
         return true;
     }
     return false;
+}
+
+TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse, TUint aTimeoutMs) {
+    if (!iIsOpen) {
+        Log::Print("OhSerialPort: Port not open for SendCommandAndWaitResponse\n");
+        return false;
+    }
+
+    // Flush input buffer by reading until CRLF or timeout
+    FlushInputBuffer();
+
+    // Send command with $ prefix and $\r suffix
+    Bws<256> commandWithPrefix;
+    commandWithPrefix.Append("$");
+    commandWithPrefix.Append(aCommand);
+    commandWithPrefix.Append("\r");
+
+    if (!Write(Brn(commandWithPrefix.Ptr(), commandWithPrefix.Bytes()))) {
+        Log::Print("OhSerialPort: Failed to write command\n");
+        return false;
+    }
+
+    // Wait for response with timeout
+    // Response format: !COMMAND result\r\n
+    TUint startTime = Os::TimeInMs(nullptr);
+    Bws<256> responseBuffer;
+    TBool foundCrlf = false;
+
+    while (Os::TimeInMs(nullptr) - startTime < aTimeoutMs) {
+        unsigned char buf[16];
+        ssize_t bytesRead = read(iFd, buf, sizeof(buf));
+        
+        if (bytesRead > 0) {
+            for (ssize_t i = 0; i < bytesRead; i++) {
+                if (buf[i] == '\r' || buf[i] == '\n') {
+                    // Check if we have a complete response ending with CRLF
+                    if (responseBuffer.Bytes() > 0 && buf[i] == '\n' && i > 0 && buf[i-1] == '\r') {
+                        foundCrlf = true;
+                        break;
+                    }
+                } else {
+                    responseBuffer.Append(buf[i]);
+                }
+            }
+            
+            if (foundCrlf) {
+                break;
+            }
+        } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
+            Log::Print("OhSerialPort: Read error: %s\n", strerror(errno));
+            return false;
+        }
+        
+        // Small delay to avoid busy waiting
+        Thread::Sleep(10);
+    }
+
+    if (!foundCrlf) {
+        Log::Print("OhSerialPort: Timeout waiting for CRLF response\n");
+        return false;
+    }
+
+    // Remove trailing \r if present
+    if (responseBuffer.Bytes() > 0 && responseBuffer[responseBuffer.Bytes() - 1] == '\r') {
+        responseBuffer.SetBytes(responseBuffer.Bytes() - 1);
+    }
+    
+    aResponse.Replace(Brn(responseBuffer.Ptr(), responseBuffer.Bytes()));
+    return true;
+}
+
+void OhSerialPort::FlushInputBuffer() {
+    if (!iIsOpen) {
+        return;
+    }
+
+    // Read and discard all data until CRLF or timeout
+    unsigned char buf[64];
+    TUint startTime = Os::TimeInMs(nullptr);
+    TBool foundCrlf = false;
+
+    while (Os::TimeInMs(nullptr) - startTime < 100) { // 100ms timeout for flush
+        ssize_t bytesRead = read(iFd, buf, sizeof(buf));
+        
+        if (bytesRead > 0) {
+            // Check for CRLF in the buffer
+            for (ssize_t i = 0; i < bytesRead; i++) {
+                if (buf[i] == '\n' && i > 0 && buf[i-1] == '\r') {
+                    foundCrlf = true;
+                    break;
+                }
+            }
+            
+            if (foundCrlf) {
+                break;
+            }
+        } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
+            break;
+        }
+        
+        Thread::Sleep(10);
+    }
 }
 
 } // namespace Av
