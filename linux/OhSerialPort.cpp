@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <termios.h>
 #include <ctime>
+#include <cstdio>
+#include <string>
 
 namespace OpenHome {
 namespace Av {
@@ -150,6 +152,11 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     commandWithPrefix.Append(aCommand);
     commandWithPrefix.Append("\r");
 
+    {
+        std::string dbg(reinterpret_cast<const char*>(commandWithPrefix.Ptr()), commandWithPrefix.Bytes());
+        Log::Print("OhSerialPort: Sending command: '%s' (%u bytes)\n", dbg.c_str(), commandWithPrefix.Bytes());
+    }
+
     if (!Write(Brn(commandWithPrefix.Ptr(), commandWithPrefix.Bytes()))) {
         Log::Print("OhSerialPort: Failed to write command\n");
         return false;
@@ -159,30 +166,30 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     // Response format: !COMMAND result\r\n
     TUint startTime = NowMs();
     Bws<256> responseBuffer;
-    TBool foundCrlf = false;
-    TBool lastWasCr = false;
+    TBool foundEnd = false;
 
     while (NowMs() - startTime < aTimeoutMs) {
         unsigned char buf[16];
         ssize_t bytesRead = read(iFd, buf, sizeof(buf));
         
         if (bytesRead > 0) {
+            std::string hex;
+            char tmp[8];
             for (ssize_t i = 0; i < bytesRead; i++) {
-                if (buf[i] == '\n' && lastWasCr) {
-                    // Complete response ending with CRLF
-                    foundCrlf = true;
+                snprintf(tmp, sizeof(tmp), "%02X ", buf[i]);
+                hex += tmp;
+            }
+            Log::Print("OhSerialPort: Read %d bytes: %s\n", static_cast<int>(bytesRead), hex.c_str());
+            for (ssize_t i = 0; i < bytesRead; i++) {
+                if (buf[i] == '\r' || buf[i] == '\n') {
+                    // CR or LF terminates the response (accept CR-only, LF-only or CRLF)
+                    foundEnd = true;
                     break;
-                } else if (buf[i] == '\r') {
-                    lastWasCr = true;
-                } else {
-                    lastWasCr = false;
-                    if (buf[i] != '\n') {
-                        responseBuffer.Append(buf[i]);
-                    }
                 }
+                responseBuffer.Append(buf[i]);
             }
             
-            if (foundCrlf) {
+            if (foundEnd) {
                 break;
             }
         } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
@@ -194,9 +201,16 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         usleep(10000);
     }
 
-    if (!foundCrlf) {
-        Log::Print("OhSerialPort: Timeout waiting for CRLF response\n");
+    if (!foundEnd) {
+        Log::Print("OhSerialPort: Timeout waiting for response (received %u bytes)\n", responseBuffer.Bytes());
         return false;
+    }
+
+    if (responseBuffer.Bytes() > 0) {
+        std::string dbg(reinterpret_cast<const char*>(responseBuffer.Ptr()), responseBuffer.Bytes());
+        Log::Print("OhSerialPort: Response: '%s'\n", dbg.c_str());
+    } else {
+        Log::Print("OhSerialPort: Response: (empty)\n");
     }
 
     // Remove trailing \r if present
