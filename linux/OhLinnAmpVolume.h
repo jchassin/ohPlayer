@@ -27,6 +27,7 @@ private: // from IFade
 private:
     TBool SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse);
     TBool QueryCurrentVolume();
+    void SelectInput(int aSource);
 
 private:
     OhSerialPort* iSerialPort;

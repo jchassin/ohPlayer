@@ -8,6 +8,8 @@ namespace {
 const char* const kCmdVolume = "VOL = ";
 const char* const kCmdBalance = "BAL = ";
 const char* const kCmdVolumeQuery = "VOL ?";
+const char* const kCmdListen = "LISTEN ";
+const int kDefaultListenSource = 1;
 const OpenHome::TUint kResponseTimeoutMs = 500;
 const OpenHome::TUint kMaxLinnVolume = 100;
 // OpenHome volume is in milli-dB: 100 steps of 1024 (see VolumeControl.cpp)
@@ -32,6 +34,7 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath)
         Log::Print("OhLinnAmpVolume: Failed to open serial port %s\n", aSerialPortPath.c_str());
     } else {
         Log::Print("OhLinnAmpVolume: Connected to %s\n", aSerialPortPath.c_str());
+        SelectInput(kDefaultListenSource);
         QueryCurrentVolume();
     }
 }
@@ -88,6 +91,22 @@ void OhLinnAmpVolume::SetFade(TInt /*aFade*/) {
 
 TBool OhLinnAmpVolume::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse) {
     return iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs);
+}
+
+void OhLinnAmpVolume::SelectInput(int aSource) {
+    if (!IsVolumeSupported()) {
+        return;
+    }
+
+    std::string command = BuildCommand(kCmdListen, aSource);
+    Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
+    Bws<32> response;
+    if (SendCommandAndWaitResponse(cmd, response)) {
+        std::string respStr(reinterpret_cast<const char*>(response.Ptr()), response.Bytes());
+        Log::Print("OhLinnAmpVolume: Selected input %d\n", aSource);
+    } else {
+        Log::Print("OhLinnAmpVolume: Failed to select input %d\n", aSource);
+    }
 }
 
 TBool OhLinnAmpVolume::QueryCurrentVolume() {
