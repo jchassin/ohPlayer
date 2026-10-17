@@ -15,8 +15,8 @@ class VolumeControlMapper : public Configuration::IConfigChoiceMapper
 public:
     void Write(IWriter& aWriter, Configuration::IConfigChoiceMappingWriter& aMappingWriter) override
     {
-        aMappingWriter.Write(aWriter, LinnAmpConfig::kVolumeControlAlsa, Brn("Volume ALSA"));
-        aMappingWriter.Write(aWriter, LinnAmpConfig::kVolumeControlLinnAmp, Brn("Amplificateur Linn"));
+        aMappingWriter.Write(aWriter, LinnAmpConfig::kVolumeControlAlsa, Brn("ALSA driver volume"));
+        aMappingWriter.Write(aWriter, LinnAmpConfig::kVolumeControlLinnAmp, Brn("Linn amplifier"));
         aMappingWriter.WriteComplete(aWriter);
     }
 };
