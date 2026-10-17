@@ -154,11 +154,6 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     commandWithPrefix.Append("$");
     commandWithPrefix.Append("\r\n");
 
-    {
-        std::string dbg(reinterpret_cast<const char*>(commandWithPrefix.Ptr()), commandWithPrefix.Bytes());
-        Log::Print("OhSerialPort: Sending command: '%s' (%u bytes)\n", dbg.c_str(), commandWithPrefix.Bytes());
-    }
-
     if (!Write(Brn(commandWithPrefix.Ptr(), commandWithPrefix.Bytes()))) {
         Log::Print("OhSerialPort: Failed to write command\n");
         return false;
@@ -177,13 +172,6 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         ssize_t bytesRead = read(iFd, buf, sizeof(buf));
         
         if (bytesRead > 0) {
-            std::string hex;
-            char tmp[8];
-            for (ssize_t i = 0; i < bytesRead; i++) {
-                snprintf(tmp, sizeof(tmp), "%02X ", buf[i]);
-                hex += tmp;
-            }
-            Log::Print("OhSerialPort: Read %d bytes: %s\n", static_cast<int>(bytesRead), hex.c_str());
             for (ssize_t i = 0; i < bytesRead; i++) {
                 if (buf[i] == '\r' || buf[i] == '\n') {
                     // End of a response line
@@ -215,15 +203,8 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     }
 
     if (!foundEnd) {
-        Log::Print("OhSerialPort: Timeout waiting for response (received %u bytes)\n", responseBuffer.Bytes());
+        Log::Print("OhSerialPort: Timeout waiting for response\n");
         return false;
-    }
-
-    if (responseBuffer.Bytes() > 0) {
-        std::string dbg(reinterpret_cast<const char*>(responseBuffer.Ptr()), responseBuffer.Bytes());
-        Log::Print("OhSerialPort: Response: '%s'\n", dbg.c_str());
-    } else {
-        Log::Print("OhSerialPort: Response: (empty)\n");
     }
 
     // Remove trailing \r if present

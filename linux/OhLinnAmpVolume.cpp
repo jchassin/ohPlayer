@@ -106,7 +106,22 @@ void OhLinnAmpVolume::QueryId() {
     Bws<64> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
         std::string respStr(reinterpret_cast<const char*>(response.Ptr()), response.Bytes());
-        Log::Print("OhLinnAmpVolume: Device ID: %s\n", respStr.c_str());
+        // Response format: !$ID LR2nnnnnnnnnnnn$ (model + 12-digit hex unique ID)
+        const std::string prefix = "ID ";
+        size_t idPos = respStr.find(prefix);
+        if (idPos != std::string::npos) {
+            std::string id = respStr.substr(idPos + prefix.length());
+            // Strip trailing '$' from response framing
+            size_t dollarPos = id.find('$');
+            if (dollarPos != std::string::npos) {
+                id = id.substr(0, dollarPos);
+            }
+            std::string model = id.substr(0, 3);
+            std::string serial = id.substr(3);
+            Log::Print("OhLinnAmpVolume: Linn %s detected (serial %s)\n", model.c_str(), serial.c_str());
+        } else {
+            Log::Print("OhLinnAmpVolume: Device ID: %s\n", respStr.c_str());
+        }
     } else {
         Log::Print("OhLinnAmpVolume: Failed to query device ID\n");
     }
