@@ -5,10 +5,9 @@
 
 namespace {
 
-const char* const kCmdVolume = "VOL ";
-const char* const kCmdBalance = "BAL ";
-const char* const kCmdFade = "FADE ";
-const char* const kCmdVolumeQuery = "VOL?";
+const char* const kCmdVolume = "VOL = ";
+const char* const kCmdBalance = "BAL = ";
+const char* const kCmdVolumeQuery = "VOL ?";
 const OpenHome::TUint kResponseTimeoutMs = 500;
 const OpenHome::TUint kMaxLinnVolume = 100;
 
@@ -78,16 +77,10 @@ void OhLinnAmpVolume::SetBalance(TInt aBalance) {
     }
 }
 
-void OhLinnAmpVolume::SetFade(TInt aFade) {
+void OhLinnAmpVolume::SetFade(TInt /*aFade*/) {
+    // FADE is not supported by the LR2 RS232 command set (see LR2 spec section 3.3)
     if (!IsVolumeSupported()) {
         return;
-    }
-
-    std::string command = BuildCommand(kCmdFade, aFade);
-    Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
-    Bws<32> response;
-    if (!SendCommandAndWaitResponse(cmd, response)) {
-        Log::Print("OhLinnAmpVolume: Failed to send fade command\n");
     }
 }
 

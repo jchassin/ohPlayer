@@ -50,7 +50,8 @@ TBool OhSerialPort::Open() {
 
     struct termios newTermios;
     memset(&newTermios, 0, sizeof(newTermios));
-    newTermios.c_cflag = CREAD | CLOCAL | CS8;
+    // LR2 RS232 spec (Appendix C): 7 data bits, 1 stop bit, even parity
+    newTermios.c_cflag = CREAD | CLOCAL | CS7 | PARENB;
     newTermios.c_iflag = 0;
     newTermios.c_oflag = 0;
     newTermios.c_lflag = 0;
