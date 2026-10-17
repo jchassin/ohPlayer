@@ -146,10 +146,11 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     // Flush input buffer by reading until CRLF or timeout
     FlushInputBuffer();
 
-    // Send command with $ prefix and $\r suffix
+    // Send command framed as $COMMAND$\r
     Bws<256> commandWithPrefix;
     commandWithPrefix.Append("$");
     commandWithPrefix.Append(aCommand);
+    commandWithPrefix.Append("$");
     commandWithPrefix.Append("\r");
 
     {
