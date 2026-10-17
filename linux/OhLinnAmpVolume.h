@@ -25,7 +25,7 @@ private: // from IFade
     void SetFade(TInt aFade) override;
 
 private:
-    TBool SendCommand(const char* aCommand);
+    TBool SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse);
     TBool QueryCurrentVolume();
 
 private:

@@ -3,6 +3,23 @@
 #include <OpenHome/Private/Printer.h>
 #include <sstream>
 
+namespace {
+
+const char* const kCmdVolume = "VOLUME ";
+const char* const kCmdBalance = "BALANCE ";
+const char* const kCmdFade = "FADE ";
+const char* const kCmdVolumeQuery = "VOLUME?";
+const TUint kResponseTimeoutMs = 500;
+const TUint kMaxLinnVolume = 100;
+
+std::string BuildCommand(const char* aPrefix, int aValue) {
+    std::ostringstream oss;
+    oss << aPrefix << aValue;
+    return oss.str();
+}
+
+}
+
 namespace OpenHome {
 namespace Av {
 
@@ -33,12 +50,14 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
     }
 
     TUint linnVolume = (aVolume * 100) / 10000;
-    if (linnVolume > 100) {
-        linnVolume = 100;
+    if (linnVolume > kMaxLinnVolume) {
+        linnVolume = kMaxLinnVolume;
     }
 
-    std::string command = "VOLUME " + std::to_string(linnVolume) + "\r";
-    if (SendCommand(command.c_str())) {
+    std::string command = BuildCommand(kCmdVolume, static_cast<int>(linnVolume));
+    Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
+    Bws<32> response;
+    if (SendCommandAndWaitResponse(cmd, response)) {
         iCurrentVolume = linnVolume;
         Log::Print("OhLinnAmpVolume: Set volume to %u (Linn: %u)\n", aVolume, linnVolume);
     } else {
@@ -51,8 +70,10 @@ void OhLinnAmpVolume::SetBalance(TInt aBalance) {
         return;
     }
 
-    std::string command = "BALANCE " + std::to_string(aBalance) + "\r";
-    if (!SendCommand(command.c_str())) {
+    std::string command = BuildCommand(kCmdBalance, aBalance);
+    Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
+    Bws<32> response;
+    if (!SendCommandAndWaitResponse(cmd, response)) {
         Log::Print("OhLinnAmpVolume: Failed to send balance command\n");
     }
 }
@@ -62,18 +83,16 @@ void OhLinnAmpVolume::SetFade(TInt aFade) {
         return;
     }
 
-    std::string command = "FADE " + std::to_string(aFade) + "\r";
-    if (!SendCommand(command.c_str())) {
+    std::string command = BuildCommand(kCmdFade, aFade);
+    Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
+    Bws<32> response;
+    if (!SendCommandAndWaitResponse(cmd, response)) {
         Log::Print("OhLinnAmpVolume: Failed to send fade command\n");
     }
 }
 
-TBool OhLinnAmpVolume::SendCommand(const char* aCommand) {
-    Brn cmd(reinterpret_cast<const TByte*>(aCommand), strlen(aCommand));
-    if (!iSerialPort->Write(cmd)) {
-        return false;
-    }
-    return true;
+TBool OhLinnAmpVolume::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse) {
+    return iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs);
 }
 
 TBool OhLinnAmpVolume::QueryCurrentVolume() {
@@ -81,20 +100,18 @@ TBool OhLinnAmpVolume::QueryCurrentVolume() {
         return false;
     }
 
-    const char* command = "VOLUME?\r";
-    if (iSerialPort->Write(Brn(reinterpret_cast<const TByte*>(command), strlen(command)))) {
-        Bws<32> response;
-        if (iSerialPort->Read(response, 500)) {
-            // Convert TByte* to char* for string operations
-            std::string respStr(reinterpret_cast<const char*>(response.Ptr()), response.Bytes());
-            if (respStr.find("VOLUME ") == 0) {
-                try {
-                    iCurrentVolume = std::stoi(respStr.substr(7));
-                    Log::Print("OhLinnAmpVolume: Current volume: %u\n", iCurrentVolume);
-                    return true;
-                } catch (...) {
-                    Log::Print("OhLinnAmpVolume: Invalid volume response\n");
-                }
+    Brn cmd(reinterpret_cast<const TByte*>(kCmdVolumeQuery), strlen(kCmdVolumeQuery));
+    Bws<32> response;
+    if (SendCommandAndWaitResponse(cmd, response)) {
+        std::string respStr(reinterpret_cast<const char*>(response.Ptr()), response.Bytes());
+        size_t volumePos = respStr.find(kCmdVolume);
+        if (volumePos != std::string::npos) {
+            try {
+                iCurrentVolume = std::stoi(respStr.substr(volumePos + strlen(kCmdVolume)));
+                Log::Print("OhLinnAmpVolume: Current volume: %u\n", iCurrentVolume);
+                return true;
+            } catch (...) {
+                Log::Print("OhLinnAmpVolume: Invalid volume response\n");
             }
         }
     }
