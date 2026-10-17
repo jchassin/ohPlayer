@@ -2,6 +2,7 @@
 #include "OhSerialPort.h"
 #include <OpenHome/Private/Printer.h>
 #include <sstream>
+#include <unistd.h>
 
 namespace {
 
@@ -96,6 +97,11 @@ void OhLinnAmpVolume::SetFade(TInt /*aFade*/) {
 }
 
 TBool OhLinnAmpVolume::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse) {
+    if (iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs)) {
+        return true;
+    }
+    // Single retry: response may be lost if the amp is busy or transitioning
+    usleep(100000);
     return iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs);
 }
 
