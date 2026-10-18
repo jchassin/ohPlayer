@@ -36,16 +36,7 @@ The simplest setup: the Raspdac Mini (LCD or OLED version) is connected to a pow
 * The Raspdac rotary encoder adjusts the ALSA volume of the DAC
 * No serial connection required
 
-```
-┌───────────────┐ I2S ┌─────────────────────────┐ RCA ┌────────────────────┐ ┌──────────┐
-│ Raspberry Pi 4 │────▶│ Raspdac DAC (ES9038Q2M)│────▶│ Power amp (fixed    │─▶│ Speakers │
-│               │     │                         │     │ gain)               │ └──────────┘
-│  ohPlayer     │     │ Raspdac Mini / OLED     │     └────────────────────┘
-└───────┬───────┘     └─────────────────────────┘
-        │ ▲
-        │ └──────── rotary encoder / OLED (volume + display)
-        └── ALSA mixer = volume control
-```
+![Setup 1 — fixed-gain amplifier](docs/setup1-fixed-gain.svg)
 
 Web UI settings (`Linn Amp` tab):
 
@@ -65,19 +56,7 @@ The Raspdac is connected to a Linn preamplifier (e.g. Akurate Kontrol / RA2) thr
 * The ALSA output is set to full scale; attenuation is delegated to the preamp
 * Volume is limited by the `Volume.Limit` setting (as on a Linn DSM)
 
-```
-┌───────────────┐ I2S ┌─────────────────────────┐ RCA ┌────────────────────┐ ┌──────────┐
-│ Raspberry Pi 4 │────▶│ Raspdac DAC (ES9038Q2M)│────▶│ Linn preamp (RA2)  │─▶│ Speakers │
-│               │     │                         │     │ power amp input    │ └──────────┘
-│  ohPlayer     │     │ Raspdac Mini / OLED     │     └─────────▲──────────┘
-└──────┬────────┘     └─────────────────────────┘               │
-       │ USB                                                    │ zone output
-       ▼                                                        │
-┌──────────────────┐  RS232 (9600 bauds, 7E1)  ┌──────────────────┴─┐
-│ USB-RS232 adapter│─────────────────────────▶│ RA2 control port   │
-│ /dev/ttyUSB0     │   $VOL = n$, $BAL = n$,   │                    │
-└──────────────────┘   $BAS/TRB$, $STANDBY$   └────────────────────┘
-```
+![Setup 2 — Linn preamp over RS232](docs/setup2-linn-preamp.svg)
 
 Web UI settings (`Linn Amp` tab):
 
