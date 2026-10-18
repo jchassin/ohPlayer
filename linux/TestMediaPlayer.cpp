@@ -27,6 +27,7 @@
 #include <OpenHome/Configuration/ConfigManager.h>
 #include <OpenHome/Configuration/Tests/ConfigRamStore.h>
 #include <OpenHome/Av/Utils/IconDriverSongcastSender.h>
+#include "IconOpenHome.h"
 #include <OpenHome/Private/Parser.h>
 #include <OpenHome/Media/Debug.h>
 #include <OpenHome/Av/Debug.h>
@@ -667,8 +668,8 @@ void TestMediaPlayer::DestroyAppFramework()
 void TestMediaPlayer::WriteResource(const Brx& aUriTail, const TIpAddress& /*aInterface*/, std::vector<char*>& /*aLanguageList*/, IResourceWriter& aResourceWriter)
 {
     if (aUriTail == kSongcastSenderIconFileName) {
-        aResourceWriter.WriteResourceBegin(sizeof(kIconDriverSongcastSender), kIconDriverSongcastSenderMimeType);
-        aResourceWriter.WriteResource(kIconDriverSongcastSender, sizeof(kIconDriverSongcastSender));
+        aResourceWriter.WriteResourceBegin(sizeof(kIconOpenHome), kIconOpenHomeMimeType);
+        aResourceWriter.WriteResource(kIconOpenHome, sizeof(kIconOpenHome));
         aResourceWriter.WriteResourceEnd();
     }
 }
