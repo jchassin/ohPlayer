@@ -49,6 +49,9 @@ ViewModel = function(){
             containerId: "Display.Tabs.About.DetailedInfo",
             fields: [
                 { key:"About.SwVersion", title:"Software Version" },
+                { key:"About.OhNetVersion", title:"ohNet Version" },
+                { key:"About.OhPipelineVersion", title:"ohPipeline Version" },
+                { key:"About.OhPlayerCommit", title:"ohPlayer Commit" },
                 { key:"About.ModelVariant", title:"Software Variant" },
                 { key:"About.SwReleaseNotesUrl", type:"link", title:"Software Update Available", linktext:"<% if ('About.SwUpdate' in fields)  { %> <%- fields['About.SwUpdate'].value %> <% } %>", linktitle:"Release Notes" },
                 { key:"About.IpAddress", title:"IP Address" },

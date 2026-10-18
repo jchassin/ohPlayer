@@ -1,5 +1,6 @@
 #include "ConfigAppPlayerLinn.h"
 #include "LinnAmpConfig.h"
+#include "VersionInfo.h"
 #include <OpenHome/Web/ConfigUi/ConfigUi.h>
 
 namespace OpenHome {
@@ -7,6 +8,9 @@ namespace Av {
 
 static const Brn kKeyLinnAmpModel("LinnAmp.Model");
 static const Brn kKeyLinnAmpSerial("LinnAmp.Serial");
+static const Brn kKeySwVersionOhNet("About.OhNetVersion");
+static const Brn kKeySwVersionOhPipeline("About.OhPipelineVersion");
+static const Brn kKeySwVersionOhPlayer("About.OhPlayerCommit");
 
 ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
                                          Environment& aEnv,
@@ -27,6 +31,10 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     // Read-only info fields for the detected amp
     AddValue(new Web::ConfigUiValRo(kKeyLinnAmpModel, Brn(aLinnAmpModel)));
     AddValue(new Web::ConfigUiValRo(kKeyLinnAmpSerial, Brn(aLinnAmpSerial)));
+    // Read-only software version fields (generated at compile time by the Makefile)
+    AddValue(new Web::ConfigUiValRo(kKeySwVersionOhNet, Brn(VersionInfo::kOhNet)));
+    AddValue(new Web::ConfigUiValRo(kKeySwVersionOhPipeline, Brn(VersionInfo::kOhPipeline)));
+    AddValue(new Web::ConfigUiValRo(kKeySwVersionOhPlayer, Brn(VersionInfo::kOhPlayerCommit)));
     // Editable Linn Amp settings
     AddConfigChoice(LinnAmpConfig::kKeyVolumeControl);
     AddConfigText(LinnAmpConfig::kKeySerialPort);

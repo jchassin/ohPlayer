@@ -21,3 +21,4 @@ tags
 
 # VS 2017+ changes
 .vs/
+linux/VersionInfo.h
