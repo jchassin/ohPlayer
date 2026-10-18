@@ -614,10 +614,10 @@ ViewModel = function(){
             description : "Model of the detected Linn amplifier."
         },
         "Helptext.LinnAmp.Bass" : {
-            description : "Bass adjustment of the Linn amplifier, from -15 to +15. Changing this requires a reboot."
+            description : "Bass adjustment of the Linn amplifier, from -7 to +7. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Treble" : {
-            description : "Treble adjustment of the Linn amplifier, from -15 to +15. Changing this requires a reboot."
+            description : "Treble adjustment of the Linn amplifier, from -7 to +7. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Serial" : {
             description : "Serial number of the detected Linn amplifier."

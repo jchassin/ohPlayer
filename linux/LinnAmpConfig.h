@@ -18,8 +18,8 @@ public:
     static const Brn kKeyTreble;
 
     // Tone control range (LR2 BAS/TRB commands)
-    static const TInt kToneMin = -15;
-    static const TInt kToneMax = 15;
+    static const TInt kToneMin = -7;
+    static const TInt kToneMax = 7;
     static const TUint kVolumeControlAlsa;
     static const TUint kVolumeControlLinnAmp;
     static const TUint kMaxSerialPortBytes = 64;
