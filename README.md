@@ -37,8 +37,22 @@ The simplest setup: the Raspdac Mini (LCD or OLED version) is connected to a pow
 * No serial connection required
 
 ```
-[Raspberry Pi] --I2S--> [Raspdac DAC ES9038Q2M] --RCA--> [Power amp (fixed gain)] --> [Speakers]
+┌───────────────┐ I2S ┌─────────────────────────┐ RCA ┌────────────────────┐ ┌──────────┐
+│ Raspberry Pi 4 │────▶│ Raspdac DAC (ES9038Q2M)│────▶│ Power amp (fixed    │─▶│ Speakers │
+│               │     │                         │     │ gain)               │ └──────────┘
+│  ohPlayer     │     │ Raspdac Mini / OLED     │     └────────────────────┘
+└───────┬───────┘     └─────────────────────────┘
+        │ ▲
+        │ └──────── rotary encoder / OLED (volume + display)
+        └── ALSA mixer = volume control
 ```
+
+Web UI settings (`Linn Amp` tab):
+
+| Setting | Value |
+|---|---|
+| Volume Control | `ALSA driver volume` |
+| Serial Port | *(empty)* |
 
 ## 2. Raspdac Mini / OLED with Linn preamplifier (RA2) over RS232
 
@@ -52,10 +66,32 @@ The Raspdac is connected to a Linn preamplifier (e.g. Akurate Kontrol / RA2) thr
 * Volume is limited by the `Volume.Limit` setting (as on a Linn DSM)
 
 ```
-[Raspberry Pi] --I2S--> [Raspdac DAC] --RCA--> [Linn preamp RA2] --> [Power amp] --> [Speakers]
-      |
-      +--USB--> [USB-RS232 adapter] --RS232--> [RA2 control port]
+┌───────────────┐ I2S ┌─────────────────────────┐ RCA ┌────────────────────┐ ┌──────────┐
+│ Raspberry Pi 4 │────▶│ Raspdac DAC (ES9038Q2M)│────▶│ Linn preamp (RA2)  │─▶│ Speakers │
+│               │     │                         │     │ power amp input    │ └──────────┘
+│  ohPlayer     │     │ Raspdac Mini / OLED     │     └─────────▲──────────┘
+└──────┬────────┘     └─────────────────────────┘               │
+       │ USB                                                    │ zone output
+       ▼                                                        │
+┌──────────────────┐  RS232 (9600 bauds, 7E1)  ┌──────────────────┴─┐
+│ USB-RS232 adapter│─────────────────────────▶│ RA2 control port   │
+│ /dev/ttyUSB0     │   $VOL = n$, $BAL = n$,   │                    │
+└──────────────────┘   $BAS/TRB$, $STANDBY$   └────────────────────┘
 ```
+
+Web UI settings (`Linn Amp` tab):
+
+| Setting | Value |
+|---|---|
+| Volume Control | `Linn amplifier` |
+| Serial Port | `/dev/ttyUSB0` |
+| Bass / Treble | -7 .. +7 |
+| Detected Amplifier | `LR2` + serial (read-only, from `$ID ?$`) |
+
+Behaviour:
+* The DAC output is set to full scale; attenuation is handled by the preamp
+* Volume is limited by the `Volume.Limit` setting (as on a Linn DSM)
+* The standby button of the control point app drives the preamp standby
 
 Settings are persistent and applied at the next start of the service (a reboot of the renderer, not of the Raspberry Pi, is enough: use the `Reboot` button of the web UI).
 
