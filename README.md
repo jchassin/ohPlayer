@@ -6,6 +6,7 @@ A couple of additional scripts are needed. Message me if interested.
 
 # History
 
+* **2026-10-18** — Added external Linn Roomamp 2 support.
 * **2026-09-04** — Synced back with AndreHro updates. Currently only used on `aarch64`, but it can easily be adapted to `armhf` if needed. Please raise an issue if support is required.
 
 * **2025-04-19** — As `ohPlayer` is no longer maintained or aligned with the rest of the stack, the project was redesigned based on `ohPipeline/TestMediaPlayer`.
@@ -27,6 +28,11 @@ Based on the [OpenHome Sample Players](https://github.com/openhome/ohPlayer) for
 # Hardware Setups
 
 Two hardware configurations are supported, selected through the web configuration UI (presentation URL of the renderer, `Linn Amp` tab):
+
+Hardware references:
+
+* [Audiophonics Raspdac Mini LCD Kit](https://www.audiophonics.fr/fr/lecteurs-reseau-open-source/audiophonics-raspdac-mini-lcd-kit-diy-lecteur-reseau-pour-raspberry-pi-4-dac-es9038q2m-p-15148.html)
+* [Audiophonics DAC I-Sabre ES9038Q2M](https://www.audiophonics.fr/fr/modules-dac-et-interfaces/audiophonics-dac-i-sabre-es9038q2m-raspberry-pi-i2s-spdif-pcm-dsd-alimentation-usb-c-p-12795.html) — tested with the ES9028 version, which has since been replaced by this one.
 
 ## 1. Raspdac Mini / OLED with fixed-gain amplifier
 
