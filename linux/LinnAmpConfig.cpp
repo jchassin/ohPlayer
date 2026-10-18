@@ -6,6 +6,10 @@ namespace Av {
 
 const Brn LinnAmpConfig::kKeyVolumeControl("LinnAmp.VolumeControl");
 const Brn LinnAmpConfig::kKeySerialPort("LinnAmp.SerialPort");
+const Brn LinnAmpConfig::kKeyBass("LinnAmp.Bass");
+const Brn LinnAmpConfig::kKeyTreble("LinnAmp.Treble");
+const TInt LinnAmpConfig::kToneMin = -15;
+const TInt LinnAmpConfig::kToneMax = 15;
 const TUint LinnAmpConfig::kVolumeControlAlsa = 0;
 const TUint LinnAmpConfig::kVolumeControlLinnAmp = 1;
 const TUint LinnAmpConfig::kMaxSerialPortBytes;
@@ -34,6 +38,12 @@ LinnAmpConfig::LinnAmpConfig(Configuration::IConfigInitialiser& aConfigInit)
     iConfigSerialPort = std::make_unique<Configuration::ConfigText>(
         aConfigInit, kKeySerialPort, 0 /* aMinLength */, kMaxSerialPortBytes, Brx::Empty(),
         true /* aRebootRequired: applied at next start */);
+    iConfigBass = std::make_unique<Configuration::ConfigNum>(
+        aConfigInit, kKeyBass, kToneMin, kToneMax, 0,
+        true /* aRebootRequired: applied at next start */);
+    iConfigTreble = std::make_unique<Configuration::ConfigNum>(
+        aConfigInit, kKeyTreble, kToneMin, kToneMax, 0,
+        true /* aRebootRequired: applied at next start */);
 }
 
 LinnAmpConfig::~LinnAmpConfig()
@@ -61,6 +71,22 @@ TBool LinnAmpConfig::ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& 
     }
 
     return aUseLinnAmp;
+}
+
+TInt LinnAmpConfig::ReadToneFromStore(Configuration::IStoreReadWrite& aStore, const Brx& aKey, TInt aDefault)
+{
+    // ConfigNum values are persisted as big-endian int32
+    Bws<sizeof(TInt)> buf;
+    try {
+        aStore.Read(aKey, buf);
+        TInt val = static_cast<TInt>(Converter::BeUint32At(buf, 0));
+        if (val >= kToneMin && val <= kToneMax) {
+            return val;
+        }
+    }
+    catch (StoreKeyNotFound&) {
+    }
+    return aDefault;
 }
 
 TUint LinnAmpConfig::ReadVolumeLimitFromStore(Configuration::IStoreReadWrite& aStore, TUint aDefault)

@@ -30,6 +30,8 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     // Editable Linn Amp settings
     AddConfigChoice(LinnAmpConfig::kKeyVolumeControl);
     AddConfigText(LinnAmpConfig::kKeySerialPort);
+    AddConfigNum(LinnAmpConfig::kKeyBass);
+    AddConfigNum(LinnAmpConfig::kKeyTreble);
 }
 
 } // namespace Av

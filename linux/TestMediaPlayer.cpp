@@ -271,6 +271,11 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             volumeInit.SetVolume(*iLinnAmpVolume);
             volumeInit.SetBalance(*iLinnAmpVolume);
             volumeInit.SetFade(*iLinnAmpVolume);
+            // Apply tone settings from the config store
+            const TInt bass = LinnAmpConfig::ReadToneFromStore(*iConfigRamStore, LinnAmpConfig::kKeyBass, 0);
+            const TInt treble = LinnAmpConfig::ReadToneFromStore(*iConfigRamStore, LinnAmpConfig::kKeyTreble, 0);
+            iLinnAmpVolume->SetBass(bass);
+            iLinnAmpVolume->SetTreble(treble);
             Log::Print("Using Linn Amp volume control on %s\n", serialPortStr.c_str());
         } else {
             delete iLinnAmpVolume;

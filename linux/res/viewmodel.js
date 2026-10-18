@@ -241,6 +241,8 @@ ViewModel = function(){
             fields : [
                 { key:"LinnAmp.VolumeControl", helptext:"Helptext.LinnAmp.VolumeControl", title:"Volume Control", type:"choice" },
                 { key:"LinnAmp.SerialPort", helptext:"Helptext.LinnAmp.SerialPort", title:"Serial Port", type:"string" },
+                { key:"LinnAmp.Bass", helptext:"Helptext.LinnAmp.Bass", title:"Bass", type:"numeric" },
+                { key:"LinnAmp.Treble", helptext:"Helptext.LinnAmp.Treble", title:"Treble", type:"numeric" },
                 { key:"LinnAmp.Model", helptext:"Helptext.LinnAmp.Model", title:"Detected Amplifier" },
                 { key:"LinnAmp.Serial", helptext:"Helptext.LinnAmp.Serial", title:"Amplifier Serial" },
             ]
@@ -610,6 +612,12 @@ ViewModel = function(){
         },
         "Helptext.LinnAmp.Model" : {
             description : "Model of the detected Linn amplifier."
+        },
+        "Helptext.LinnAmp.Bass" : {
+            description : "Bass adjustment of the Linn amplifier, from -15 to +15. Changing this requires a reboot."
+        },
+        "Helptext.LinnAmp.Treble" : {
+            description : "Treble adjustment of the Linn amplifier, from -15 to +15. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Serial" : {
             description : "Serial number of the detected Linn amplifier."

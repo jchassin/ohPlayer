@@ -8,6 +8,8 @@ namespace {
 
 const char* const kCmdVolume = "VOL = ";
 const char* const kCmdBalance = "BAL = ";
+const char* const kCmdBass = "BAS = ";
+const char* const kCmdTreble = "TRB = ";
 const char* const kCmdVolumeQuery = "VOL ?";
 const char* const kCmdIdQuery = "ID ?";
 const char* const kCmdListen = "LISTEN ";
@@ -160,6 +162,29 @@ void OhLinnAmpVolume::SetStandby(TBool aOn) {
     } else {
         Log::Print("OhLinnAmpVolume: Failed to set standby %s\n", aOn ? "ON" : "OFF");
     }
+}
+
+void OhLinnAmpVolume::SetTone(const char* aPrefix, TInt aValue) {
+    if (!IsVolumeSupported()) {
+        return;
+    }
+
+    std::string command = BuildCommand(aPrefix, static_cast<int>(aValue));
+    Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
+    Bws<32> response;
+    if (SendCommandAndWaitResponse(cmd, response)) {
+        Log::Print("OhLinnAmpVolume: Set %s to %d\n", aPrefix, aValue);
+    } else {
+        Log::Print("OhLinnAmpVolume: Failed to set %s\n", aPrefix);
+    }
+}
+
+void OhLinnAmpVolume::SetBass(TInt aBass) {
+    SetTone(kCmdBass, aBass);
+}
+
+void OhLinnAmpVolume::SetTreble(TInt aTreble) {
+    SetTone(kCmdTreble, aTreble);
 }
 
 void OhLinnAmpVolume::SelectInput(int aSource) {

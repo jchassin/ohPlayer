@@ -17,6 +17,8 @@ public:
 
     TBool IsVolumeSupported() const;
     void SetStandby(TBool aOn);
+    void SetBass(TInt aBass);
+    void SetTreble(TInt aTreble);
 
     // Info from the $ID ?$ query, empty if not detected
     const Brx& DeviceId() const;
@@ -35,6 +37,7 @@ private:
     TBool SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse);
     TBool QueryCurrentVolume();
     void QueryId();
+    void SetTone(const char* aPrefix, TInt aValue);
     void SelectInput(int aSource);
 
 private:
