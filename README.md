@@ -24,6 +24,43 @@ Based on the [OpenHome Sample Players](https://github.com/openhome/ohPlayer) for
 
 ---
 
+# Hardware Setups
+
+Two hardware configurations are supported, selected through the web configuration UI (presentation URL of the renderer, `Linn Amp` tab):
+
+## 1. Raspdac Mini / OLED with fixed-gain amplifier
+
+The simplest setup: the Raspdac Mini (LCD or OLED version) is connected to a power amplifier with fixed gain, and volume is controlled by the ALSA driver of the DAC.
+
+* Volume control: **`ALSA driver volume`**
+* The Raspdac rotary encoder adjusts the ALSA volume of the DAC
+* No serial connection required
+
+```
+[Raspberry Pi] --I2S--> [Raspdac DAC ES9038Q2M] --RCA--> [Power amp (fixed gain)] --> [Speakers]
+```
+
+## 2. Raspdac Mini / OLED with Linn preamplifier (RA2) over RS232
+
+The Raspdac is connected to a Linn preamplifier (e.g. Akurate Kontrol / RA2) through a USB-to-RS232 adapter. The preamp handles volume, balance, bass and treble; the DAC outputs at full scale.
+
+* Volume control: **`Linn amplifier`**
+* Serial port: e.g. **`/dev/ttyUSB0`** (USB-RS232 adapter, 9600 bauds, 7E1)
+* Bass / Treble: -7 to +7, applied to the preamp at startup
+* Standby: the on/off button of the control point app drives the preamp standby (`$STANDBY ON/OFF$`)
+* The ALSA output is set to full scale; attenuation is delegated to the preamp
+* Volume is limited by the `Volume.Limit` setting (as on a Linn DSM)
+
+```
+[Raspberry Pi] --I2S--> [Raspdac DAC] --RCA--> [Linn preamp RA2] --> [Power amp] --> [Speakers]
+      |
+      +--USB--> [USB-RS232 adapter] --RS232--> [RA2 control port]
+```
+
+Settings are persistent and applied at the next start of the service (a reboot of the renderer, not of the Raspberry Pi, is enough: use the `Reboot` button of the web UI).
+
+---
+
 # Installation
 
 ## Prerequisites
