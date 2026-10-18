@@ -142,14 +142,8 @@ void VolumeSinkLogger::SetFade(TInt aFade)
 void RebootLogger::Reboot(const Brx& aReason)
 {
     Log::Print("\n\n\nRebootLogger::Reboot. Reason:\n%.*s\n\n\n", PBUF(aReason));
-    // Restart the application via systemd (ohPlayer.service)
-    // A full system reboot is not required to apply configuration changes.
+    // Exit the process; systemd (ohPlayer.service, Restart=always) restarts it.
     fflush(stdout);
-    int ret = system("systemctl restart ohPlayer.service");
-    if (ret != 0) {
-        Log::Print("RebootLogger: systemctl restart failed (%d), falling back to system reboot\n", ret);
-        system("reboot");
-    }
     _exit(0);
 }
 
