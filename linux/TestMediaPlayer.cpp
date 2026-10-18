@@ -6,6 +6,8 @@
 #include "ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
+#include <cstdlib>
+#include <unistd.h>
 #include <OpenHome/Av/MediaPlayer.h>
 #include <OpenHome/Av/Product.h>
 #include <OpenHome/Net/Core/DvDevice.h>
@@ -139,6 +141,15 @@ void VolumeSinkLogger::SetFade(TInt aFade)
 void RebootLogger::Reboot(const Brx& aReason)
 {
     Log::Print("\n\n\nRebootLogger::Reboot. Reason:\n%.*s\n\n\n", PBUF(aReason));
+    // Restart the application via systemd (ohPlayer.service)
+    // A full system reboot is not required to apply configuration changes.
+    fflush(stdout);
+    int ret = system("systemctl restart ohPlayer.service");
+    if (ret != 0) {
+        Log::Print("RebootLogger: systemctl restart failed (%d), falling back to system reboot\n", ret);
+        system("reboot");
+    }
+    _exit(0);
 }
 
 
