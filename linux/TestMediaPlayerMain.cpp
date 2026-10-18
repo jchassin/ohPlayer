@@ -83,8 +83,8 @@ void TestMediaPlayerThread::RunInThread()
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.Qobuz().CString());
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.UserAgent().CString());
     Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.StoreFile().CString());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.OptionOdp().Value());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.OptionWebUi().Value());
+    Log::Print("%s:%d - %u\n", __FILE__, __LINE__, iOptions.OptionOdp().Value());
+    Log::Print("%s:%d - %u\n", __FILE__, __LINE__, iOptions.OptionWebUi().Value());
 
 
     // Create TestMediaPlayer.
