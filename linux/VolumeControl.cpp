@@ -13,16 +13,31 @@ using namespace OpenHome::Av;
 using namespace OpenHome::Media;
 
 VolumeControl::VolumeControl()
+: iHandle(NULL)
+, iElem(NULL)
 {
     const TChar *CARD          = "default";
     const TChar *SELEM_NAMES[] = {"Digital", "PCM", "Master"};
     Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Get the mixer element for the default sound card.
-    snd_mixer_open(&iHandle, 0);
-    snd_mixer_attach(iHandle, CARD);
-    snd_mixer_selem_register(iHandle, NULL, NULL);
-    snd_mixer_load(iHandle);
-
+    if (snd_mixer_open(&iHandle, 0) < 0) {
+        iHandle = NULL;
+        OhLog::PrintError("VolumeControl: snd_mixer_open failed\n");
+        return;
+    }
+    if (snd_mixer_attach(iHandle, CARD) < 0) {
+        OhLog::PrintError("VolumeControl: snd_mixer_attach(%s) failed\n", CARD);
+        snd_mixer_close(iHandle);
+        iHandle = NULL;
+        return;
+    }
+    if (snd_mixer_selem_register(iHandle, NULL, NULL) < 0 ||
+        snd_mixer_load(iHandle) < 0) {
+        OhLog::PrintError("VolumeControl: failed to load ALSA mixer elements\n");
+        snd_mixer_close(iHandle);
+        iHandle = NULL;
+        return;
+    }
     // Get the mixer element for the most relevant control.
     snd_mixer_selem_id_t *iSid;
 
@@ -43,16 +58,23 @@ VolumeControl::VolumeControl()
             break;
         }
     }
-    if (snd_mixer_selem_has_playback_switch(iElem)) {
-	Log::Print("VolumeControl snd_mixer_selem_set_playback_switch_all\n");
-        snd_mixer_selem_set_playback_switch_all(iElem, 1);
+    if (iElem != NULL) {
+        if (snd_mixer_selem_has_playback_switch(iElem)) {
+            Log::Print("VolumeControl snd_mixer_selem_set_playback_switch_all\n");
+            snd_mixer_selem_set_playback_switch_all(iElem, 1);
+        }
+    } else {
+        // No volume control on this sound card: output runs at full scale.
+        Log::Print("VolumeControl: no ALSA volume control found - output at full scale\n");
     }
 
 }
 
 VolumeControl::~VolumeControl()
 {
-    snd_mixer_close(iHandle);
+    if (iHandle != NULL) {
+        snd_mixer_close(iHandle);
+    }
 }
 
 TBool VolumeControl::IsVolumeSupported()
@@ -77,7 +99,6 @@ void VolumeControl::SetVolume(TUint aVolume)
     // Sanity Check
     if (! IsVolumeSupported())
     {
-        OhLog::PrintError("SetVolume : %d\n", __LINE__);
         return;
     }
     Log::Print("Volume : %u\n", aVolume );

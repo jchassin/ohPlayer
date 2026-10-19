@@ -261,6 +261,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     LinnAmpConfig::ReadFromStore(*iConfigRamStore, serialPortBuf, useLinnAmp);
     
     // Use Linn Amp volume control if requested and serial port is provided
+    TBool linnAmpActive = false;
     if (useLinnAmp && serialPortBuf.Bytes() > 0) {
         std::string serialPortStr(reinterpret_cast<const char*>(serialPortBuf.Ptr()), serialPortBuf.Bytes());
         const TUint volumeLimit = LinnAmpConfig::ReadVolumeLimitFromStore(*iConfigRamStore, 100);
@@ -277,19 +278,32 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             const TInt treble = LinnAmpConfig::ReadToneFromStore(*iConfigRamStore, LinnAmpConfig::kKeyTreble, 0);
             iLinnAmpVolume->SetBass(bass);
             iLinnAmpVolume->SetTreble(treble);
+            linnAmpActive = true;
             Log::Print("Using Linn Amp volume control on %s\n", serialPortStr.c_str());
         } else {
             delete iLinnAmpVolume;
             iLinnAmpVolume = nullptr;
-            volumeInit.SetVolume(iVolumeLogger);
-            volumeInit.SetBalance(iVolumeLogger);
-            volumeInit.SetFade(iVolumeLogger);
             Log::Print("Linn Amp volume control failed, falling back to ALSA\n");
         }
-    } else {
-        volumeInit.SetVolume(iVolumeLogger);
-        volumeInit.SetBalance(iVolumeLogger);
-        volumeInit.SetFade(iVolumeLogger);
+    }
+
+    // Select the ALSA volume sink if the sound card provides a hardware
+    // volume control; otherwise fall back to a logging-only sink and leave
+    // the output at full scale (volume is then handled upstream or not at
+    // all, e.g. on DACs without mixer controls).
+    if (!linnAmpActive) {
+        IVolume& volumeSink = iVolumeLogger;
+        IBalance& balanceSink = iVolumeLogger;
+        IFade& fadeSink = iVolumeLogger;
+        if (!iVolumeLogger.IsVolumeSupported()) {
+            Log::Print("Sound card has no ALSA volume control - output at full scale\n");
+            volumeSink = iVolumeSinkLogger;
+            balanceSink = iVolumeSinkLogger;
+            fadeSink = iVolumeSinkLogger;
+        }
+        volumeInit.SetVolume(volumeSink);
+        volumeInit.SetBalance(balanceSink);
+        volumeInit.SetFade(fadeSink);
     }
 
     // Create MediaPlayer.
