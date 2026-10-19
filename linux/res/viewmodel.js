@@ -246,6 +246,7 @@ ViewModel = function(){
                 { key:"LinnAmp.SerialPort", helptext:"Helptext.LinnAmp.SerialPort", title:"Serial Port", type:"string" },
                 { key:"LinnAmp.Bass", helptext:"Helptext.LinnAmp.Bass", title:"Bass", type:"numeric" },
                 { key:"LinnAmp.Treble", helptext:"Helptext.LinnAmp.Treble", title:"Treble", type:"numeric" },
+                { key:"LinnAmp.AlsaVolume", helptext:"Helptext.LinnAmp.AlsaVolume", title:"ALSA Volume", type:"numeric" },
                 { key:"LinnAmp.Model", helptext:"Helptext.LinnAmp.Model", title:"Detected Amplifier" },
                 { key:"LinnAmp.Serial", helptext:"Helptext.LinnAmp.Serial", title:"Amplifier Serial" },
             ]
@@ -621,6 +622,9 @@ ViewModel = function(){
         },
         "Helptext.LinnAmp.Treble" : {
             description : "Treble adjustment of the Linn amplifier, from -7 to +7. Changing this requires a reboot."
+        },
+        "Helptext.LinnAmp.AlsaVolume" : {
+            description : "ALSA output level (0-100) applied when the Linn amplifier controls the volume. Use this to match the loudness of a room driven by the Linn amplifier with a room driven by the ALSA driver. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Serial" : {
             description : "Serial number of the detected Linn amplifier."

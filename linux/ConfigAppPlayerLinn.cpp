@@ -40,6 +40,7 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddConfigText(LinnAmpConfig::kKeySerialPort);
     AddConfigNum(LinnAmpConfig::kKeyBass);
     AddConfigNum(LinnAmpConfig::kKeyTreble);
+    AddConfigNum(LinnAmpConfig::kKeyAlsaVolume);
 }
 
 } // namespace Av

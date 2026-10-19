@@ -266,8 +266,9 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
         const TUint volumeLimit = LinnAmpConfig::ReadVolumeLimitFromStore(*iConfigRamStore, 100);
         iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr, volumeLimit);
         if (iLinnAmpVolume->IsVolumeSupported()) {
-            // Set the ALSA output to full scale: attenuation is handled by the Linn amp
-            iVolumeLogger.SetVolumeFixed(100 * 1024);
+            // Set the ALSA output level: attenuation is handled by the Linn amp
+            const TUint alsaVolume = LinnAmpConfig::ReadAlsaVolumeFromStore(*iConfigRamStore, 100);
+            iVolumeLogger.SetVolumeFixed(alsaVolume * 1024);
             volumeInit.SetVolume(*iLinnAmpVolume);
             volumeInit.SetBalance(*iLinnAmpVolume);
             volumeInit.SetFade(*iLinnAmpVolume);

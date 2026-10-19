@@ -16,6 +16,10 @@ public:
     static const Brn kKeySerialPort;
     static const Brn kKeyBass;
     static const Brn kKeyTreble;
+    static const Brn kKeyAlsaVolume;
+
+    // ALSA output level (OpenHome volume steps, 0-100) used when volume is
+    // controlled by an external Linn amplifier.
 
     // Tone control range (LR2 BAS/TRB commands)
     static const TInt kToneMin = -7;
@@ -40,11 +44,16 @@ public:
     // Reads LinnAmp.Bass / LinnAmp.Treble from the store. Returns aDefault if not set.
     static TInt ReadToneFromStore(Configuration::IStoreReadWrite& aStore, const Brx& aKey, TInt aDefault);
 
+    // Reads LinnAmp.AlsaVolume (ALSA output level, 0-100) from the store.
+    // Returns aDefault if not set.
+    static TUint ReadAlsaVolumeFromStore(Configuration::IStoreReadWrite& aStore, TUint aDefault);
+
 private:
     std::unique_ptr<Configuration::ConfigChoice> iConfigVolumeControl;
     std::unique_ptr<Configuration::ConfigText> iConfigSerialPort;
     std::unique_ptr<Configuration::ConfigNum> iConfigBass;
     std::unique_ptr<Configuration::ConfigNum> iConfigTreble;
+    std::unique_ptr<Configuration::ConfigNum> iConfigAlsaVolume;
 };
 
 } // namespace Av
