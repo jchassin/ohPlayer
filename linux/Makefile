@@ -102,9 +102,11 @@ install:
 	install -m 755 $(TARGET) $(DESTDIR)$(BINDIR)
 	install -m 644 OpenHome-48x48.png $(DESTDIR)$(RESDIR)
 	install -m 644 copyright $(DESTDIR)$(DOCDIR)
-	cp -a $(RESOURCEDIR)/. $(DESTDIR)$(RESDIR)/
-	install -m 755 -d $(DESTDIR)$(RESDIR)/lang/en-gb
-	install -m 644 $(DEPRESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/lang/en-gb
+	install -m 755 -d $(DESTDIR)$(RESDIR)/res
+	cp -a $(RESOURCEDIR)/. $(DESTDIR)$(RESDIR)/res/
+	install -m 755 -d $(DESTDIR)$(RESDIR)/res/lang/en-gb
+	install -m 644 $(DEPRESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/res/lang/en-gb
+	install -m 644 $(DEPRESOURCEDIR)/webconfig.js $(DESTDIR)$(RESDIR)/res
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/openhome-player
