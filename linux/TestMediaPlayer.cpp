@@ -279,6 +279,10 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             iLinnAmpVolume->SetBass(bass);
             iLinnAmpVolume->SetTreble(treble);
             linnAmpActive = true;
+            // ohPipeline only creates the Volume provider (and announces the
+            // Volume attribute to control points) when internal volume control
+            // is enabled, so force it on: volume is delegated to the Linn amp.
+            LinnAmpConfig::EnsureVolumeControlEnabled(*iConfigRamStore);
             Log::Print("Using Linn Amp volume control on %s\n", serialPortStr.c_str());
         } else {
             delete iLinnAmpVolume;
