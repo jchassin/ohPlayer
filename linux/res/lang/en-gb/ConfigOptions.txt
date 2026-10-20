@@ -20,8 +20,8 @@ Source.Visible
 1   Yes
 
 Volume.Enabled
-0   No
 1   Yes
+0   No
 
 Volume.StartupEnabled
 1   True
