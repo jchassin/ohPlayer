@@ -97,12 +97,13 @@ clean:
 	rm -f $(TARGET)
 
 install:
-	install -m 755 -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(DOCDIR) $(DESTDIR)$(RESDIR) $(DESTDIR)$(RESDIR)/res
+	install -m 755 -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(DOCDIR) $(DESTDIR)$(RESDIR)
 	install -m 755 $(TARGET) $(DESTDIR)$(BINDIR)
 	install -m 644 OpenHome-48x48.png $(DESTDIR)$(RESDIR)
 	install -m 644 copyright $(DESTDIR)$(DOCDIR)
-	cp -R $(RESOURCEDIR) $(DESTDIR)$(RESDIR)
-	cp $(DEPRESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/res/lang
+	cp -a $(RESOURCEDIR)/. $(DESTDIR)$(RESDIR)/
+	install -m 755 -d $(DESTDIR)$(RESDIR)/lang/en-gb
+	install -m 644 $(DEPRESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/lang/en-gb
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/openhome-player
