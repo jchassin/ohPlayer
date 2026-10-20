@@ -104,8 +104,6 @@ install:
 	install -m 644 copyright $(DESTDIR)$(DOCDIR)
 	install -m 755 -d $(DESTDIR)$(RESDIR)/res
 	cp -a $(RESOURCEDIR)/. $(DESTDIR)$(RESDIR)/res/
-	install -m 755 -d $(DESTDIR)$(RESDIR)/res/lang/en-gb
-	install -m 644 $(DEPRESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/res/lang/en-gb
 	install -m 644 $(DEPRESOURCEDIR)/webconfig.js $(DESTDIR)$(RESDIR)/res
 
 uninstall:
