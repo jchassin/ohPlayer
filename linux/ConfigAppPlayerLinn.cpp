@@ -41,6 +41,10 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddConfigNum(LinnAmpConfig::kKeyBass);
     AddConfigNum(LinnAmpConfig::kKeyTreble);
     AddConfigNum(LinnAmpConfig::kKeyAlsaVolume);
+    // Expose ohPipeline's internal volume control toggle (hidden by default).
+    // Allows disabling the volume control point-side on setups where the
+    // sound card has no mixer and no external amplifier controls volume.
+    AddConfigChoiceConditional(Brn("Volume.Enabled"));
 }
 
 } // namespace Av
