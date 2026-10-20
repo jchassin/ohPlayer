@@ -1,0 +1,52 @@
+Device.AutoPlay
+0   Off
+1   On
+
+Sender.Enabled
+0   False
+1   True
+
+Sender.Mode
+0   Multicast
+1   Unicast
+
+Source.NetAux.Auto
+0   Enabled
+1   Disabled (selectable externally)
+2   Disabled (not selectable externally)
+
+Source.Visible
+0   No
+1   Yes
+
+Volume.StartupEnabled
+1   True
+0   False
+
+qobuz.com.SoundQuality
+0   320kbps MP3
+1   Lossless (FLAC 44.1kHz, 16-bit)
+2   Lossless+ (FLAC 96kHz, 24-bit)
+3   Lossless++ (FLAC 192kHz, 24-bit)
+
+qobuz.com.Enabled
+0   No
+1   Yes
+
+tidalhifi.com.SoundQuality
+0   Low
+1   High
+2   Lossless
+3   Hi-Res
+
+tidalhifi.com.Enabled
+0   No
+1   Yes
+
+tunein.com.Enabled
+0   No
+1   Yes
+
+Roon.Protocol
+0  Roon Ready
+1  Linn Streaming

@@ -18,9 +18,10 @@ CFLAGS = -c -Wall -std=c++17 -O0 -g -DTARG_ARCH=$(TARG_ARCH) \
 
 # Native Installation Path Configurations
 PREFIX      = /usr
-BINDIR      = $(PREFIX)/bin
-RESDIR      = $(PREFIX)/share/openhome-player
-DOCDIR      = $(PREFIX)/share/doc/openhome-player
+DESTDIR     = $(PREFIX)
+BINDIR      = /bin
+RESDIR      = /share/openhome-player
+DOCDIR      = /share/doc/openhome-player
 RESOURCEDIR = res
 DEPRESOURCEDIR = ../dependencies/$(TARG_ARCH)/ohMediaPlayer/res
 
@@ -97,12 +98,12 @@ clean:
 	rm -f $(TARGET)
 
 install:
-	install -m 755 -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(DOCDIR) $(DESTDIR)$(RESDIR) $(DESTDIR)$(RESDIR)/res
+	install -m 755 -d $(DESTDIR)$(BINDIR) $(DESTDIR)$(DOCDIR) $(DESTDIR)$(RESDIR) $(DESTDIR)$(RESDIR)/res/lang 
 	install -m 755 $(TARGET) $(DESTDIR)$(BINDIR)
 	install -m 644 OpenHome-48x48.png $(DESTDIR)$(RESDIR)
 	install -m 644 copyright $(DESTDIR)$(DOCDIR)
 	cp -R $(RESOURCEDIR) $(DESTDIR)$(RESDIR)
-	cp $(DEPRESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/res/lang
+	cp $(DEPRESOURCEDIR)/lang/en-gb/ConfigOptions.txt $(DESTDIR)$(RESDIR)/res/lang/.
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/openhome-player
