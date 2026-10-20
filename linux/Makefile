@@ -18,9 +18,10 @@ CFLAGS = -c -Wall -std=c++17 -O0 -g -DTARG_ARCH=$(TARG_ARCH) \
 
 # Native Installation Path Configurations
 PREFIX      = /usr
-BINDIR      = $(PREFIX)/bin
-RESDIR      = $(PREFIX)/share/openhome-player
-DOCDIR      = $(PREFIX)/share/doc/openhome-player
+DESTDIR     = $(PREFIX)
+BINDIR      = /bin
+RESDIR      = /share/openhome-player
+DOCDIR      = /share/doc/openhome-player
 RESOURCEDIR = res
 DEPRESOURCEDIR = ../dependencies/$(TARG_ARCH)/ohMediaPlayer/res
 
