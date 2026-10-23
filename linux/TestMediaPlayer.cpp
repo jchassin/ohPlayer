@@ -3,6 +3,7 @@
 #include "RaspdacMiniIF.h"
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
+#include "PrefixedFriendlyName.h"
 #include "ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
@@ -462,7 +463,13 @@ void TestMediaPlayer::Run()
     iServerOdp = std::make_unique<DviServerOdp>(iMediaPlayer->DvStack(), kNumOdpSessions, iOdpPort);
     iServerOdp->Start();
     Log::Print("ODP server running on port %u\n", iServerOdp->Port()); // don't use iOdpPort here - if it is 0, iServerOdp->Port() tells us the host assigned port
-    iOdpZeroConf =std::make_unique<OdpZeroConf>(iMediaPlayer->Env(), *iServerOdp, iMediaPlayer->FriendlyNameObservable());
+    // Announce the ODP endpoint under a prefixed instance name so the
+    // _odp._tcp mDNS record can never collide with the host name announced
+    // by the system mDNS daemon (ohNet asserts on mDNS name conflicts).
+    // See PrefixedFriendlyNameObservable.
+    iOdpFriendlyName = std::make_unique<PrefixedFriendlyNameObservable>(
+        iMediaPlayer->FriendlyNameObservable(), Brn("ohPlayer"));
+    iOdpZeroConf =std::make_unique<OdpZeroConf>(iMediaPlayer->Env(), *iServerOdp, *iOdpFriendlyName);
     iOdpZeroConf->SetZeroConfEnabled(true);
 
     EnableDevices();

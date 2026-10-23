@@ -63,6 +63,7 @@ namespace Av {
     class FriendlyNameHandler;
     class RamStore;
     class IPlaylistLoader;
+    class PrefixedFriendlyNameObservable;
 namespace Test {
 
 class VolumeProfile : public IVolumeProfile
@@ -223,6 +224,7 @@ private:
     std::unique_ptr<Configuration::ConfigRamStore> iConfigRamStore;
     std::unique_ptr<Configuration::StoreFileWriterJson> iStoreFileWriter;
     TUint iOdpPort;
+    std::unique_ptr<Av::PrefixedFriendlyNameObservable> iOdpFriendlyName;
     std::unique_ptr<OpenHome::Net::OdpZeroConf> iOdpZeroConf;
     std::unique_ptr<OpenHome::Net::DviServerOdp> iServerOdp;
     TUint iMinWebUiResourceThreads;
