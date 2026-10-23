@@ -4,7 +4,7 @@
 #include <OpenHome/Buffer.h>
 #include <OpenHome/Av/Product.h>
 #include <OpenHome/Functor.h>
-#include <OpenHome/Thread.h>
+#include <OpenHome/Private/Thread.h>
 #include <map>
 
 namespace OpenHome {
