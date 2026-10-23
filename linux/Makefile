@@ -53,10 +53,6 @@ LDFLAGS  = -L$(DEPS_DIR)/ohMediaPlayer/lib \
 OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
 HEADERS  = $(wildcard *.h)
 
-# Only ConfigAppPlayerLinn.cpp includes VersionInfo.h.
-VERSION_OBJ = $(OBJ_DIR)/ConfigAppPlayerLinn.o
-$(VERSION_OBJ): $(VERSION_FILE)
-
 # ============================================================================
 # Compilation Build Automation Targets
 # ============================================================================
@@ -65,6 +61,12 @@ $(VERSION_OBJ): $(VERSION_FILE)
 
 default: version build $(TARGET)
 all: default
+
+# Only ConfigAppPlayerLinn.cpp includes VersionInfo.h; depend it on
+# VersionInfo.h. Kept after the default target so it does not become
+# make's default goal.
+VERSION_OBJ = $(OBJ_DIR)/ConfigAppPlayerLinn.o
+$(VERSION_OBJ): $(VERSION_FILE)
 
 # Generate VersionInfo.h with dependency versions and git commit
 VERSION_FILE = VersionInfo.h
