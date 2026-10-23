@@ -22,7 +22,8 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
                                          TUint aResourceHandlerCount, TUint aMaxTabs, TUint aSendQueueSize,
                                          TUint aMsgBufCount, TUint aMsgBufBytes,
                                          IRebootHandler& aRebootHandler,
-                                         const Brx& aLinnAmpModel, const Brx& aLinnAmpSerial)
+                                         const Brx& aLinnAmpModel, const Brx& aLinnAmpSerial,
+                                         TBool aLinnAmpActive)
     : Web::ConfigAppMediaPlayer(aInfoAggregator, aEnv, aProduct, aConfigManager, aResourceFactory,
                                 aSources, aResourcePrefix, aResourceDir,
                                 aResourceHandlerCount, aMaxTabs, aSendQueueSize,
@@ -43,7 +44,16 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     // Expose ohPipeline's internal volume control toggle (hidden by default).
     // Allows disabling the volume control point-side on setups where the
     // sound card has no mixer and no external amplifier controls volume.
-    AddConfigChoiceConditional(Brn("Volume.Enabled"));
+    // When an external Linn amplifier handles volume, the internal volume is
+    // inactive by definition, so the field is read-only and reports No
+    // (the MediaPlayer's ConfigVal holds the runtime-enabled value used to
+    // create the Volume provider; the user's setting in the store is No).
+    if (aLinnAmpActive) {
+        AddValue(new Web::ConfigUiValRo(Brn("Volume.Enabled"), Brn("No")));
+    }
+    else {
+        AddConfigChoiceConditional(Brn("Volume.Enabled"));
+    }
 }
 
 } // namespace Av

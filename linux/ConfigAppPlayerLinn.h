@@ -21,7 +21,8 @@ public:
                         TUint aResourceHandlerCount, TUint aMaxTabs, TUint aSendQueueSize,
                         TUint aMsgBufCount, TUint aMsgBufBytes,
                         IRebootHandler& aRebootHandler,
-                        const Brx& aLinnAmpModel, const Brx& aLinnAmpSerial);
+                        const Brx& aLinnAmpModel, const Brx& aLinnAmpSerial,
+                        TBool aLinnAmpActive);
 };
 
 } // namespace Av

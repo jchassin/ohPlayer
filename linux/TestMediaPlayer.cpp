@@ -704,7 +704,8 @@ IWebApp* TestMediaPlayer::CreateConfigApp(const std::vector<const Brx*>& aSource
                                    Brn("Softplayer"), aResourceDir,
                                    aMinWebUiResourceThreads, aMaxWebUiTabs, aMaxSendQueueSize,
                                    aMsgBufCount, aMsgBufBytes, iRebootHandler,
-                                   linnAmpModel, linnAmpSerial);
+                                   linnAmpModel, linnAmpSerial,
+                                   iLinnAmpVolume != nullptr);
 }
 
 void TestMediaPlayer::InitialiseLogger()
