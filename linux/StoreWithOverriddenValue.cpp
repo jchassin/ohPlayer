@@ -1,5 +1,5 @@
 #include "StoreWithOverriddenValue.h"
-#include <OpenHome/Stream.h>
+#include <OpenHome/Private/Stream.h>
 
 namespace OpenHome {
 namespace Av {
