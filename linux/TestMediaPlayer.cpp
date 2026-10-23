@@ -363,9 +363,17 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     iPipelineObserver = std::make_unique<LoggingPipelineObserver>();
     iMediaPlayer->Pipeline().AddObserver(*iPipelineObserver);
     Log::Print("%s:%d\n", __FILE__, __LINE__);
-    iFnUpdaterStandard = std::make_unique<FriendlyNameAttributeUpdater>(iMediaPlayer->FriendlyNameObservable(), iMediaPlayer->ThreadPool(), *iDevice);
+    // Announce mDNS records (_http._tcp / _odp._tcp) under a prefixed
+    // instance name so they can never collide with the host name announced
+    // by the system mDNS daemon (ohNet asserts on mDNS name conflicts).
+    // See PrefixedFriendlyNameObservable.
+    iMdnsFriendlyName = std::make_unique<PrefixedFriendlyNameObservable>(
+        iMediaPlayer->FriendlyNameObservable(), Brn("ohPlayer"));
+    iFnUpdaterStandard = std::make_unique<FriendlyNameAttributeUpdater>(*iMdnsFriendlyName, iMediaPlayer->ThreadPool(), *iDevice);
     iFnManagerUpnpAv =  std::make_unique<FriendlyNameManagerUpnpAv>(kFriendlyNamePrefix, iMediaPlayer->Product());
-    iFnUpdaterUpnpAv = std::make_unique<FriendlyNameAttributeUpdater>(*iFnManagerUpnpAv, iMediaPlayer->ThreadPool(), *iDeviceUpnpAv);
+    iMdnsFriendlyNameUpnpAv = std::make_unique<PrefixedFriendlyNameObservable>(
+        *iFnManagerUpnpAv, Brn("ohPlayer"));
+    iFnUpdaterUpnpAv = std::make_unique<FriendlyNameAttributeUpdater>(*iMdnsFriendlyNameUpnpAv, iMediaPlayer->ThreadPool(), *iDeviceUpnpAv);
     iFsFlushPeriodic = std::make_unique<FsFlushPeriodic>(iMediaPlayer->Env(), iMediaPlayer->PowerManager(), iMediaPlayer->ThreadPool(), kFsFlushFreqMs);
     Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Register with the PowerManager
@@ -463,13 +471,10 @@ void TestMediaPlayer::Run()
     iServerOdp = std::make_unique<DviServerOdp>(iMediaPlayer->DvStack(), kNumOdpSessions, iOdpPort);
     iServerOdp->Start();
     Log::Print("ODP server running on port %u\n", iServerOdp->Port()); // don't use iOdpPort here - if it is 0, iServerOdp->Port() tells us the host assigned port
-    // Announce the ODP endpoint under a prefixed instance name so the
-    // _odp._tcp mDNS record can never collide with the host name announced
-    // by the system mDNS daemon (ohNet asserts on mDNS name conflicts).
-    // See PrefixedFriendlyNameObservable.
-    iOdpFriendlyName = std::make_unique<PrefixedFriendlyNameObservable>(
-        iMediaPlayer->FriendlyNameObservable(), Brn("ohPlayer"));
-    iOdpZeroConf =std::make_unique<OdpZeroConf>(iMediaPlayer->Env(), *iServerOdp, *iOdpFriendlyName);
+    // ODP endpoint announced under the prefixed friendly name (see
+    // PrefixedFriendlyNameObservable) so the _odp._tcp mDNS record can never
+    // collide with the host name announced by the system mDNS daemon.
+    iOdpZeroConf =std::make_unique<OdpZeroConf>(iMediaPlayer->Env(), *iServerOdp, *iMdnsFriendlyName);
     iOdpZeroConf->SetZeroConfEnabled(true);
 
     EnableDevices();
