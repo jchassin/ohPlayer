@@ -266,7 +266,13 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     //  - Volume.Enabled = No with a serial port configured: volume is
     //    delegated to an external Linn amplifier. If no amplifier responds,
     //    the volume stays greyed out.
+    // While an amplifier is active, Volume.Enabled is forced to Yes in the
+    // store (ohPipeline only creates the Volume provider when internal volume
+    // control is enabled; the ConfigVal reads the store once, in its
+    // constructor), then restored to No after the MediaPlayer is created so
+    // the next start selects the amplifier branch again.
     const TBool volumeEnabled = LinnAmpConfig::ReadVolumeControlEnabledFromStore(*iConfigRamStore, true);
+    TBool linnAmpUsed = false;
 
     if (!volumeEnabled && serialPortBuf.Bytes() > 0) {
         // External Linn amplifier over RS232.
@@ -285,15 +291,20 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             const TInt treble = LinnAmpConfig::ReadToneFromStore(*iConfigRamStore, LinnAmpConfig::kKeyTreble, 0);
             iLinnAmpVolume->SetBass(bass);
             iLinnAmpVolume->SetTreble(treble);
+            linnAmpUsed = true;
             // ohPipeline only creates the Volume provider (and announces the
             // Volume attribute to control points) when internal volume control
-            // is enabled, so force it back on: volume is delegated to the amp.
+            // is enabled, so force it on: volume is delegated to the amp.
+            // Restored to No below, after the MediaPlayer is created.
             LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, true);
             Log::Print("Using Linn Amp volume control on %s\n", serialPortStr.c_str());
         } else {
             delete iLinnAmpVolume;
             iLinnAmpVolume = nullptr;
             // No amplifier detected: grey out the volume in control points.
+            // Restore Volume.Enabled to No so the next start does not fall
+            // back on the internal ALSA volume the user chose to disable.
+            LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, false);
             Log::Print("Linn Amp volume control failed - volume disabled\n");
             volumeInit.SetVolume(iVolumeSinkLogger);
             volumeInit.SetBalance(iVolumeSinkLogger);
@@ -344,6 +355,14 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                    *iInfoLogger,
                                    aUdn, mpInit);
     delete mpInit;
+
+    // The MediaPlayer (and its VolumeConfig) has read Volume.Enabled from the
+    // store. If a Linn amp is handling volume, Volume.Enabled was forced to
+    // Yes above; restore it to No now so the next start selects the amplifier
+    // branch again instead of falling back on the internal ALSA volume.
+    if (linnAmpUsed) {
+        LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, false);
+    }
 
     // Register Linn Amp web config parameters (volume control choice and serial port)
     iLinnAmpConfig = std::make_unique<LinnAmpConfig>(iMediaPlayer->ConfigInitialiser());
@@ -453,9 +472,12 @@ void TestMediaPlayer::Run()
     InitialiseSubsystems();
 
     // Debugging for ConfigManager.
+    // NOTE: do NOT call configManager.DumpToStore() here: it rewrites every
+    // in-memory ConfigVal back to the store, which would clobber the
+    // Volume.Enabled=No restoration done for Linn amp setups (see the volume
+    // routing in the constructor).
     IConfigManager& configManager = iMediaPlayer->ConfigManager();
     configManager.Print();
-    configManager.DumpToStore();
 
     iAppFramework->Start();
 
@@ -498,9 +520,12 @@ void TestMediaPlayer::RunWithSemaphore()
     InitialiseSubsystems();
 
     // Debugging for ConfigManager.
+    // NOTE: do NOT call configManager.DumpToStore() here: it rewrites every
+    // in-memory ConfigVal back to the store, which would clobber the
+    // Volume.Enabled=No restoration done for Linn amp setups (see the volume
+    // routing in the constructor).
     IConfigManager& configManager = iMediaPlayer->ConfigManager();
     configManager.Print();
-    configManager.DumpToStore();
 
     iAppFramework->Start();
     EnableDevices();
