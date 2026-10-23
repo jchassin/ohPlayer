@@ -6,6 +6,14 @@ A couple of additional scripts are needed. Message me if interested.
 
 # History
 
+* **2026-10-23** — Volume routing with official DS semantics, mixer-less sound cards, mDNS crash fix, install and build fixes.
+  * `Internal Volume Control` (`Volume.Enabled`) exposed in the web ui (Volume tab): `Yes`/unset — internal ALSA volume; `No` with a serial port configured — external Linn amplifier over RS232; card without a mixer or amplifier not detected — volume greyed out in control points. The `LinnAmp.VolumeControl` parameter was removed.
+  * New `LinnAmp.AlsaVolume` parameter (0-100, default 100) to level-match rooms when the Linn amplifier handles volume.
+  * `StoreWithOverriddenValue` decouples the user's persisted intent from what the MediaPlayer sees at runtime.
+  * Sound cards without a mixer are fully supported (no crash, no error spam).
+  * mDNS host name is now derived from the Linux host name (`ohp-<hostname>`), fixing the sporadic `-65548` name-conflict crash between players.
+  * Makefile: `install` target fixed (web ui resources to `/usr/share/openhome-player/res/`, `webconfig.js`, `lang/`), incremental `VersionInfo.h` generation.
+
 * **2026-10-18** — Added external Linn Roomamp 2 support.
 * **2026-09-04** — Synced back with AndreHro updates. Currently only used on `aarch64`, but it can easily be adapted to `armhf` if needed. Please raise an issue if support is required.
 
@@ -38,24 +46,24 @@ Hardware references:
 
 The simplest setup: the Raspdac Mini (LCD or OLED version) is connected to a power amplifier with fixed gain, and volume is controlled by the ALSA driver of the DAC.
 
-* Volume control: **`ALSA driver volume`**
+* Volume control: **internal (ALSA driver)** — `Internal Volume Control = Yes`
 * The Raspdac rotary encoder adjusts the ALSA volume of the DAC
 * No serial connection required
 
 ![Setup 1 — fixed-gain amplifier](docs/setup1-fixed-gain.svg)
 
-Web UI settings (`Linn Amp` tab):
+Web UI settings (`Volume` and `Linn Amp` tabs):
 
 | Setting | Value |
 |---|---|
-| Volume Control | `ALSA driver volume` |
+| Internal Volume Control | `Yes` |
 | Serial Port | *(empty)* |
 
 ## 2. Raspdac Mini / OLED with Linn preamplifier (RA2) over RS232
 
 The Raspdac is connected to a Linn preamplifier (e.g. Akurate Kontrol / RA2) through a USB-to-RS232 adapter. The preamp handles volume, balance, bass and treble; the DAC outputs at full scale.
 
-* Volume control: **`Linn amplifier`**
+* Volume control: **external Linn amplifier** — `Internal Volume Control = No` with a serial port configured
 * Serial port: e.g. **`/dev/ttyUSB0`** (USB-RS232 adapter, 9600 bauds, 7E1)
 * Bass / Treble: -7 to +7, applied to the preamp at startup
 * Standby: the on/off button of the control point app drives the preamp standby (`$STANDBY ON/OFF$`)
@@ -64,13 +72,14 @@ The Raspdac is connected to a Linn preamplifier (e.g. Akurate Kontrol / RA2) thr
 
 ![Setup 2 — Linn preamp over RS232](docs/setup2-linn-preamp.svg)
 
-Web UI settings (`Linn Amp` tab):
+Web UI settings (`Volume` and `Linn Amp` tabs):
 
 | Setting | Value |
 |---|---|
-| Volume Control | `Linn amplifier` |
+| Internal Volume Control | `No` (read-only while the amplifier is active) |
 | Serial Port | `/dev/ttyUSB0` |
 | Bass / Treble | -7 .. +7 |
+| ALSA Volume | 0 .. 100 (output level of the DAC; attenuation handled by the preamp) |
 | Detected Amplifier | `LR2` + serial (read-only, from `$ID ?$`) |
 
 Behaviour:
