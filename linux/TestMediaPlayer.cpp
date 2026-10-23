@@ -3,6 +3,7 @@
 #include "RaspdacMiniIF.h"
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
+#include "StoreWithOverriddenValue.h"
 #include "ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
@@ -266,11 +267,11 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     //  - Volume.Enabled = No with a serial port configured: volume is
     //    delegated to an external Linn amplifier. If no amplifier responds,
     //    the volume stays greyed out.
-    // While an amplifier is active, Volume.Enabled is forced to Yes in the
-    // store (ohPipeline only creates the Volume provider when internal volume
-    // control is enabled; the ConfigVal reads the store once, in its
-    // constructor), then restored to No after the MediaPlayer is created so
-    // the next start selects the amplifier branch again.
+    // While an amplifier is active, the MediaPlayer is given a store wrapper
+    // that reports Volume.Enabled as Yes (ohPipeline only creates the Volume
+    // provider when internal volume control is enabled). The real store keeps
+    // the user's No, so the web ui reflects the intent and the next start
+    // selects the amplifier branch again. No store value is ever forced.
     const TBool volumeEnabled = LinnAmpConfig::ReadVolumeControlEnabledFromStore(*iConfigRamStore, true);
     TBool linnAmpUsed = false;
 
@@ -292,19 +293,13 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             iLinnAmpVolume->SetBass(bass);
             iLinnAmpVolume->SetTreble(treble);
             linnAmpUsed = true;
-            // ohPipeline only creates the Volume provider (and announces the
-            // Volume attribute to control points) when internal volume control
-            // is enabled, so force it on: volume is delegated to the amp.
-            // Restored to No below, after the MediaPlayer is created.
-            LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, true);
             Log::Print("Using Linn Amp volume control on %s\n", serialPortStr.c_str());
         } else {
             delete iLinnAmpVolume;
             iLinnAmpVolume = nullptr;
             // No amplifier detected: grey out the volume in control points.
-            // Restore Volume.Enabled to No so the next start does not fall
-            // back on the internal ALSA volume the user chose to disable.
-            LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, false);
+            // Volume.Enabled already reads No, so the greyed-out state is
+            // announced and persists to the next start.
             Log::Print("Linn Amp volume control failed - volume disabled\n");
             volumeInit.SetVolume(iVolumeSinkLogger);
             volumeInit.SetBalance(iVolumeSinkLogger);
@@ -349,20 +344,26 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     auto mpInit = MediaPlayerInitParams::New(Brn(aRoom), Brn(aProductName), kFriendlyNamePrefix);
     mpInit->EnableConfigApp();
     mpInit->EnablePins(kMaxPinsDevice);
+    // When a Linn amp handles volume, report Volume.Enabled as Yes to the
+    // MediaPlayer only (see StoreWithOverriddenValue); the real store keeps
+    // the user's setting so the web ui and the next start are unaffected.
+    static const TByte kVolumeEnabledYes[] = { 0, 0, 0, 1 }; // big-endian eStringIdYes
+    if (linnAmpUsed) {
+        iMediaPlayerStore = std::make_unique<StoreWithOverriddenValue>(
+            *iConfigRamStore, Brn("Volume.Enabled"), Brn(kVolumeEnabledYes, sizeof(kVolumeEnabledYes)));
+    }
+    else {
+        iMediaPlayerStore = nullptr;
+    }
+    IStoreReadWrite& mediaPlayerStore = (iMediaPlayerStore != nullptr)
+        ? static_cast<IStoreReadWrite&>(*iMediaPlayerStore)
+        : static_cast<IStoreReadWrite&>(*iConfigRamStore);
     iMediaPlayer = std::make_unique<MediaPlayer>(aDvStack, aCpStack, *iDevice, *iRamStore,
-                                   *iConfigRamStore, pipelineInit, *iAudioTime,
+                                   mediaPlayerStore, pipelineInit, *iAudioTime,
                                    volumeInit, volumeProfile,
                                    *iInfoLogger,
                                    aUdn, mpInit);
     delete mpInit;
-
-    // The MediaPlayer (and its VolumeConfig) has read Volume.Enabled from the
-    // store. If a Linn amp is handling volume, Volume.Enabled was forced to
-    // Yes above; restore it to No now so the next start selects the amplifier
-    // branch again instead of falling back on the internal ALSA volume.
-    if (linnAmpUsed) {
-        LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, false);
-    }
 
     // Register Linn Amp web config parameters (volume control choice and serial port)
     iLinnAmpConfig = std::make_unique<LinnAmpConfig>(iMediaPlayer->ConfigInitialiser());

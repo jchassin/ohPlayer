@@ -63,6 +63,7 @@ namespace Av {
     class FriendlyNameHandler;
     class RamStore;
     class IPlaylistLoader;
+    class StoreWithOverriddenValue;
 namespace Test {
 
 class VolumeProfile : public IVolumeProfile
@@ -191,6 +192,9 @@ protected:
     std::unique_ptr<Net::DvDeviceStandard> iDevice;
     std::unique_ptr<Net::DvDevice> iDeviceUpnpAv;
 
+    // Store wrapper given to the MediaPlayer. Declared before iMediaPlayer
+    // so it outlives it (members are destroyed in reverse declaration order).
+    std::unique_ptr<Av::StoreWithOverriddenValue> iMediaPlayerStore;
     std::unique_ptr<MediaPlayer> iMediaPlayer;
     std::unique_ptr<Web::WebAppFramework> iAppFramework;    // FIXME - add getter to IMediaPlayer and make private
     RebootLogger iRebootHandler;
