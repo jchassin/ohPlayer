@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenHome/Types.h>
+#include <OpenHome/Buffer.h>
 #include <OpenHome/Configuration/IStore.h>
 
 namespace OpenHome {
