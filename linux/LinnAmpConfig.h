@@ -37,12 +37,15 @@ public:
     static TBool ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& aSerialPort,
                                TBool& aUseLinnAmp);
 
-    // Ensures Volume.Enabled is Yes in the store. Used when an external Linn
-    // amplifier handles volume: ohPipeline only creates the Volume provider
-    // (and announces the Volume attribute to control points) when internal
-    // volume control is enabled, so it must stay enabled with the Linn amp
-    // as the volume sink.
-    static void EnsureVolumeControlEnabled(Configuration::IStoreReadWrite& aStore);
+    // Reads Volume.Enabled from the store (ohPipeline choice, big-endian
+    // uint32: 1 == Yes, 0 == No). Returns aDefault if not set.
+    static TBool ReadVolumeControlEnabledFromStore(Configuration::IStoreReadWrite& aStore, TBool aDefault);
+
+    // Writes Volume.Enabled to the store. ohPipeline only creates the Volume
+    // provider (and announces the Volume attribute to control points) when
+    // internal volume control is enabled, so writing No greys out the volume
+    // in control point apps.
+    static void WriteVolumeControlEnabled(Configuration::IStoreReadWrite& aStore, TBool aEnabled);
 
     // Reads Volume.Limit (max volume in OpenHome steps) from the store.
     // Returns aDefault if not set.

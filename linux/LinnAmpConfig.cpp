@@ -78,22 +78,24 @@ TBool LinnAmpConfig::ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& 
     return aUseLinnAmp;
 }
 
-void LinnAmpConfig::EnsureVolumeControlEnabled(Configuration::IStoreReadWrite& aStore)
+TBool LinnAmpConfig::ReadVolumeControlEnabledFromStore(Configuration::IStoreReadWrite& aStore, TBool aDefault)
 {
-    // ohPipeline reads Volume.Enabled as a big-endian uint32 choice
-    // (eStringIdYes == 1). Only write when it is currently disabled.
+    // ohPipeline choice, persisted as big-endian uint32 (1 == Yes, 0 == No)
     static const Brn kKeyVolumeEnabled("Volume.Enabled");
     Bws<sizeof(TUint)> buf;
     try {
         aStore.Read(kKeyVolumeEnabled, buf);
-        if (Converter::BeUint32At(buf, 0) == 1) {
-            return;
-        }
+        return (Converter::BeUint32At(buf, 0) == 1);
     }
     catch (StoreKeyNotFound&) {
     }
+    return aDefault;
+}
 
-    const TUint32 val = 1; // eStringIdYes
+void LinnAmpConfig::WriteVolumeControlEnabled(Configuration::IStoreReadWrite& aStore, TBool aEnabled)
+{
+    static const Brn kKeyVolumeEnabled("Volume.Enabled");
+    const TUint32 val = aEnabled ? 1 : 0; // eStringIdYes / eStringIdNo
     const TByte* ptr = reinterpret_cast<const TByte*>(&val);
     TByte be[sizeof(TUint)];
     be[0] = ptr[3];
@@ -101,7 +103,6 @@ void LinnAmpConfig::EnsureVolumeControlEnabled(Configuration::IStoreReadWrite& a
     be[2] = ptr[1];
     be[3] = ptr[0];
     aStore.Write(kKeyVolumeEnabled, Brn(be, sizeof(be)));
-    Log::Print("LinnAmpConfig: volume control delegated to the Linn amplifier - forcing Volume.Enabled to Yes\n");
 }
 
 TInt LinnAmpConfig::ReadToneFromStore(Configuration::IStoreReadWrite& aStore, const Brx& aKey, TInt aDefault)

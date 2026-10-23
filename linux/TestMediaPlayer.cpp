@@ -259,10 +259,18 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     Bws<LinnAmpConfig::kMaxSerialPortBytes> serialPortBuf;
     TBool useLinnAmp = false;
     LinnAmpConfig::ReadFromStore(*iConfigRamStore, serialPortBuf, useLinnAmp);
-    
-    // Use Linn Amp volume control if requested and serial port is provided
-    TBool linnAmpActive = false;
-    if (useLinnAmp && serialPortBuf.Bytes() > 0) {
+
+    // Volume routing, matching official Linn DS behaviour:
+    //  - Volume.Enabled = Yes (default when unset): internal volume control,
+    //    using the ALSA mixer. If the sound card has no mixer the volume is
+    //    greyed out in control point apps (Volume.Enabled forced to No).
+    //  - Volume.Enabled = No with a serial port configured: volume is
+    //    delegated to an external Linn amplifier. If no amplifier responds,
+    //    the volume stays greyed out.
+    const TBool volumeEnabled = LinnAmpConfig::ReadVolumeControlEnabledFromStore(*iConfigRamStore, true);
+
+    if (!volumeEnabled && useLinnAmp && serialPortBuf.Bytes() > 0) {
+        // External Linn amplifier over RS232.
         std::string serialPortStr(reinterpret_cast<const char*>(serialPortBuf.Ptr()), serialPortBuf.Bytes());
         const TUint volumeLimit = LinnAmpConfig::ReadVolumeLimitFromStore(*iConfigRamStore, 100);
         iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr, volumeLimit);
@@ -278,36 +286,43 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             const TInt treble = LinnAmpConfig::ReadToneFromStore(*iConfigRamStore, LinnAmpConfig::kKeyTreble, 0);
             iLinnAmpVolume->SetBass(bass);
             iLinnAmpVolume->SetTreble(treble);
-            linnAmpActive = true;
             // ohPipeline only creates the Volume provider (and announces the
             // Volume attribute to control points) when internal volume control
-            // is enabled, so force it on: volume is delegated to the Linn amp.
-            LinnAmpConfig::EnsureVolumeControlEnabled(*iConfigRamStore);
+            // is enabled, so force it back on: volume is delegated to the amp.
+            LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, true);
             Log::Print("Using Linn Amp volume control on %s\n", serialPortStr.c_str());
         } else {
             delete iLinnAmpVolume;
             iLinnAmpVolume = nullptr;
-            Log::Print("Linn Amp volume control failed, falling back to ALSA\n");
+            // No amplifier detected: grey out the volume in control points.
+            Log::Print("Linn Amp volume control failed - volume disabled\n");
+            volumeInit.SetVolume(iVolumeSinkLogger);
+            volumeInit.SetBalance(iVolumeSinkLogger);
+            volumeInit.SetFade(iVolumeSinkLogger);
         }
-    }
-
-    // Select the ALSA volume sink if the sound card provides a hardware
-    // volume control; otherwise fall back to a logging-only sink and leave
-    // the output at full scale (volume is then handled upstream or not at
-    // all, e.g. on DACs without mixer controls).
-    if (!linnAmpActive) {
-        IVolume& volumeSink = iVolumeLogger;
-        IBalance& balanceSink = iVolumeLogger;
-        IFade& fadeSink = iVolumeLogger;
-        if (!iVolumeLogger.IsVolumeSupported()) {
-            Log::Print("Sound card has no ALSA volume control - output at full scale\n");
-            volumeSink = iVolumeSinkLogger;
-            balanceSink = iVolumeSinkLogger;
-            fadeSink = iVolumeSinkLogger;
+    } else if (volumeEnabled) {
+        // Internal volume control: use the ALSA mixer.
+        if (iVolumeLogger.IsVolumeSupported()) {
+            volumeInit.SetVolume(iVolumeLogger);
+            volumeInit.SetBalance(iVolumeLogger);
+            volumeInit.SetFade(iVolumeLogger);
+        } else {
+            // No mixer on the sound card: no volume control at all.
+            // Grey out the volume in control points by disabling Volume.Enabled
+            // before the MediaPlayer is created (ohPipeline only announces the
+            // Volume attribute when internal volume control is enabled).
+            Log::Print("Internal volume control enabled but sound card has no mixer - volume disabled\n");
+            LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, false);
+            volumeInit.SetVolume(iVolumeSinkLogger);
+            volumeInit.SetBalance(iVolumeSinkLogger);
+            volumeInit.SetFade(iVolumeSinkLogger);
         }
-        volumeInit.SetVolume(volumeSink);
-        volumeInit.SetBalance(balanceSink);
-        volumeInit.SetFade(fadeSink);
+    } else {
+        // Volume control disabled and no external amplifier: greyed out.
+        Log::Print("Internal volume control disabled - volume greyed out\n");
+        volumeInit.SetVolume(iVolumeSinkLogger);
+        volumeInit.SetBalance(iVolumeSinkLogger);
+        volumeInit.SetFade(iVolumeSinkLogger);
     }
 
     // Create MediaPlayer.
