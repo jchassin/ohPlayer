@@ -242,7 +242,6 @@ ViewModel = function(){
         {
             containerId:"Display.Tabs.RS232.BasicInfo",
             fields : [
-                { key:"LinnAmp.VolumeControl", helptext:"Helptext.LinnAmp.VolumeControl", title:"Volume Control", type:"choice" },
                 { key:"LinnAmp.SerialPort", helptext:"Helptext.LinnAmp.SerialPort", title:"Serial Port", type:"string" },
                 { key:"LinnAmp.Bass", helptext:"Helptext.LinnAmp.Bass", title:"Bass", type:"numeric" },
                 { key:"LinnAmp.Treble", helptext:"Helptext.LinnAmp.Treble", title:"Treble", type:"numeric" },
@@ -608,11 +607,8 @@ ViewModel = function(){
         "Helptext.Display.LedOffInSleep" : {
               description : "Select <span class='HelpTextOption'><%- field.meta.options[0].value %></span> to turn the power indicator LED(s) off when in sleep mode. Select <span class='HelpTextOption'><%- field.meta.options[1].value %></span> to dim the LED when in sleep mode."
         },
-        "Helptext.LinnAmp.VolumeControl" : {
-            description : "Select whether volume is controlled by the ALSA driver or by an external Linn amplifier connected over RS232. Changing this requires a reboot."
-        },
         "Helptext.LinnAmp.SerialPort" : {
-            description : "Serial port the Linn amplifier is connected to (e.g. /dev/ttyUSB0). Changing this requires a reboot."
+            description : "Serial port the Linn amplifier is connected to (e.g. /dev/ttyUSB0). The amplifier is only used when Internal Volume Control is set to No. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Model" : {
             description : "Model of the detected Linn amplifier."
@@ -624,7 +620,7 @@ ViewModel = function(){
             description : "Treble adjustment of the Linn amplifier, from -7 to +7. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.AlsaVolume" : {
-            description : "ALSA output level (0-100) applied when the Linn amplifier controls the volume. Use this to match the loudness of a room driven by the Linn amplifier with a room driven by the ALSA driver. Changing this requires a reboot."
+            description : "ALSA output level (0-100) applied when the Linn amplifier controls the volume (Internal Volume Control set to No). Use this to match the loudness of a room driven by the Linn amplifier with a room driven by the ALSA mixer. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Serial" : {
             description : "Serial number of the detected Linn amplifier."

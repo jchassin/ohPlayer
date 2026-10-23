@@ -12,20 +12,14 @@ namespace Av {
 class LinnAmpConfig
 {
 public:
-    static const Brn kKeyVolumeControl;
     static const Brn kKeySerialPort;
     static const Brn kKeyBass;
     static const Brn kKeyTreble;
     static const Brn kKeyAlsaVolume;
 
-    // ALSA output level (OpenHome volume steps, 0-100) used when volume is
-    // controlled by an external Linn amplifier.
-
     // Tone control range (LR2 BAS/TRB commands)
     static const TInt kToneMin = -7;
     static const TInt kToneMax = 7;
-    static const TUint kVolumeControlAlsa;
-    static const TUint kVolumeControlLinnAmp;
     static const TUint kMaxSerialPortBytes = 64;
 
     // Registers the web config parameters with the MediaPlayer's ConfigManager.
@@ -33,9 +27,9 @@ public:
     LinnAmpConfig(Configuration::IConfigInitialiser& aConfigInit);
     ~LinnAmpConfig();
 
-    // Reads startup values from the store (before MediaPlayer creation).
-    static TBool ReadFromStore(Configuration::IStoreReadWrite& aStore, Bwx& aSerialPort,
-                               TBool& aUseLinnAmp);
+    // Reads the serial port from the store (before MediaPlayer creation).
+    // Returns an empty buffer if not set.
+    static void ReadSerialPortFromStore(Configuration::IStoreReadWrite& aStore, Bwx& aSerialPort);
 
     // Reads Volume.Enabled from the store (ohPipeline choice, big-endian
     // uint32: 1 == Yes, 0 == No). Returns aDefault if not set.
@@ -59,7 +53,6 @@ public:
     static TUint ReadAlsaVolumeFromStore(Configuration::IStoreReadWrite& aStore, TUint aDefault);
 
 private:
-    std::unique_ptr<Configuration::ConfigChoice> iConfigVolumeControl;
     std::unique_ptr<Configuration::ConfigText> iConfigSerialPort;
     std::unique_ptr<Configuration::ConfigNum> iConfigBass;
     std::unique_ptr<Configuration::ConfigNum> iConfigTreble;

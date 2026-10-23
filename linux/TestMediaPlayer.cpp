@@ -257,8 +257,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     // Read Linn Amp settings from the config store (web config)
     Bws<LinnAmpConfig::kMaxSerialPortBytes> serialPortBuf;
-    TBool useLinnAmp = false;
-    LinnAmpConfig::ReadFromStore(*iConfigRamStore, serialPortBuf, useLinnAmp);
+    LinnAmpConfig::ReadSerialPortFromStore(*iConfigRamStore, serialPortBuf);
 
     // Volume routing, matching official Linn DS behaviour:
     //  - Volume.Enabled = Yes (default when unset): internal volume control,
@@ -269,7 +268,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     //    the volume stays greyed out.
     const TBool volumeEnabled = LinnAmpConfig::ReadVolumeControlEnabledFromStore(*iConfigRamStore, true);
 
-    if (!volumeEnabled && useLinnAmp && serialPortBuf.Bytes() > 0) {
+    if (!volumeEnabled && serialPortBuf.Bytes() > 0) {
         // External Linn amplifier over RS232.
         std::string serialPortStr(reinterpret_cast<const char*>(serialPortBuf.Ptr()), serialPortBuf.Bytes());
         const TUint volumeLimit = LinnAmpConfig::ReadVolumeLimitFromStore(*iConfigRamStore, 100);
