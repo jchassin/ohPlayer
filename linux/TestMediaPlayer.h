@@ -216,16 +216,15 @@ private:
     std::unique_ptr<Media::AudioTimeCpu> iAudioTime;
     Bws<Uri::kMaxUriBytes+1> iPresentationUrl;
     std::unique_ptr<Media::LoggingPipelineObserver> iPipelineObserver;
-    std::unique_ptr<Av::PrefixedFriendlyNameObservable> iMdnsFriendlyName;
     std::unique_ptr<Av::FriendlyNameAttributeUpdater> iFnUpdaterStandard;
     std::unique_ptr<FriendlyNameManagerUpnpAv> iFnManagerUpnpAv;
-    std::unique_ptr<Av::PrefixedFriendlyNameObservable> iMdnsFriendlyNameUpnpAv;
     std::unique_ptr<Av::FriendlyNameAttributeUpdater> iFnUpdaterUpnpAv;
     std::unique_ptr<FsFlushPeriodic> iFsFlushPeriodic;
     std::unique_ptr<RamStore> iRamStore;
     std::unique_ptr<Configuration::ConfigRamStore> iConfigRamStore;
     std::unique_ptr<Configuration::StoreFileWriterJson> iStoreFileWriter;
     TUint iOdpPort;
+    std::unique_ptr<Av::PrefixedFriendlyNameObservable> iOdpFriendlyName;
     std::unique_ptr<OpenHome::Net::OdpZeroConf> iOdpZeroConf;
     std::unique_ptr<OpenHome::Net::DviServerOdp> iServerOdp;
     TUint iMinWebUiResourceThreads;
