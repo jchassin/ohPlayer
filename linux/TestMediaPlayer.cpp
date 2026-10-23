@@ -865,7 +865,22 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
 )
 {
     InitialisationParams* initParams = InitialisationParams::Create();
-    initParams->SetDvEnableBonjour(aRoom, true);
+    // The mDNS host name must be unique per machine. It used to be the room
+    // name (identical on every player unless -r was passed), causing
+    // mStatus_NameConflict (-65548) crashes when several players run on the
+    // same network. Derive it from the Linux host name (unique per machine)
+    // with a distinct suffix so it also cannot clash with the system mDNS
+    // daemon (avahi/mdnsd) announcing <hostname>.local.
+    Bws<128> mdnsHost;
+    mdnsHost.Append("ohp-");
+    char linuxHostName[64] = {0};
+    if (gethostname(linuxHostName, sizeof(linuxHostName) - 1) == 0 && linuxHostName[0] != '\0') {
+        mdnsHost.Append(Brn(linuxHostName));
+    }
+    else {
+        mdnsHost.Append(Brn(aRoom));
+    }
+    initParams->SetDvEnableBonjour(mdnsHost.PtrZ(), true);
     if (aLoopback == true) {
         initParams->SetUseLoopbackNetworkAdapter();
     }
