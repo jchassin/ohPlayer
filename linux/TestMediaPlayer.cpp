@@ -949,9 +949,13 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     initParams->SetDvNumLpecThreads(4);
     initParams->SetDvLpecServerPort(2324);
 #endif
-    Debug::SetLevel(Debug::kPipeline);
-    Debug::AddLevel(Debug::kSources);
-    Debug::AddLevel(Debug::kMedia);
+    // Debug log levels. kSources logs track/artist display updates.
+    // kMedia and kPipeline are disabled: they are extremely verbose
+    // (every HLS segment fetch / pipeline element transition is logged)
+    // and were only useful during bring-up.
+    Debug::SetLevel(Debug::kSources);
+    //Debug::AddLevel(Debug::kPipeline);
+    //Debug::AddLevel(Debug::kMedia);
     Debug::AddLevel(Debug::kRaat);
     Debug::AddLevel(Debug::kAdapterChange);
     //Debug::AddLevel(Debug::kSongcast);
