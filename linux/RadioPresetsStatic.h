@@ -25,6 +25,7 @@ public:
     static const TUint kNumPresets = 10;
     static const TUint kMaxNameBytes = 64;
     static const TUint kMaxUriBytes = 256;
+    static const TUint kMaxImageUriBytes = 256;
     static const TUint kKeyBytes = 32;
     static void GetPresetKey(TUint aIndex, const Brx& aSuffix, Bwx& aKey);
     RadioPresetsStatic(Configuration::IConfigInitialiser& aConfigInit);
@@ -52,8 +53,10 @@ private:
     static const Brn kDisplayName;
     std::vector<std::unique_ptr<Configuration::ConfigText>> iNames;
     std::vector<std::unique_ptr<Configuration::ConfigText>> iUris;
+    std::vector<std::unique_ptr<Configuration::ConfigText>> iImageUris;
     std::vector<std::unique_ptr<PresetValue>> iNameValues;
     std::vector<std::unique_ptr<PresetValue>> iUriValues;
+    std::vector<std::unique_ptr<PresetValue>> iImageUriValues;
     IRadioPresetWriter* iPresetWriter;
 };
 

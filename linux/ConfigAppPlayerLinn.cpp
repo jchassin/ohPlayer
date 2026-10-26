@@ -45,10 +45,13 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
         Bws<RadioPresetsStatic::kKeyBytes> key;
         static const Brn kSuffixName(".Name");
         static const Brn kSuffixUri(".Uri");
+        static const Brn kSuffixImage(".Image");
         for (TUint i = 0; i < RadioPresetsStatic::kNumPresets; i++) {
             RadioPresetsStatic::GetPresetKey(i, kSuffixName, key);
             AddConfigText(key);
             RadioPresetsStatic::GetPresetKey(i, kSuffixUri, key);
+            AddConfigText(key);
+            RadioPresetsStatic::GetPresetKey(i, kSuffixImage, key);
             AddConfigText(key);
         }
     }

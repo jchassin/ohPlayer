@@ -156,24 +156,34 @@ ViewModel = function(){
                     { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" },
                     { key:"Radio.Preset1.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 1 Name" },
                     { key:"Radio.Preset1.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 1 URL" },
+                    { key:"Radio.Preset1.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 1 Image URL" },
                     { key:"Radio.Preset2.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 2 Name" },
                     { key:"Radio.Preset2.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 2 URL" },
+                    { key:"Radio.Preset2.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 2 Image URL" },
                     { key:"Radio.Preset3.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 3 Name" },
                     { key:"Radio.Preset3.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 3 URL" },
+                    { key:"Radio.Preset3.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 3 Image URL" },
                     { key:"Radio.Preset4.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 4 Name" },
                     { key:"Radio.Preset4.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 4 URL" },
+                    { key:"Radio.Preset4.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 4 Image URL" },
                     { key:"Radio.Preset5.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 5 Name" },
                     { key:"Radio.Preset5.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 5 URL" },
+                    { key:"Radio.Preset5.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 5 Image URL" },
                     { key:"Radio.Preset6.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 6 Name" },
                     { key:"Radio.Preset6.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 6 URL" },
+                    { key:"Radio.Preset6.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 6 Image URL" },
                     { key:"Radio.Preset7.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 7 Name" },
                     { key:"Radio.Preset7.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 7 URL" },
+                    { key:"Radio.Preset7.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 7 Image URL" },
                     { key:"Radio.Preset8.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 8 Name" },
                     { key:"Radio.Preset8.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 8 URL" },
+                    { key:"Radio.Preset8.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 8 Image URL" },
                     { key:"Radio.Preset9.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 9 Name" },
                     { key:"Radio.Preset9.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 9 URL" },
+                    { key:"Radio.Preset9.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 9 Image URL" },
                     { key:"Radio.Preset10.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 10 Name" },
-                    { key:"Radio.Preset10.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 10 URL" }
+                    { key:"Radio.Preset10.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 10 URL" },
+                    { key:"Radio.Preset10.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 10 Image URL" }
                 ]);
             }
             if (src == "Spotify") {
@@ -693,6 +703,9 @@ ViewModel = function(){
         },
         "Helptext.Radio.Preset.Uri" : {
             description: "URL of the audio stream (e.g. https://icecast.radiofrance.fr/franceinter-hifi.aac) for this radio preset. Leave empty to unset the preset.",
+        },
+        "Helptext.Radio.Preset.Image" : {
+            description: "Optional URL of the station logo (e.g. https://commons.wikimedia.org/wiki/Special:FilePath/FIP_logo_2021.svg?width=250) shown as artwork in control point apps.",
         },
         "Helptext.Volume.Enabled" : {
             description : "If you wish to use the <%- device %> with an external pre amplifier, select <span class='HelpTextOption'><%- field.meta.options[1].value %></span>. Otherwise select <span class='HelpTextOption'><%- field.meta.options[0].value %></span>" +

@@ -15,6 +15,7 @@ const Brn RadioPresetsStatic::kDisplayName("Stations");
 const TUint RadioPresetsStatic::kNumPresets;
 const TUint RadioPresetsStatic::kMaxNameBytes;
 const TUint RadioPresetsStatic::kMaxUriBytes;
+const TUint RadioPresetsStatic::kMaxImageUriBytes;
 const TUint RadioPresetsStatic::kKeyBytes;
 
 namespace {
@@ -23,19 +24,20 @@ namespace {
 struct Station {
     const char* iName;
     const char* iUri;
+    const char* iImageUri;
 };
 
 static const Station kDefaultStations[RadioPresetsStatic::kNumPresets] = {
-    { "France Inter",     "https://icecast.radiofrance.fr/franceinter-hifi.aac" },
-    { "FIP",              "https://icecast.radiofrance.fr/fip-hifi.aac" },
-    { "France Musique",   "https://icecast.radiofrance.fr/francemusique-hifi.aac" },
-    { "France Info",      "https://icecast.radiofrance.fr/franceinfo-hifi.aac" },
-    { "France Culture",   "https://icecast.radiofrance.fr/franceculture-hifi.aac" },
-    { "Mouv'",            "https://icecast.radiofrance.fr/mouv-hifi.aac" },
-    { "",                 "" }, // presets 7-10 left empty
-    { "",                 "" },
-    { "",                 "" },
-    { "",                 "" },
+    { "France Inter",     "https://icecast.radiofrance.fr/franceinter-hifi.aac",   "https://commons.wikimedia.org/wiki/Special:FilePath/France_Inter_logo_2021.svg?width=250" },
+    { "FIP",              "https://icecast.radiofrance.fr/fip-hifi.aac",            "https://commons.wikimedia.org/wiki/Special:FilePath/FIP_logo_2021.svg?width=250" },
+    { "France Musique",   "https://icecast.radiofrance.fr/francemusique-hifi.aac",  "https://commons.wikimedia.org/wiki/Special:FilePath/France_Musique_logo_2021.svg?width=250" },
+    { "France Info",      "https://icecast.radiofrance.fr/franceinfo-hifi.aac",     "https://commons.wikimedia.org/wiki/Special:FilePath/Franceinfo.svg?width=250" },
+    { "France Culture",   "https://icecast.radiofrance.fr/franceculture-hifi.aac",  "https://commons.wikimedia.org/wiki/Special:FilePath/France_Culture_logo_2021.svg?width=250" },
+    { "Mouv'",            "https://icecast.radiofrance.fr/mouv-hifi.aac",            "https://commons.wikimedia.org/wiki/Special:FilePath/Mouv_logo_2022.svg?width=250" },
+    { "",                 "", "" }, // presets 7-10 left empty
+    { "",                 "", "" },
+    { "",                 "", "" },
+    { "",                 "", "" },
 };
 
 } // namespace
@@ -77,6 +79,7 @@ RadioPresetsStatic::RadioPresetsStatic(Configuration::IConfigInitialiser& aConfi
 {
     static const Brn kSuffixName(".Name");
     static const Brn kSuffixUri(".Uri");
+    static const Brn kSuffixImage(".Image");
     Bws<kKeyBytes> key;
     for (TUint i = 0; i < kNumPresets; i++) {
         const Station& station = kDefaultStations[i];
@@ -90,6 +93,11 @@ RadioPresetsStatic::RadioPresetsStatic(Configuration::IConfigInitialiser& aConfi
         iUris.push_back(std::make_unique<Configuration::ConfigText>(
             aConfigInit, key, 0 /*aMinLength*/, kMaxUriBytes,
             Brn(station.iUri), false /*aRebootRequired*/, Configuration::ConfigValAccess::Public));
+
+        GetPresetKey(i, kSuffixImage, key);
+        iImageUris.push_back(std::make_unique<Configuration::ConfigText>(
+            aConfigInit, key, 0 /*aMinLength*/, kMaxImageUriBytes,
+            Brn(station.iImageUri), false /*aRebootRequired*/, Configuration::ConfigValAccess::Public));
     }
 }
 
@@ -126,6 +134,7 @@ void RadioPresetsStatic::Activate(IRadioPresetWriter& aWriter)
         for (TUint i = 0; i < kNumPresets; i++) {
             iNameValues.push_back(std::make_unique<PresetValue>(*iNames[i], *this));
             iUriValues.push_back(std::make_unique<PresetValue>(*iUris[i], *this));
+            iImageUriValues.push_back(std::make_unique<PresetValue>(*iImageUris[i], *this));
         }
     }
 }
@@ -146,7 +155,8 @@ void RadioPresetsStatic::RefreshPresets()
         if (name.Bytes() == 0 || uri.Bytes() == 0) {
             continue; // empty name or uri leaves the preset unset
         }
-        iPresetWriter->SetPreset(i, uri, name, Brx::Empty());
+        const Brx& imageUri = iImageUriValues[i]->Value();
+        iPresetWriter->SetPreset(i, uri, name, imageUri.Bytes() > 0 ? imageUri : Brx::Empty());
     }
 }
 
