@@ -1,6 +1,7 @@
 #include "ConfigAppPlayerLinn.h"
 #include "LinnAmpConfig.h"
 #include "PipelineConfig.h"
+#include "RadioPresetsStatic.h"
 #include "VersionInfo.h"
 #include <OpenHome/Web/ConfigUi/ConfigUi.h>
 
