@@ -6,6 +6,7 @@
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
 #include "PipelineConfig.h"
+#include "RadioPresetsStatic.h"
 
 #include <OpenHome/Av/MediaPlayer.h>
 #include <OpenHome/Net/Core/DvDevice.h>
