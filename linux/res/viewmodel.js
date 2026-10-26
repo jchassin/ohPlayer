@@ -153,7 +153,19 @@ ViewModel = function(){
             }
             if (src == "Radio") {
                 fieldList = fieldList.concat([
-                    { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" }
+                    { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" },
+                    { key:"Radio.Preset1.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 1 Name" },
+                    { key:"Radio.Preset1.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 1 URL" },
+                    { key:"Radio.Preset2.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 2 Name" },
+                    { key:"Radio.Preset2.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 2 URL" },
+                    { key:"Radio.Preset3.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 3 Name" },
+                    { key:"Radio.Preset3.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 3 URL" },
+                    { key:"Radio.Preset4.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 4 Name" },
+                    { key:"Radio.Preset4.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 4 URL" },
+                    { key:"Radio.Preset5.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 5 Name" },
+                    { key:"Radio.Preset5.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 5 URL" },
+                    { key:"Radio.Preset6.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 6 Name" },
+                    { key:"Radio.Preset6.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 6 URL" }
                 ]);
             }
             if (src == "Spotify") {
@@ -667,6 +679,12 @@ ViewModel = function(){
         },
         "Helptext.Radio.TuneInUserName" : {
             description: "Enter your TuneIn account username for accessing your stored radio presets. Go to <a href='http://TuneIn.com/' target='_blank'>TuneIn.com</a> to setup your account. You may also select from the drop down list of Pre-defined accounts.",
+        },
+        "Helptext.Radio.Preset.Name" : {
+            description: "Name of the station stored in this radio preset, shown in control point apps. Leave empty to unset the preset.",
+        },
+        "Helptext.Radio.Preset.Uri" : {
+            description: "URL of the audio stream (e.g. https://icecast.radiofrance.fr/franceinter-hifi.aac) for this radio preset. Leave empty to unset the preset.",
         },
         "Helptext.Volume.Enabled" : {
             description : "If you wish to use the <%- device %> with an external pre amplifier, select <span class='HelpTextOption'><%- field.meta.options[1].value %></span>. Otherwise select <span class='HelpTextOption'><%- field.meta.options[0].value %></span>" +

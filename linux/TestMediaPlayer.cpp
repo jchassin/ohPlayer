@@ -381,6 +381,12 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     // Register pipeline buffer web config parameters (applied at next start)
     iPipelineConfig = std::make_unique<PipelineConfig>(iMediaPlayer->ConfigInitialiser());
+
+    // Create the static radio preset provider here so its config values are
+    // registered before the web config app is created (AddConfigApp runs in
+    // Run()). The provider itself is registered with MediaPlayer's
+    // RadioPresets in InitialiseSubsystems, after the Radio source is added.
+    iRadioPresetsStatic = std::make_unique<RadioPresetsStatic>(iMediaPlayer->ConfigInitialiser());
     
     iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
 #if 1
@@ -673,8 +679,8 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
     auto radioPresets = iMediaPlayer->RadioPresets();
     if (radioPresets.Ok()) {
         // RadioPresets takes ownership of the provider (deletes it in its
-        // destructor), so hand over a raw pointer and don't keep a unique_ptr.
-        radioPresets.Unwrap().AddProvider(new RadioPresetsStatic());
+        // destructor), so release our unique_ptr when handing it over.
+        radioPresets.Unwrap().AddProvider(iRadioPresetsStatic.release());
     }
 
     iMediaPlayer->Add(SourceFactory::NewUpnpAv(*iMediaPlayer, *iDeviceUpnpAv));

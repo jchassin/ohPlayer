@@ -39,6 +39,18 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddValue(new Web::ConfigUiValRo(kKeySwVersionOhPlayer, Brn(VersionInfo::kOhPlayerCommit)));
     // Editable Linn Amp settings
     AddConfigText(LinnAmpConfig::kKeySerialPort);
+    // Radio presets (static station list)
+    {
+        Bws<RadioPresetsStatic::kKeyBytes> key;
+        static const Brn kSuffixName(".Name");
+        static const Brn kSuffixUri(".Uri");
+        for (TUint i = 0; i < RadioPresetsStatic::kNumPresets; i++) {
+            RadioPresetsStatic::GetPresetKey(i, kSuffixName, key);
+            AddConfigText(key);
+            RadioPresetsStatic::GetPresetKey(i, kSuffixUri, key);
+            AddConfigText(key);
+        }
+    }
     AddConfigNum(LinnAmpConfig::kKeyBass);
     AddConfigNum(LinnAmpConfig::kKeyTreble);
     AddConfigNum(LinnAmpConfig::kKeyAlsaVolume);

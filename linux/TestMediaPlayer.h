@@ -238,6 +238,7 @@ private:
     OhLinnAmpVolume* iLinnAmpVolume;
     std::unique_ptr<LinnAmpConfig> iLinnAmpConfig;
     std::unique_ptr<PipelineConfig> iPipelineConfig;
+    std::unique_ptr<RadioPresetsStatic> iRadioPresetsStatic;
 
     std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver;
     std::unique_ptr<Media::IPipelineObserver>    iRaspdacObserver;
