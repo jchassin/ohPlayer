@@ -8,6 +8,15 @@ namespace Av {
 const Brn PipelineConfig::kKeyStarvationRamperMinSize("Pipeline.StarvationRamperMinSize");
 const Brn PipelineConfig::kKeyEncodedReservoirSize("Pipeline.EncodedReservoirSize");
 
+// Out-of-class definitions: the constants are odr-used (passed by const
+// reference to the Configuration::ConfigNum constructor), which requires
+// a definition in addition to the in-class initialisation in the header.
+const TUint PipelineConfig::kMinMs = 100;
+const TUint PipelineConfig::kMaxMs = 3000;
+const TUint PipelineConfig::kDefaultStarvationRamperMinSizeMs = 100;
+const TUint PipelineConfig::kDefaultEncodedReservoirSizeMs = 1024;
+const TUint PipelineConfig::kEncodedReservoirBytesPerMs = 1536;
+
 PipelineConfig::PipelineConfig(Configuration::IConfigInitialiser& aConfigInit)
 {
     // Registering a ConfigVal with the ConfigInitialiser makes it appear in the web config app
