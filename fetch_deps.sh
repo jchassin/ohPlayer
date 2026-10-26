@@ -18,7 +18,7 @@ declare -A PLATFORM_MAP
 PLATFORM_MAP[ohNet]="aarch64-scarthgap-linux-${DEBUG_MODE}"
 PLATFORM_MAP[ohWafHelpers]=""
 PLATFORM_MAP[ohMediaPlayer]="aarch64-scarthgap-linux-${DEBUG_MODE}"
-PLATFORM_MAP[ohNetGenerated]="AnyPlatform"
+PLATFORM_MAP[ohNetGenerated]="AnyPlatform-${DEBUG_MODE}"  # headers-only package (Generated/Cp* and Dv*); the aarch64 lib comes from the ohContainerBuilder-built package
 
 for NAME in "${!DEPS[@]}"; do
     VERSION=${DEPS[$NAME]}
