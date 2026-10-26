@@ -34,10 +34,10 @@ static const Station kDefaultStations[RadioPresetsStatic::kNumPresets] = {
     { "France Info",      "https://icecast.radiofrance.fr/franceinfo-hifi.aac",     "https://commons.wikimedia.org/wiki/Special:FilePath/Franceinfo.svg?width=250" },
     { "France Culture",   "https://icecast.radiofrance.fr/franceculture-hifi.aac",  "https://commons.wikimedia.org/wiki/Special:FilePath/France_Culture_logo_2021.svg?width=250" },
     { "Mouv'",            "https://icecast.radiofrance.fr/mouv-hifi.aac",            "https://commons.wikimedia.org/wiki/Special:FilePath/Mouv_logo_2022.svg?width=250" },
-    { "",                 "", "" }, // presets 7-10 left empty
-    { "",                 "", "" },
-    { "",                 "", "" },
-    { "",                 "", "" },
+    { "Radio Nacional",   "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r1_main.m3u8", "https://graph.facebook.com/radionacionalrne/picture?width=200&height=200" },
+    { "Radio Cl\u00e1sica RNE", "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r2_main.m3u8", "https://graph.facebook.com/radioclasicartve/picture?width=200&height=200" },
+    { "Radio 3 RNE",      "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8", "https://graph.facebook.com/radio3/picture?width=200&height=200" },
+    { "Radio 5 RNE",      "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r5_madrid_main.m3u8", "https://graph.facebook.com/rne/picture?width=200&height=200" },
 };
 
 } // namespace
