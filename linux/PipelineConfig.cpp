@@ -11,11 +11,11 @@ const Brn PipelineConfig::kKeyEncodedReservoirSize("Pipeline.EncodedReservoirSiz
 // Out-of-class definitions: the constants are odr-used (passed by const
 // reference to the Configuration::ConfigNum constructor), which requires
 // a definition in addition to the in-class initialisation in the header.
-const TUint PipelineConfig::kMinMs = 100;
-const TUint PipelineConfig::kMaxMs = 3000;
-const TUint PipelineConfig::kDefaultStarvationRamperMinSizeMs = 100;
-const TUint PipelineConfig::kDefaultEncodedReservoirSizeMs = 1024;
-const TUint PipelineConfig::kEncodedReservoirBytesPerMs = 1536;
+const TUint PipelineConfig::kMinMs;
+const TUint PipelineConfig::kMaxMs;
+const TUint PipelineConfig::kDefaultStarvationRamperMinSizeMs;
+const TUint PipelineConfig::kDefaultEncodedReservoirSizeMs;
+const TUint PipelineConfig::kEncodedReservoirBytesPerMs;
 
 PipelineConfig::PipelineConfig(Configuration::IConfigInitialiser& aConfigInit)
 {
