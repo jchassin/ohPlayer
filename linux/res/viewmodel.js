@@ -97,6 +97,8 @@ ViewModel = function(){
                 { key:"Source.StartupName", helptext:"Helptext.Device.StartupSource", title:"Startup Source", type:"choice" },
                 { key:"Kustom.AutoStandby", helptext:"Helptext.Kustom.AutoStandby", title:"Auto Standby" },
                 { key:"Delay.Value", helptext:"Helptext.Delay.Value", title:"Delay (ms)" },
+                { key:"Pipeline.StarvationRamperMinSize", helptext:"Helptext.Pipeline.StarvationRamperMinSize", title:"Starvation Ramper Min Size (ms)", type:"numeric" },
+                { key:"Pipeline.EncodedReservoirSize", helptext:"Helptext.Pipeline.EncodedReservoirSize", title:"Encoded Reservoir Size (ms)", type:"numeric" },
                 { key:"Device.VerboseDeviceLogging", helptext:"Helptext.Device.VerboseDeviceLogging", title:"Verbose Device Logging" },
                 { key:"Analogue.Exakt.Dual.Fronts", helptext:"Helptext.Analogue.Exakt.Dual.Fronts", title:"Dual Analogue/Exakt Stereo Output"},
                 { key:"Xlr.0.Out", helptext:"Helptext.Device.XlrOutput", title:"XLR Output" },
@@ -152,12 +154,6 @@ ViewModel = function(){
             if (src == "Radio") {
                 fieldList = fieldList.concat([
                     { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" }
-                ]);
-            }
-            if (src == "Receiver") {
-                fieldList = fieldList.concat([
-                    { key:"Pipeline.StarvationRamperMinSize", helptext:"Helptext.Pipeline.StarvationRamperMinSize", title:"Starvation Ramper Min Size (ms)", type:"numeric" },
-                    { key:"Pipeline.EncodedReservoirSize", helptext:"Helptext.Pipeline.EncodedReservoirSize", title:"Encoded Reservoir Size (ms)", type:"numeric" }
                 ]);
             }
             if (src == "Spotify") {
