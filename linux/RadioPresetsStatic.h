@@ -22,7 +22,7 @@ namespace Av {
 class RadioPresetsStatic : public IRadioPresetProvider
 {
 public:
-    static const TUint kNumPresets = 6;
+    static const TUint kNumPresets = 10;
     static const TUint kMaxNameBytes = 64;
     static const TUint kMaxUriBytes = 256;
     static const TUint kKeyBytes = 32;

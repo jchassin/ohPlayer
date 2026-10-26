@@ -32,6 +32,10 @@ static const Station kDefaultStations[RadioPresetsStatic::kNumPresets] = {
     { "France Info",      "https://icecast.radiofrance.fr/franceinfo-hifi.aac" },
     { "France Culture",   "https://icecast.radiofrance.fr/franceculture-hifi.aac" },
     { "Mouv'",            "https://icecast.radiofrance.fr/mouv-hifi.aac" },
+    { "",                 "" }, // presets 7-10 left empty
+    { "",                 "" },
+    { "",                 "" },
+    { "",                 "" },
 };
 
 } // namespace

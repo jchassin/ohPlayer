@@ -165,7 +165,15 @@ ViewModel = function(){
                     { key:"Radio.Preset5.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 5 Name" },
                     { key:"Radio.Preset5.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 5 URL" },
                     { key:"Radio.Preset6.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 6 Name" },
-                    { key:"Radio.Preset6.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 6 URL" }
+                    { key:"Radio.Preset6.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 6 URL" },
+                    { key:"Radio.Preset7.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 7 Name" },
+                    { key:"Radio.Preset7.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 7 URL" },
+                    { key:"Radio.Preset8.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 8 Name" },
+                    { key:"Radio.Preset8.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 8 URL" },
+                    { key:"Radio.Preset9.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 9 Name" },
+                    { key:"Radio.Preset9.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 9 URL" },
+                    { key:"Radio.Preset10.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 10 Name" },
+                    { key:"Radio.Preset10.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 10 URL" }
                 ]);
             }
             if (src == "Spotify") {
