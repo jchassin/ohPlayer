@@ -1,5 +1,6 @@
 #include "ConfigAppPlayerLinn.h"
 #include "LinnAmpConfig.h"
+#include "PipelineConfig.h"
 #include "VersionInfo.h"
 #include <OpenHome/Web/ConfigUi/ConfigUi.h>
 
@@ -41,6 +42,9 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddConfigNum(LinnAmpConfig::kKeyBass);
     AddConfigNum(LinnAmpConfig::kKeyTreble);
     AddConfigNum(LinnAmpConfig::kKeyAlsaVolume);
+    // Editable pipeline buffer settings (Songcast tab)
+    AddConfigNum(PipelineConfig::kKeyStarvationRamperMinSize);
+    AddConfigNum(PipelineConfig::kKeyEncodedReservoirSize);
     // Expose ohPipeline's internal volume control toggle (hidden by default).
     // Allows disabling the volume control point-side on setups where the
     // sound card has no mixer and no external amplifier controls volume.

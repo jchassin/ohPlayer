@@ -154,6 +154,12 @@ ViewModel = function(){
                     { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" }
                 ]);
             }
+            if (src == "Receiver") {
+                fieldList = fieldList.concat([
+                    { key:"Pipeline.StarvationRamperMinSize", helptext:"Helptext.Pipeline.StarvationRamperMinSize", title:"Starvation Ramper Min Size (ms)", type:"numeric" },
+                    { key:"Pipeline.EncodedReservoirSize", helptext:"Helptext.Pipeline.EncodedReservoirSize", title:"Encoded Reservoir Size (ms)", type:"numeric" }
+                ]);
+            }
             if (src == "Spotify") {
                 fieldList = fieldList.concat([
                     { key:"Spotify.DelayMode", helptext:"Helptext.Spotify.DelayMode", title:"Delay Mode", type:"choice" }
@@ -638,6 +644,16 @@ ViewModel = function(){
             description : "If you wish the <%- device %> (Songcast sender) to be selectable as a numeric preset from the handset, set the preset number.",
             options : "0 (Disabled), 1 to 9999 (Enabled)",
             "default" : "0 (Disabled)"
+        },
+        "Helptext.Pipeline.StarvationRamperMinSize" : {
+            description : "Minimum amount of buffered audio, in milliseconds, that must have accumulated before playback resumes after a buffer underrun. Increase this value if you experience audio dropouts on unstable network links (e.g. powerline). Changing this requires a reboot.",
+            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) ms",
+            "default" : "100"
+        },
+        "Helptext.Pipeline.EncodedReservoirSize" : {
+            description : "Amount of audio, in milliseconds, buffered between the network and the decoder. Increase this value to absorb network jitter on unstable links (e.g. powerline). Changing this requires a reboot.",
+            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) ms",
+            "default" : "1024"
         },
         "Helptext.StreamingService.Enabled" : {
             description : "Enables the <%- field.helptextparams.service %> service on your <%- device %>. Go to <a href='<%- field.helptextparams.servicelinkuri %>' target='_blank'><%- field.helptextparams.servicelinktitle %></a> for more information."

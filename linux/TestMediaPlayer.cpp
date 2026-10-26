@@ -3,6 +3,7 @@
 #include "RaspdacMiniIF.h"
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
+#include "PipelineConfig.h"
 #include "StoreWithOverriddenValue.h"
 #include "ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
@@ -333,9 +334,18 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Create MediaPlayer.
     // NOTE: If values for Room.Name and Product.Name already exist in the Store,
     //       the aRoom and aProductName default values will be ignored.
+    // Pipeline buffer tuning (web config UI, Songcast tab). Values are read from
+    // the store so that changes made in the web config UI are applied at the next
+    // start.
+    const TUint starvationRamperMinMs = PipelineConfig::ReadStarvationRamperMinSizeMsFromStore(*iConfigRamStore);
+    const TUint encodedReservoirMs = PipelineConfig::ReadEncodedReservoirSizeMsFromStore(*iConfigRamStore);
+    Log::Print("Pipeline buffers: StarvationRamperMinSize=%ums, EncodedReservoirSize=%ums (%u bytes)\n",
+               starvationRamperMinMs, encodedReservoirMs,
+               encodedReservoirMs * PipelineConfig::kEncodedReservoirBytesPerMs);
     auto pipelineInit = PipelineInitParams::New();
-    pipelineInit->SetStarvationRamperMinSize(100 * Jiffies::kPerMs); // larger StarvationRamper size useful for desktop
+    pipelineInit->SetStarvationRamperMinSize(starvationRamperMinMs * Jiffies::kPerMs); // larger StarvationRamper size useful for desktop
                                                                      // platforms with slightly unpredictable thread scheduling
+    pipelineInit->SetEncodedReservoirSize(encodedReservoirMs * PipelineConfig::kEncodedReservoirBytesPerMs);
     pipelineInit->SetGorgerDuration(pipelineInit->DecodedReservoirJiffies());
     pipelineInit->SetDsdMaxSampleRate(kDsdMaxSampleRate);
     pipelineInit->SetSupportElements(Media::EPipelineSupportElementsValidatorMinimal | Media::EPipelineSupportElementsDecodedAudioValidator | Media::EPipelineSupportElementsRampValidator);
@@ -367,6 +377,9 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     // Register Linn Amp web config parameters (volume control choice and serial port)
     iLinnAmpConfig = std::make_unique<LinnAmpConfig>(iMediaPlayer->ConfigInitialiser());
+
+    // Register pipeline buffer web config parameters (applied at next start)
+    iPipelineConfig = std::make_unique<PipelineConfig>(iMediaPlayer->ConfigInitialiser());
     
     iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
 #if 1

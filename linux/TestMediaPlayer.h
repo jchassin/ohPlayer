@@ -5,6 +5,7 @@
 #include "VolumeControl.h"
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
+#include "PipelineConfig.h"
 
 #include <OpenHome/Av/MediaPlayer.h>
 #include <OpenHome/Net/Core/DvDevice.h>
@@ -236,6 +237,7 @@ private:
     TUint iUiMsgBufBytes;
     OhLinnAmpVolume* iLinnAmpVolume;
     std::unique_ptr<LinnAmpConfig> iLinnAmpConfig;
+    std::unique_ptr<PipelineConfig> iPipelineConfig;
 
     std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver;
     std::unique_ptr<Media::IPipelineObserver>    iRaspdacObserver;
