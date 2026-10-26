@@ -6,6 +6,14 @@ A couple of additional scripts are needed. Message me if interested.
 
 # History
 
+* **2026-10-27** — Radio presets, advanced pipeline buffer tuning, radio pinning without TuneIn, build and web ui fixes.
+  * Radio presets are now configurable in the web ui (Radio tab): 10 slots, each with a Name, a stream URL and an optional station logo (artwork) URL. Defaults: 6 Radio France stations (hifi AAC icecast) and 4 RNE Spanish national stations (HLS). Edits apply without a reboot.
+  * Radio presets and arbitrary stream URLs can be pinned from control point apps without a TuneIn partner id (RadioPins/UrlPins registered unconditionally).
+  * Advanced pipeline buffer parameters exposed in the web ui (Device tab, Advanced) in pipeline-native units: `Pipeline.StarvationRamperMinSize` (jiffies, default 5644800 = 100 ms) and `Pipeline.EncodedReservoirSize` (bytes, default 1572864 = the ohPipeline default). Useful to absorb network jitter on unstable links.
+  * `fetch_deps.sh` also fetches the `Generated/` ohNet headers (Cp*/Dv*) from the openhome/ohNetGenerated GitHub tag matching the configured version.
+  * Fixed a ConfigUi crash on open after a store reset: the web ui message pool was exhausted by the burst of field notifications (pool raised to 200 messages / 300 x 64-byte buffers).
+  * Quiet debug logging: the `kPipeline` and `kMedia` modules (one line per HLS segment / pipeline transition) are disabled by default.
+
 * **2026-10-23** — Volume routing with official DS semantics, mixer-less sound cards, mDNS crash fix, install and build fixes.
   * `Internal Volume Control` (`Volume.Enabled`) exposed in the web ui (Volume tab): `Yes`/unset — internal ALSA volume; `No` with a serial port configured — external Linn amplifier over RS232; card without a mixer or amplifier not detected — volume greyed out in control points. The `LinnAmp.VolumeControl` parameter was removed.
   * New `LinnAmp.AlsaVolume` parameter (0-100, default 100) to level-match rooms when the Linn amplifier handles volume.
@@ -32,6 +40,20 @@ A couple of additional scripts are needed. Message me if interested.
 Based on the [OpenHome Sample Players](https://github.com/openhome/ohPlayer) for macOS, Windows, Linux and Raspberry Pi.
 
 ---
+
+# Radio Presets
+
+The Radio source exposes 10 presets, fully configurable in the web configuration ui (Radio tab). Each preset has:
+
+* **Name** — station title shown in control point apps
+* **URL** — stream address (icecast/aac, HLS m3u8, ...)
+* **Image URL** — optional station logo, shown as preset artwork
+
+Presets with an empty name or URL are unset. Changes take effect without a reboot.
+
+Defaults: the six Radio France hifi AAC stations (France Inter, FIP, France Musique, France Info, France Culture, Mouv') and four RNE Spanish national stations (Radio Nacional, Radio Clasica, Radio 3, Radio 5, HLS streams). Values already saved in the store always override the defaults.
+
+Presets can be pinned from control point apps; pins reference the preset number.
 
 # Hardware Setups
 

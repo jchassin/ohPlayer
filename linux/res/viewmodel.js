@@ -97,6 +97,8 @@ ViewModel = function(){
                 { key:"Source.StartupName", helptext:"Helptext.Device.StartupSource", title:"Startup Source", type:"choice" },
                 { key:"Kustom.AutoStandby", helptext:"Helptext.Kustom.AutoStandby", title:"Auto Standby" },
                 { key:"Delay.Value", helptext:"Helptext.Delay.Value", title:"Delay (ms)" },
+                { key:"Pipeline.StarvationRamperMinSize", helptext:"Helptext.Pipeline.StarvationRamperMinSize", title:"Starvation Ramper Min Size (jiffies)", type:"numeric" },
+                { key:"Pipeline.EncodedReservoirSize", helptext:"Helptext.Pipeline.EncodedReservoirSize", title:"Encoded Reservoir Size (bytes)", type:"numeric" },
                 { key:"Device.VerboseDeviceLogging", helptext:"Helptext.Device.VerboseDeviceLogging", title:"Verbose Device Logging" },
                 { key:"Analogue.Exakt.Dual.Fronts", helptext:"Helptext.Analogue.Exakt.Dual.Fronts", title:"Dual Analogue/Exakt Stereo Output"},
                 { key:"Xlr.0.Out", helptext:"Helptext.Device.XlrOutput", title:"XLR Output" },
@@ -151,7 +153,37 @@ ViewModel = function(){
             }
             if (src == "Radio") {
                 fieldList = fieldList.concat([
-                    { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" }
+                    { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" },
+                    { key:"Radio.Preset1.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 1 Name" },
+                    { key:"Radio.Preset1.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 1 URL" },
+                    { key:"Radio.Preset1.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 1 Image URL" },
+                    { key:"Radio.Preset2.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 2 Name" },
+                    { key:"Radio.Preset2.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 2 URL" },
+                    { key:"Radio.Preset2.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 2 Image URL" },
+                    { key:"Radio.Preset3.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 3 Name" },
+                    { key:"Radio.Preset3.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 3 URL" },
+                    { key:"Radio.Preset3.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 3 Image URL" },
+                    { key:"Radio.Preset4.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 4 Name" },
+                    { key:"Radio.Preset4.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 4 URL" },
+                    { key:"Radio.Preset4.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 4 Image URL" },
+                    { key:"Radio.Preset5.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 5 Name" },
+                    { key:"Radio.Preset5.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 5 URL" },
+                    { key:"Radio.Preset5.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 5 Image URL" },
+                    { key:"Radio.Preset6.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 6 Name" },
+                    { key:"Radio.Preset6.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 6 URL" },
+                    { key:"Radio.Preset6.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 6 Image URL" },
+                    { key:"Radio.Preset7.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 7 Name" },
+                    { key:"Radio.Preset7.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 7 URL" },
+                    { key:"Radio.Preset7.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 7 Image URL" },
+                    { key:"Radio.Preset8.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 8 Name" },
+                    { key:"Radio.Preset8.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 8 URL" },
+                    { key:"Radio.Preset8.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 8 Image URL" },
+                    { key:"Radio.Preset9.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 9 Name" },
+                    { key:"Radio.Preset9.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 9 URL" },
+                    { key:"Radio.Preset9.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 9 Image URL" },
+                    { key:"Radio.Preset10.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 10 Name" },
+                    { key:"Radio.Preset10.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 10 URL" },
+                    { key:"Radio.Preset10.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 10 Image URL" }
                 ]);
             }
             if (src == "Spotify") {
@@ -639,6 +671,16 @@ ViewModel = function(){
             options : "0 (Disabled), 1 to 9999 (Enabled)",
             "default" : "0 (Disabled)"
         },
+        "Helptext.Pipeline.StarvationRamperMinSize" : {
+            description : "Advanced: minimum amount of buffered audio, in jiffies (56448 per ms), that must have accumulated before playback resumes after a buffer underrun. Increase this value if you experience audio dropouts on unstable network links (e.g. powerline). Default: 5644800 (100 ms). Changing this requires a reboot.",
+            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) jiffies (56448 per ms)",
+            "default" : "5644800 (100 ms)"
+        },
+        "Helptext.Pipeline.EncodedReservoirSize" : {
+            description : "Advanced: size, in bytes, of the buffer between the network and the decoder. Increase this value to absorb network jitter on unstable links (e.g. powerline). Default: 1572864 (1536 KB). Changing this requires a reboot.",
+            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) bytes",
+            "default" : "1572864 (1536 KB)"
+        },
         "Helptext.StreamingService.Enabled" : {
             description : "Enables the <%- field.helptextparams.service %> service on your <%- device %>. Go to <a href='<%- field.helptextparams.servicelinkuri %>' target='_blank'><%- field.helptextparams.servicelinktitle %></a> for more information."
         },
@@ -655,6 +697,15 @@ ViewModel = function(){
         },
         "Helptext.Radio.TuneInUserName" : {
             description: "Enter your TuneIn account username for accessing your stored radio presets. Go to <a href='http://TuneIn.com/' target='_blank'>TuneIn.com</a> to setup your account. You may also select from the drop down list of Pre-defined accounts.",
+        },
+        "Helptext.Radio.Preset.Name" : {
+            description: "Name of the station stored in this radio preset, shown in control point apps. Leave empty to unset the preset.",
+        },
+        "Helptext.Radio.Preset.Uri" : {
+            description: "URL of the audio stream (e.g. https://icecast.radiofrance.fr/franceinter-hifi.aac) for this radio preset. Leave empty to unset the preset.",
+        },
+        "Helptext.Radio.Preset.Image" : {
+            description: "Optional URL of the station logo (e.g. https://commons.wikimedia.org/wiki/Special:FilePath/FIP_logo_2021.svg?width=250) shown as artwork in control point apps.",
         },
         "Helptext.Volume.Enabled" : {
             description : "If you wish to use the <%- device %> with an external pre amplifier, select <span class='HelpTextOption'><%- field.meta.options[1].value %></span>. Otherwise select <span class='HelpTextOption'><%- field.meta.options[0].value %></span>" +

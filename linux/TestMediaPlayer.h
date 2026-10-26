@@ -5,6 +5,8 @@
 #include "VolumeControl.h"
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
+#include "PipelineConfig.h"
+#include "RadioPresetsStatic.h"
 
 #include <OpenHome/Av/MediaPlayer.h>
 #include <OpenHome/Net/Core/DvDevice.h>
@@ -131,9 +133,15 @@ private:
     static const TUint kNumOdpSessions = 4;
     static const TUint kMinWebUiResourceThreads = 4;
     static const TUint kMaxWebUiTabs = 4;
-    static const TUint kUiSendQueueSize = 100;
+    // Web ui config message pool. Sized for the full config app field set,
+    // including the 30 radio preset fields (name/uri/image per preset):
+    // opening the config ui notifies every field at once, and each
+    // notification takes one message plus ceil(valueBytes/kUiMsgBufBytes)
+    // buffers. 64-byte buffers keep a 256-byte value at 4 buffers instead
+    // of 16 with the original 16-byte buffers.
+    static const TUint kUiSendQueueSize = 200;
     static const TUint kUiMsgBufCount = kUiSendQueueSize + ((kUiSendQueueSize + 1) / 2);
-    static const TUint kUiMsgBufBytes = 16;
+    static const TUint kUiMsgBufBytes = 64;
     static const TUint kMaxPinsDevice = 6;
     static const TUint kFsFlushFreqMs = 60 * 1000; // 1 minute
     static const TUint kDsdMaxSampleRate = 5644800; // DSD128 ; 11289600 DSD256
@@ -236,6 +244,8 @@ private:
     TUint iUiMsgBufBytes;
     OhLinnAmpVolume* iLinnAmpVolume;
     std::unique_ptr<LinnAmpConfig> iLinnAmpConfig;
+    std::unique_ptr<PipelineConfig> iPipelineConfig;
+    std::unique_ptr<RadioPresetsStatic> iRadioPresetsStatic;
 
     std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver;
     std::unique_ptr<Media::IPipelineObserver>    iRaspdacObserver;

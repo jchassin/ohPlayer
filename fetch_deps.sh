@@ -18,7 +18,7 @@ declare -A PLATFORM_MAP
 PLATFORM_MAP[ohNet]="aarch64-scarthgap-linux-${DEBUG_MODE}"
 PLATFORM_MAP[ohWafHelpers]=""
 PLATFORM_MAP[ohMediaPlayer]="aarch64-scarthgap-linux-${DEBUG_MODE}"
-PLATFORM_MAP[ohNetGenerated]="AnyPlatform"
+PLATFORM_MAP[ohNetGenerated]="AnyPlatform-${DEBUG_MODE}"  # headers-only package (Generated/Cp* and Dv*); the aarch64 lib comes from the ohContainerBuilder-built package
 
 for NAME in "${!DEPS[@]}"; do
     VERSION=${DEPS[$NAME]}
@@ -48,3 +48,31 @@ for NAME in "${!DEPS[@]}"; do
     fi
     echo "--------------------------------------------------------"
 done
+
+# ----------------------------------------------------------------------------
+# Generated ohNet headers (Cp* proxies and Dv* providers) are not shipped in
+# the S3 packages for this platform. Fetch them from the openhome/ohNetGenerated
+# GitHub repository at the tag matching the version above and install them
+# flat into ${DEPS_DIR}/Generated/, which is on the compiler include path
+# (-I$(DEPS_DIR) resolves #include <Generated/...>).
+# Only headers are needed: the corresponding .cpp files are already compiled
+# into the ohNetGenerated library.
+OHNG_GITHUB_TAG="ohNetGenerated_${DEPS[ohNetGenerated]}"
+OHNG_TARBALL="https://github.com/openhome/ohNetGenerated/archive/refs/tags/${OHNG_GITHUB_TAG}.tar.gz"
+OHNG_TMP="$(mktemp -d)"
+
+echo "Downloading ohNetGenerated sources (${OHNG_GITHUB_TAG}) for Generated headers..."
+echo "Target URL: $OHNG_TARBALL"
+
+curl -sSL "$OHNG_TARBALL" | tar -xz -C "$OHNG_TMP" 2>/dev/null
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "ERROR: Failed to download ohNetGenerated sources from GitHub!"
+else
+    OHNG_SRC=$(find "$OHNG_TMP" -maxdepth 1 -mindepth 1 -type d | head -1)
+    mkdir -p "${DEPS_DIR}/Generated"
+    cp "${OHNG_SRC}"/OpenHome/Net/ControlPoint/Proxies/*.h "${DEPS_DIR}/Generated/" 2>/dev/null
+    cp "${OHNG_SRC}"/OpenHome/Net/Device/Providers/*.h "${DEPS_DIR}/Generated/" 2>/dev/null
+    HEADER_COUNT=$(ls "${DEPS_DIR}/Generated"/*.h 2>/dev/null | wc -l)
+    echo "Installed ${HEADER_COUNT} Generated headers into ${DEPS_DIR}/Generated/"
+fi
+rm -rf "$OHNG_TMP"

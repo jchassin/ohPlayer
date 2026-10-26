@@ -1,5 +1,7 @@
 #include "ConfigAppPlayerLinn.h"
 #include "LinnAmpConfig.h"
+#include "PipelineConfig.h"
+#include "RadioPresetsStatic.h"
 #include "VersionInfo.h"
 #include <OpenHome/Web/ConfigUi/ConfigUi.h>
 
@@ -38,9 +40,27 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddValue(new Web::ConfigUiValRo(kKeySwVersionOhPlayer, Brn(VersionInfo::kOhPlayerCommit)));
     // Editable Linn Amp settings
     AddConfigText(LinnAmpConfig::kKeySerialPort);
+    // Radio presets (static station list)
+    {
+        Bws<RadioPresetsStatic::kKeyBytes> key;
+        static const Brn kSuffixName(".Name");
+        static const Brn kSuffixUri(".Uri");
+        static const Brn kSuffixImage(".Image");
+        for (TUint i = 0; i < RadioPresetsStatic::kNumPresets; i++) {
+            RadioPresetsStatic::GetPresetKey(i, kSuffixName, key);
+            AddConfigText(key);
+            RadioPresetsStatic::GetPresetKey(i, kSuffixUri, key);
+            AddConfigText(key);
+            RadioPresetsStatic::GetPresetKey(i, kSuffixImage, key);
+            AddConfigText(key);
+        }
+    }
     AddConfigNum(LinnAmpConfig::kKeyBass);
     AddConfigNum(LinnAmpConfig::kKeyTreble);
     AddConfigNum(LinnAmpConfig::kKeyAlsaVolume);
+    // Editable pipeline buffer settings (Songcast tab)
+    AddConfigNum(PipelineConfig::kKeyStarvationRamperMinSize);
+    AddConfigNum(PipelineConfig::kKeyEncodedReservoirSize);
     // Expose ohPipeline's internal volume control toggle (hidden by default).
     // Allows disabling the volume control point-side on setups where the
     // sound card has no mixer and no external amplifier controls volume.

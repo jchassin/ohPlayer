@@ -3,6 +3,8 @@
 #include "RaspdacMiniIF.h"
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
+#include "PipelineConfig.h"
+#include "RadioPresetsStatic.h"
 #include "StoreWithOverriddenValue.h"
 #include "ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
@@ -21,6 +23,8 @@
 #include <OpenHome/Media/Codec/ContainerFactory.h>
 #include <OpenHome/Media/Protocol/ProtocolFactory.h>
 #include <OpenHome/Av/SourceFactory.h>
+#include <OpenHome/Av/Radio/RadioPins.h>
+#include <OpenHome/Av/Pins/UrlPins.h>
 #include <OpenHome/Av/KvpStore.h>
 //#include "RamStore.h"
 #include <OpenHome/Av/UpnpAv/UpnpAv.h>
@@ -333,9 +337,18 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Create MediaPlayer.
     // NOTE: If values for Room.Name and Product.Name already exist in the Store,
     //       the aRoom and aProductName default values will be ignored.
+    // Pipeline buffer tuning (web config UI, Songcast tab). Values are read from
+    // the store so that changes made in the web config UI are applied at the next
+    // start.
+    const TUint starvationRamperMinJiffies = PipelineConfig::ReadStarvationRamperMinSizeJiffiesFromStore(*iConfigRamStore);
+    const TUint encodedReservoirBytes = PipelineConfig::ReadEncodedReservoirSizeBytesFromStore(*iConfigRamStore);
+    Log::Print("Pipeline buffers: StarvationRamperMinSize=%u jiffies (~%ums), EncodedReservoirSize=%u bytes\n",
+               starvationRamperMinJiffies, starvationRamperMinJiffies / Jiffies::kPerMs,
+               encodedReservoirBytes);
     auto pipelineInit = PipelineInitParams::New();
-    pipelineInit->SetStarvationRamperMinSize(100 * Jiffies::kPerMs); // larger StarvationRamper size useful for desktop
+    pipelineInit->SetStarvationRamperMinSize(starvationRamperMinJiffies); // larger StarvationRamper size useful for desktop
                                                                      // platforms with slightly unpredictable thread scheduling
+    pipelineInit->SetEncodedReservoirSize(encodedReservoirBytes);
     pipelineInit->SetGorgerDuration(pipelineInit->DecodedReservoirJiffies());
     pipelineInit->SetDsdMaxSampleRate(kDsdMaxSampleRate);
     pipelineInit->SetSupportElements(Media::EPipelineSupportElementsValidatorMinimal | Media::EPipelineSupportElementsDecodedAudioValidator | Media::EPipelineSupportElementsRampValidator);
@@ -367,6 +380,15 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     // Register Linn Amp web config parameters (volume control choice and serial port)
     iLinnAmpConfig = std::make_unique<LinnAmpConfig>(iMediaPlayer->ConfigInitialiser());
+
+    // Register pipeline buffer web config parameters (applied at next start)
+    iPipelineConfig = std::make_unique<PipelineConfig>(iMediaPlayer->ConfigInitialiser());
+
+    // Create the static radio preset provider here so its config values are
+    // registered before the web config app is created (AddConfigApp runs in
+    // Run()). The provider itself is registered with MediaPlayer's
+    // RadioPresets in InitialiseSubsystems, after the Radio source is added.
+    iRadioPresetsStatic = std::make_unique<RadioPresetsStatic>(iMediaPlayer->ConfigInitialiser());
     
     iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
 #if 1
@@ -652,6 +674,27 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
     else {
         iMediaPlayer->Add(SourceFactory::NewRadio(*iMediaPlayer, iTuneInPartnerId));
     }
+    // Register the static station list (Radio France) as a radio preset provider.
+    // Selectable in the web config ui (Radio.PresetProvider) alongside TuneIn
+    // when configured. Must be added after the Radio source and before the
+    // pipeline starts (RadioPresets::Start runs on SourceRadio::Started).
+    auto radioPresets = iMediaPlayer->RadioPresets();
+    if (radioPresets.Ok()) {
+        // RadioPresets takes ownership of the provider (deletes it in its
+        // destructor), so release our unique_ptr when handing it over.
+        radioPresets.Unwrap().AddProvider(iRadioPresetsStatic.release());
+    }
+
+    // Register radio/url pin invokers so radio presets and stream urls can be
+    // pinned from control point apps. ohPipeline only registers these when a
+    // TuneIn partner id is configured (SourceRadio.cpp); register them here
+    // so pinning works without TuneIn. PinsInvocable takes ownership of the
+    // invokers (deletes them in its destructor).
+    auto pinsInvocable = iMediaPlayer->PinsInvocable();
+    if (pinsInvocable.Ok()) {
+        pinsInvocable.Unwrap().Add(new RadioPins(*iDevice, iMediaPlayer->CpStack()));
+        pinsInvocable.Unwrap().Add(new UrlPins(*iDevice, iMediaPlayer->CpStack(), iMediaPlayer->ThreadPool()));
+    }
 
     iMediaPlayer->Add(SourceFactory::NewUpnpAv(*iMediaPlayer, *iDeviceUpnpAv));
 
@@ -906,9 +949,13 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     initParams->SetDvNumLpecThreads(4);
     initParams->SetDvLpecServerPort(2324);
 #endif
-    Debug::SetLevel(Debug::kPipeline);
-    Debug::AddLevel(Debug::kSources);
-    Debug::AddLevel(Debug::kMedia);
+    // Debug log levels. kSources logs track/artist display updates.
+    // kMedia and kPipeline are disabled: they are extremely verbose
+    // (every HLS segment fetch / pipeline element transition is logged)
+    // and were only useful during bring-up.
+    Debug::SetLevel(Debug::kSources);
+    //Debug::AddLevel(Debug::kPipeline);
+    //Debug::AddLevel(Debug::kMedia);
     Debug::AddLevel(Debug::kRaat);
     Debug::AddLevel(Debug::kAdapterChange);
     //Debug::AddLevel(Debug::kSongcast);
