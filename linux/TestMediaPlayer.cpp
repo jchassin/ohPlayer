@@ -4,6 +4,7 @@
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
 #include "PipelineConfig.h"
+#include "RadioPresetsStatic.h"
 #include "StoreWithOverriddenValue.h"
 #include "ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
@@ -664,6 +665,16 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
     }
     else {
         iMediaPlayer->Add(SourceFactory::NewRadio(*iMediaPlayer, iTuneInPartnerId));
+    }
+    // Register the static station list (Radio France) as a radio preset provider.
+    // Selectable in the web config ui (Radio.PresetProvider) alongside TuneIn
+    // when configured. Must be added after the Radio source and before the
+    // pipeline starts (RadioPresets::Start runs on SourceRadio::Started).
+    auto radioPresets = iMediaPlayer->RadioPresets();
+    if (radioPresets.Ok()) {
+        // RadioPresets takes ownership of the provider (deletes it in its
+        // destructor), so hand over a raw pointer and don't keep a unique_ptr.
+        radioPresets.Unwrap().AddProvider(new RadioPresetsStatic());
     }
 
     iMediaPlayer->Add(SourceFactory::NewUpnpAv(*iMediaPlayer, *iDeviceUpnpAv));
