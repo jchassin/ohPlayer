@@ -9,6 +9,14 @@ namespace Av {
 
 const Brn RadioPresetsStatic::kDisplayName("Stations");
 
+// Out-of-class definitions: the constants are odr-used (passed by const
+// reference to the Configuration::ConfigText constructor), which requires
+// a definition in addition to the in-class initialisation in the header.
+const TUint RadioPresetsStatic::kNumPresets;
+const TUint RadioPresetsStatic::kMaxNameBytes;
+const TUint RadioPresetsStatic::kMaxUriBytes;
+const TUint RadioPresetsStatic::kKeyBytes;
+
 namespace {
 
 // Default station list (Radio France hifi AAC streams), in preset order.
