@@ -337,15 +337,15 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Pipeline buffer tuning (web config UI, Songcast tab). Values are read from
     // the store so that changes made in the web config UI are applied at the next
     // start.
-    const TUint starvationRamperMinMs = PipelineConfig::ReadStarvationRamperMinSizeMsFromStore(*iConfigRamStore);
-    const TUint encodedReservoirMs = PipelineConfig::ReadEncodedReservoirSizeMsFromStore(*iConfigRamStore);
-    Log::Print("Pipeline buffers: StarvationRamperMinSize=%ums, EncodedReservoirSize=%ums (%u bytes)\n",
-               starvationRamperMinMs, encodedReservoirMs,
-               encodedReservoirMs * PipelineConfig::kEncodedReservoirBytesPerMs);
+    const TUint starvationRamperMinJiffies = PipelineConfig::ReadStarvationRamperMinSizeJiffiesFromStore(*iConfigRamStore);
+    const TUint encodedReservoirBytes = PipelineConfig::ReadEncodedReservoirSizeBytesFromStore(*iConfigRamStore);
+    Log::Print("Pipeline buffers: StarvationRamperMinSize=%u jiffies (~%ums), EncodedReservoirSize=%u bytes\n",
+               starvationRamperMinJiffies, starvationRamperMinJiffies / Jiffies::kPerMs,
+               encodedReservoirBytes);
     auto pipelineInit = PipelineInitParams::New();
-    pipelineInit->SetStarvationRamperMinSize(starvationRamperMinMs * Jiffies::kPerMs); // larger StarvationRamper size useful for desktop
+    pipelineInit->SetStarvationRamperMinSize(starvationRamperMinJiffies); // larger StarvationRamper size useful for desktop
                                                                      // platforms with slightly unpredictable thread scheduling
-    pipelineInit->SetEncodedReservoirSize(encodedReservoirMs * PipelineConfig::kEncodedReservoirBytesPerMs);
+    pipelineInit->SetEncodedReservoirSize(encodedReservoirBytes);
     pipelineInit->SetGorgerDuration(pipelineInit->DecodedReservoirJiffies());
     pipelineInit->SetDsdMaxSampleRate(kDsdMaxSampleRate);
     pipelineInit->SetSupportElements(Media::EPipelineSupportElementsValidatorMinimal | Media::EPipelineSupportElementsDecodedAudioValidator | Media::EPipelineSupportElementsRampValidator);

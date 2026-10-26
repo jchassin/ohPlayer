@@ -97,8 +97,8 @@ ViewModel = function(){
                 { key:"Source.StartupName", helptext:"Helptext.Device.StartupSource", title:"Startup Source", type:"choice" },
                 { key:"Kustom.AutoStandby", helptext:"Helptext.Kustom.AutoStandby", title:"Auto Standby" },
                 { key:"Delay.Value", helptext:"Helptext.Delay.Value", title:"Delay (ms)" },
-                { key:"Pipeline.StarvationRamperMinSize", helptext:"Helptext.Pipeline.StarvationRamperMinSize", title:"Starvation Ramper Min Size (ms)", type:"numeric" },
-                { key:"Pipeline.EncodedReservoirSize", helptext:"Helptext.Pipeline.EncodedReservoirSize", title:"Encoded Reservoir Size (ms)", type:"numeric" },
+                { key:"Pipeline.StarvationRamperMinSize", helptext:"Helptext.Pipeline.StarvationRamperMinSize", title:"Starvation Ramper Min Size (jiffies)", type:"numeric" },
+                { key:"Pipeline.EncodedReservoirSize", helptext:"Helptext.Pipeline.EncodedReservoirSize", title:"Encoded Reservoir Size (bytes)", type:"numeric" },
                 { key:"Device.VerboseDeviceLogging", helptext:"Helptext.Device.VerboseDeviceLogging", title:"Verbose Device Logging" },
                 { key:"Analogue.Exakt.Dual.Fronts", helptext:"Helptext.Analogue.Exakt.Dual.Fronts", title:"Dual Analogue/Exakt Stereo Output"},
                 { key:"Xlr.0.Out", helptext:"Helptext.Device.XlrOutput", title:"XLR Output" },
@@ -642,14 +642,14 @@ ViewModel = function(){
             "default" : "0 (Disabled)"
         },
         "Helptext.Pipeline.StarvationRamperMinSize" : {
-            description : "Minimum amount of buffered audio, in milliseconds, that must have accumulated before playback resumes after a buffer underrun. Increase this value if you experience audio dropouts on unstable network links (e.g. powerline). Changing this requires a reboot.",
-            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) ms",
-            "default" : "100"
+            description : "Advanced: minimum amount of buffered audio, in jiffies (56448 per ms), that must have accumulated before playback resumes after a buffer underrun. Increase this value if you experience audio dropouts on unstable network links (e.g. powerline). Default: 5644800 (100 ms). Changing this requires a reboot.",
+            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) jiffies (56448 per ms)",
+            "default" : "5644800 (100 ms)"
         },
         "Helptext.Pipeline.EncodedReservoirSize" : {
-            description : "Amount of audio, in milliseconds, buffered between the network and the decoder. Increase this value to absorb network jitter on unstable links (e.g. powerline). Changing this requires a reboot.",
-            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) ms",
-            "default" : "1024"
+            description : "Advanced: size, in bytes, of the buffer between the network and the decoder. Increase this value to absorb network jitter on unstable links (e.g. powerline). Default: 1572864 (1536 KB). Changing this requires a reboot.",
+            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) bytes",
+            "default" : "1572864 (1536 KB)"
         },
         "Helptext.StreamingService.Enabled" : {
             description : "Enables the <%- field.helptextparams.service %> service on your <%- device %>. Go to <a href='<%- field.helptextparams.servicelinkuri %>' target='_blank'><%- field.helptextparams.servicelinktitle %></a> for more information."
