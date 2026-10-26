@@ -23,6 +23,8 @@
 #include <OpenHome/Media/Codec/ContainerFactory.h>
 #include <OpenHome/Media/Protocol/ProtocolFactory.h>
 #include <OpenHome/Av/SourceFactory.h>
+#include <OpenHome/Av/Radio/RadioPins.h>
+#include <OpenHome/Av/Pins/UrlPins.h>
 #include <OpenHome/Av/KvpStore.h>
 //#include "RamStore.h"
 #include <OpenHome/Av/UpnpAv/UpnpAv.h>
@@ -681,6 +683,17 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
         // RadioPresets takes ownership of the provider (deletes it in its
         // destructor), so release our unique_ptr when handing it over.
         radioPresets.Unwrap().AddProvider(iRadioPresetsStatic.release());
+    }
+
+    // Register radio/url pin invokers so radio presets and stream urls can be
+    // pinned from control point apps. ohPipeline only registers these when a
+    // TuneIn partner id is configured (SourceRadio.cpp); register them here
+    // so pinning works without TuneIn. PinsInvocable takes ownership of the
+    // invokers (deletes them in its destructor).
+    auto pinsInvocable = iMediaPlayer->PinsInvocable();
+    if (pinsInvocable.Ok()) {
+        pinsInvocable.Unwrap().Add(new RadioPins(*iDevice, iMediaPlayer->CpStack()));
+        pinsInvocable.Unwrap().Add(new UrlPins(*iDevice, iMediaPlayer->CpStack(), iMediaPlayer->ThreadPool()));
     }
 
     iMediaPlayer->Add(SourceFactory::NewUpnpAv(*iMediaPlayer, *iDeviceUpnpAv));
