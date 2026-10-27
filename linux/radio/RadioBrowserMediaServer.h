@@ -61,7 +61,7 @@ public:
     void SetGenreList(const std::vector<Brn>& aGenres);
 
 private:
-    class ContentDirectory : public Net::DvUpnpOrgContentDirectory1
+    class ContentDirectory : public Net::DvProviderUpnpOrgContentDirectory1
     {
     public:
         ContentDirectory(Net::DvDeviceStandard& aDevice, RadioBrowserMediaServer& aServer);
@@ -75,7 +75,7 @@ private:
         RadioBrowserMediaServer& iServer;
     };
 
-    class ConnectionManager : public Net::DvUpnpOrgConnectionManager1
+    class ConnectionManager : public Net::DvProviderUpnpOrgConnectionManager1
     {
     public:
         ConnectionManager(Net::DvDeviceStandard& aDevice);

@@ -12,7 +12,7 @@ namespace OpenHome {
     class SslContext;
     class ITimerFactory;
 namespace Media {
-class ReaderAlgorithmBuffered;
+class UriLoader;
 }
 namespace Av {
 
