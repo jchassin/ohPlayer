@@ -12,6 +12,7 @@ namespace OpenHome {
 namespace Av {
 
 static const Brn kDefaultServer("de1.api.radio-browser.info");
+static const TUint kRetryIntervalMs = 5 * 1000; // avoid a tight retry loop in synchronous handlers
 static const Brn kSchemeHttps("https://");
 
 // RadioBrowserClient::Station
@@ -32,7 +33,7 @@ RadioBrowserClient::Station::Station()
 
 RadioBrowserClient::RadioBrowserClient(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent,
                                        ITimerFactory& aTimerFactory)
-    : iLoader(new Media::UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, 0 /* retry immediately */))
+    : iLoader(new Media::UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, kRetryIntervalMs))
     , iServer(kUriMaxBytes)
     , iRequestUri(kUriMaxBytes)
 {
