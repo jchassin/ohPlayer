@@ -63,6 +63,11 @@ OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 # .d file listing exactly the headers it includes, so touching one header only
 # rebuilds the objects that actually include it.
 DEPS     = $(OBJECTS:.o=.d)
+# Objects built before dependency tracking was introduced have no .d file;
+# make treats them as having no dependencies, so header changes never
+# rebuild them (stale constants baked into old objects). Regenerate any
+# missing .d (cheap: preprocessor only) as part of every build.
+DEPS_MISSING = $(filter-out $(wildcard $(DEPS)),$(DEPS))
 
 # ============================================================================
 # Compilation Build Automation Targets
@@ -108,6 +113,12 @@ $(OBJ_DIR)/%.o: %.cpp
 	$(CXX) $(CFLAGS) -MMD -MP $(INCLUDES) -I$(OHNG_PROVIDER_DIR) -c $< -o $@
 
 -include $(DEPS)
+
+# Generate missing .d files (preprocess-only; fast) so that every object
+# gets proper dependency tracking from its next rebuild onward.
+$(DEPS_MISSING): $(OBJ_DIR)/%.d: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CFLAGS) -MMD -MP $(INCLUDES) -I$(OHNG_PROVIDER_DIR) -M -MQ $(patsubst %.d,%.o,$@) $< -o $@ 2>/dev/null || rm -f $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
