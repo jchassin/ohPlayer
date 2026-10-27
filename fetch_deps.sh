@@ -72,7 +72,8 @@ else
     mkdir -p "${DEPS_DIR}/Generated"
     cp "${OHNG_SRC}"/OpenHome/Net/ControlPoint/Proxies/*.h "${DEPS_DIR}/Generated/" 2>/dev/null
     cp "${OHNG_SRC}"/OpenHome/Net/Device/Providers/*.h "${DEPS_DIR}/Generated/" 2>/dev/null
+    cp "${OHNG_SRC}"/OpenHome/Net/Device/Providers/*.cpp "${DEPS_DIR}/Generated/" 2>/dev/null
     HEADER_COUNT=$(ls "${DEPS_DIR}/Generated"/*.h 2>/dev/null | wc -l)
-    echo "Installed ${HEADER_COUNT} Generated headers into ${DEPS_DIR}/Generated/"
+    echo "Installed ${HEADER_COUNT} Generated headers and provider sources into ${DEPS_DIR}/Generated/"
 fi
 rm -rf "$OHNG_TMP"

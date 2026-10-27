@@ -7,6 +7,7 @@
 #include "LinnAmpConfig.h"
 #include "PipelineConfig.h"
 #include "RadioPresetsStatic.h"
+#include "RadioBrowserMediaServer.h"
 
 #include <OpenHome/Av/MediaPlayer.h>
 #include <OpenHome/Net/Core/DvDevice.h>
@@ -246,6 +247,7 @@ private:
     std::unique_ptr<LinnAmpConfig> iLinnAmpConfig;
     std::unique_ptr<PipelineConfig> iPipelineConfig;
     std::unique_ptr<RadioPresetsStatic> iRadioPresetsStatic;
+    std::unique_ptr<Av::RadioBrowserMediaServer> iRadioBrowserMediaServer;
 
     std::unique_ptr<OpenHome::Media::DriverAlsa> iDriver;
     std::unique_ptr<Media::IPipelineObserver>    iRaspdacObserver;

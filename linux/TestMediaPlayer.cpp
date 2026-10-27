@@ -378,6 +378,46 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                    aUdn, mpInit);
     delete mpInit;
 
+    // Radio Browser media server: exposes the community radio directory
+    // (radio-browser.info) to UPnP/DLNA control points for browsing/search;
+    // stations play on this renderer through its usual protocols (http/hls).
+    // UPnP MediaServer UDN must be a canonical uuid (8-4-4-4-12 hex);
+    // some control points (e.g. Linn app) ignore devices whose UDN is not a
+    // well-formed uuid. Derive a stable one from the renderer udn.
+    // DvDeviceStandard adds the "uuid:" prefix itself; pass the bare uuid.
+    Bws<64> radioBrowserUdn;
+    {
+        // simple deterministic 128-bit hash of the renderer udn (FNV-1a x2)
+        TUint64 h1 = 0xcbf29ce484222325ULL;
+        TUint64 h2 = 0x9e3779b97f4a7c15ULL;
+        for (TUint i = 0; i < aUdn.Bytes(); i++) {
+            h1 ^= aUdn[i]; h1 *= 0x100000001b3ULL;
+            h2 ^= (TUint64(aUdn[i]) << 32) | aUdn[i]; h2 *= 0x100000001b3ULL;
+        }
+        const TUint64 ms[] = { h1, h2 };
+        const TByte* p = reinterpret_cast<const TByte*>(ms);
+        for (TUint i = 0; i < 16; i++) {
+            if (i == 4 || i == 6 || i == 8 || i == 10) {
+                radioBrowserUdn.Append('-');
+            }
+            Ascii::AppendHex(radioBrowserUdn, p[i]);
+        }
+    }
+    // Friendly name: use the effective room from the store (Product.Room is
+    // where the web ui / Product store it); fall back to the -r argument.
+    Bws<Product::kMaxRoomBytes> roomBuf;
+    static const Brn kKeyProductRoom("Product.Room");
+    try {
+        iConfigRamStore->Read(kKeyProductRoom, roomBuf);
+    }
+    catch (StoreKeyNotFound&) {
+        roomBuf.Replace(Brn(aRoom));
+    }
+    iRadioBrowserMediaServer = std::make_unique<RadioBrowserMediaServer>(
+        aDvStack, iMediaPlayer->Env(), iMediaPlayer->Ssl(), iUserAgent,
+        radioBrowserUdn, Brn(roomBuf.Ptr(), roomBuf.Bytes()));
+    iRadioBrowserMediaServer->Start();
+
     // Register Linn Amp web config parameters (volume control choice and serial port)
     iLinnAmpConfig = std::make_unique<LinnAmpConfig>(iMediaPlayer->ConfigInitialiser());
 
@@ -943,6 +983,11 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
         initParams->SetUseLoopbackNetworkAdapter();
     }
     initParams->SetDvUpnpServerPort(51000);
+    // More UPnP session threads: the default (4) is easily starved when a
+    // control point browses the Radio Browser media server (its Browse/Search
+    // handlers do synchronous API calls taking seconds) while the renderer
+    // and web ui share the same session pool. 12 threads leave ample room.
+    initParams->SetDvNumServerThreads(12);
     initParams->SetEnableShell(aShellPort);
     initParams->SetIPv6Supported(false);
 #ifdef LPEC_ENABLE
