@@ -135,7 +135,6 @@ void RadioBrowserMediaServer::ContentDirectory::Search(Net::IDvInvocation& aInvo
 {
     // The control point search box sends criteria like: dc:title contains "jazz"
     Bws<128> term;
-    Log::Print("RadioBrowserMediaServer: Search criteria received: %.*s\n", PBUF(aSearchCriteria));
     {
         static const Brn kContains("contains \"");
         const TByte* ptr = aSearchCriteria.Ptr();
@@ -161,7 +160,6 @@ void RadioBrowserMediaServer::ContentDirectory::Search(Net::IDvInvocation& aInvo
         }
     }
 
-    Log::Print("RadioBrowserMediaServer: extracted search term: %.*s\n", PBUF(term));
     Bws<16384> didl;
     TUint numberReturned = 0;
     TUint totalMatches = 0;
