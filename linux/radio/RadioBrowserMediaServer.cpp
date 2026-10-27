@@ -21,6 +21,11 @@ RadioBrowserMediaServer::ContentDirectory::ContentDirectory(Net::DvDeviceStandar
     : DvProviderUpnpOrgContentDirectory1(aDevice)
     , iServer(aServer)
 {
+    // The generated action GetSystemUpdateID binds its output parameter to the
+    // SystemUpdateID property; the property must exist (and be initialised)
+    // before any SCPD request or event subscription dereferences it.
+    EnablePropertySystemUpdateID();
+    SetPropertySystemUpdateID(1);
     EnableActionGetSearchCapabilities();
     EnableActionGetSortCapabilities();
     EnableActionGetSystemUpdateID();
@@ -182,6 +187,15 @@ void RadioBrowserMediaServer::ContentDirectory::Search(Net::IDvInvocation& aInvo
 RadioBrowserMediaServer::ConnectionManager::ConnectionManager(Net::DvDeviceStandard& aDevice)
     : DvProviderUpnpOrgConnectionManager1(aDevice)
 {
+    // Generated actions bind output parameters to these properties; they must
+    // exist and be initialised.
+    static const Brn kProtocolInfo("*:*:*:*");
+    EnablePropertySourceProtocolInfo();
+    SetPropertySourceProtocolInfo(Brx::Empty());
+    EnablePropertySinkProtocolInfo();
+    SetPropertySinkProtocolInfo(kProtocolInfo);
+    EnablePropertyCurrentConnectionIDs();
+    SetPropertyCurrentConnectionIDs(Brx::Empty());
     EnableActionGetProtocolInfo();
     EnableActionGetCurrentConnectionIDs();
     EnableActionGetCurrentConnectionInfo();
