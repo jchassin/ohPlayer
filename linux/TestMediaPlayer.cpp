@@ -973,6 +973,11 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
         initParams->SetUseLoopbackNetworkAdapter();
     }
     initParams->SetDvUpnpServerPort(51000);
+    // More UPnP session threads: the default (4) is easily starved when a
+    // control point browses the Radio Browser media server (its Browse/Search
+    // handlers do synchronous API calls taking seconds) while the renderer
+    // and web ui share the same session pool. 12 threads leave ample room.
+    initParams->SetDvNumServerThreads(12);
     initParams->SetEnableShell(aShellPort);
     initParams->SetIPv6Supported(false);
 #ifdef LPEC_ENABLE
