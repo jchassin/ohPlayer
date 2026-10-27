@@ -13,7 +13,6 @@ namespace Av {
 
 static const Brn kDefaultServer("de1.api.radio-browser.info");
 static const Brn kSchemeHttps("https://");
-static const TUint kReadBufBytes = 64 * 1024; // station lists can be large
 
 // RadioBrowserClient::Station
 
@@ -33,10 +32,7 @@ RadioBrowserClient::Station::Station()
 
 RadioBrowserClient::RadioBrowserClient(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent,
                                        ITimerFactory& aTimerFactory)
-    : iEnv(aEnv)
-    , iSsl(aSsl)
-    , iUserAgent(aUserAgent)
-    , iLoader(new Media::UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, 0 /* retry immediately */))
+    : iLoader(new Media::UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, 0 /* retry immediately */))
     , iServer(kUriMaxBytes)
     , iRequestUri(kUriMaxBytes)
 {

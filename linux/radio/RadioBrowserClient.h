@@ -89,9 +89,6 @@ private:
                        TUint aMaxResults);
 
 private:
-    Environment& iEnv;
-    SslContext& iSsl;
-    const Brx& iUserAgent;
     Media::UriLoader* iLoader;
     Bwh iServer;      // host name of the API server
     Bwh iRequestUri;  // scratch for building request uris
