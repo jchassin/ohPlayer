@@ -12,6 +12,7 @@
 #include <memory>
 #include <mutex>
 #include <functional>
+#include <algorithm>
 
 namespace OpenHome {
     class Environment;
@@ -93,6 +94,9 @@ private:
     void BrowseCountryStations(const Brx& aCountry, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseGenre(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseName(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
+    void BrowseQualityContainers(const Brx& aParentId, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
+    void BrowseQualityStations(const std::vector<RadioBrowserClient::Station>& aStations, const Brx& aQuality, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
+    const std::vector<RadioBrowserClient::Station>& LetterStations(const Brx& aLetter);
     void BrowseNameStations(const Brx& aLetter, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseGenreStations(const Brx& aGenre, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseSearch(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);

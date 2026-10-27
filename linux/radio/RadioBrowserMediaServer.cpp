@@ -24,6 +24,38 @@ static const char* kDidlPreamble =
 
 static const char* kDidlEpilogue = "</DIDL-Lite>";
 
+
+static TBool SplitQuality(const Brx& aId, const Brx& aPrefix, Brn& aKey, Brn& aQuality)
+{
+    // aId: "<prefix><key>[/hi|/mid|/low]" ; returns false if prefix doesn't match
+    if (aId.Bytes() <= aPrefix.Bytes() ||
+        Brn(aId.Ptr(), aPrefix.Bytes()) != aPrefix) {
+        return false;
+    }
+    const TByte* p = aId.Ptr() + aPrefix.Bytes();
+    TUint bytes = aId.Bytes() - aPrefix.Bytes();
+    // look for the quality suffix at the end
+    if (bytes > kQualitySuffixHi.Bytes() &&
+        Brn(p + bytes - kQualitySuffixHi.Bytes(), kQualitySuffixHi.Bytes()) == kQualitySuffixHi) {
+        aQuality.Set(kQualitySuffixHi.Ptr(), kQualitySuffixHi.Bytes());
+        aKey.Set(p, bytes - kQualitySuffixHi.Bytes());
+        return true;
+    }
+    if (bytes > kQualitySuffixMid.Bytes() &&
+        Brn(p + bytes - kQualitySuffixMid.Bytes(), kQualitySuffixMid.Bytes()) == kQualitySuffixMid) {
+        aQuality.Set(kQualitySuffixMid.Ptr(), kQualitySuffixMid.Bytes());
+        aKey.Set(p, bytes - kQualitySuffixMid.Bytes());
+        return true;
+    }
+    if (bytes > kQualitySuffixLow.Bytes() &&
+        Brn(p + bytes - kQualitySuffixLow.Bytes(), kQualitySuffixLow.Bytes()) == kQualitySuffixLow) {
+        aQuality.Set(kQualitySuffixLow.Ptr(), kQualitySuffixLow.Bytes());
+        aKey.Set(p, bytes - kQualitySuffixLow.Bytes());
+        return true;
+    }
+    return false;
+}
+
 // RadioBrowserMediaServer::ContentDirectory
 
 RadioBrowserMediaServer::ContentDirectory::ContentDirectory(Net::DvDeviceStandard& aDevice, RadioBrowserMediaServer& aServer)
@@ -96,6 +128,9 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         static const Brn kCountryPrefix("country/");
         static const Brn kGenrePrefix("genre/");
         static const Brn kNamePrefix("name/");
+        static const Brn kQualitySuffixHi("/hi");
+        static const Brn kQualitySuffixMid("/mid");
+        static const Brn kQualitySuffixLow("/low");
 
         if (aObjectID == kRoot) {
             didl.Append(Brn(kDidlPreamble));
@@ -129,23 +164,42 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         }
         else if (aObjectID.Bytes() > kCountryPrefix.Bytes() &&
                  Brn(aObjectID.Ptr(), kCountryPrefix.Bytes()) == kCountryPrefix) {
-            Brn country(aObjectID.Ptr() + kCountryPrefix.Bytes(), aObjectID.Bytes() - kCountryPrefix.Bytes());
+            Brn rest(aObjectID.Ptr() + kCountryPrefix.Bytes(), aObjectID.Bytes() - kCountryPrefix.Bytes());
+            Brn quality;
+            Brn key;
             didl.Append(Brn(kDidlPreamble));
-            iServer.BrowseCountryStations(country, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            if (SplitQuality(aObjectID, kCountryPrefix, key, quality)) {
+                iServer.BrowseQualityStations(iServer.CountryStations(key), quality, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            }
+            else {
+                iServer.BrowseQualityContainers(aObjectID, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            }
             didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID.Bytes() > kGenrePrefix.Bytes() &&
                  Brn(aObjectID.Ptr(), kGenrePrefix.Bytes()) == kGenrePrefix) {
-            Brn genre(aObjectID.Ptr() + kGenrePrefix.Bytes(), aObjectID.Bytes() - kGenrePrefix.Bytes());
+            Brn quality;
+            Brn key;
             didl.Append(Brn(kDidlPreamble));
-            iServer.BrowseGenreStations(genre, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            if (SplitQuality(aObjectID, kGenrePrefix, key, quality)) {
+                iServer.BrowseQualityStations(iServer.GenreStations(key), quality, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            }
+            else {
+                iServer.BrowseQualityContainers(aObjectID, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            }
             didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID.Bytes() > kNamePrefix.Bytes() &&
                  Brn(aObjectID.Ptr(), kNamePrefix.Bytes()) == kNamePrefix) {
-            Brn letter(aObjectID.Ptr() + kNamePrefix.Bytes(), aObjectID.Bytes() - kNamePrefix.Bytes());
+            Brn quality;
+            Brn key;
             didl.Append(Brn(kDidlPreamble));
-            iServer.BrowseNameStations(letter, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            if (SplitQuality(aObjectID, kNamePrefix, key, quality)) {
+                iServer.BrowseQualityStations(iServer.LetterStations(key), quality, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            }
+            else {
+                iServer.BrowseQualityContainers(aObjectID, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            }
             didl.Append(Brn(kDidlEpilogue));
         }
         else {
@@ -540,6 +594,113 @@ void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<65536>&
     }
 }
 
+
+void RadioBrowserMediaServer::BrowseQualityContainers(const Brx& aParentId, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+{
+    // Three quality sub-containers, each with the parent's station count.
+    static const Brn kHiTitle("Hi-Res (>=192 kbps)");
+    static const Brn kMidTitle("Mid-Res (96-191 kbps)");
+    static const Brn kLowTitle("Low-Res (<96 kbps)");
+    struct Entry { const TChar* suffix; const Brx* title; };
+    const Entry entries[] = {
+        { "/hi", &kHiTitle },
+        { "/mid", &kMidTitle },
+        { "/low", &kLowTitle },
+    };
+    const TUint total = sizeof(entries) / sizeof(entries[0]);
+    aTotalMatches = total;
+    TUint returned = 0;
+    for (TUint i = aStartingIndex; i < total && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
+        Bws<128> id(aParentId);
+        id.Append(Brn(entries[i].suffix));
+        WriteContainerDidl(aDidl, id, *entries[i].title, kMaxStations);
+        returned++;
+    }
+    aNumberReturned = returned;
+}
+
+// Simple case-insensitive latin sort key: uppercases ascii letters and
+// maps common accented latin-1 letters to their base letter.
+static TChar NormaliseSortChar(TChar aChar)
+{
+    if (aChar >= 'a' && aChar <= 'z') {
+        return static_cast<TChar>(aChar - 'a' + 'A');
+    }
+    if (aChar >= 'A' && aChar <= 'Z') {
+        return aChar;
+    }
+    if (aChar >= 0xC0) { // latin-1 supplement: accented letters are 2 bytes utf-8; treat non-ascii as neutral
+        return aChar;
+    }
+    return aChar;
+}
+
+static TBool NameLess(const RadioBrowserClient::Station& aLhs, const RadioBrowserClient::Station& aRhs)
+{
+    const Brx& l = aLhs.Name();
+    const Brx& r = aRhs.Name();
+    const TUint bytes = (l.Bytes() < r.Bytes() ? l.Bytes() : r.Bytes());
+    for (TUint i = 0; i < bytes; i++) {
+        const TChar lc = NormaliseSortChar(l[i]);
+        const TChar rc = NormaliseSortChar(r[i]);
+        if (lc != rc) {
+            return lc < rc;
+        }
+    }
+    return l.Bytes() < r.Bytes();
+}
+
+void RadioBrowserMediaServer::BrowseQualityStations(const std::vector<RadioBrowserClient::Station>& aStations, const Brx& aQuality, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+{
+    static const Brn kHi("/hi");
+    static const Brn kMid("/mid");
+    static const Brn kLow("/low");
+    // bucket by bitrate (unknown bitrate, typically hls, counts as mid)
+    std::vector<const RadioBrowserClient::Station*> bucket;
+    for (const auto& station : aStations) {
+        const TUint bitrate = station.Bitrate();
+        if (aQuality == kHi) {
+            if (bitrate >= 192) {
+                bucket.push_back(&station);
+            }
+        }
+        else if (aQuality == kMid) {
+            if (bitrate == 0 || (bitrate >= 96 && bitrate < 192)) {
+                bucket.push_back(&station);
+            }
+        }
+        else if (aQuality == kLow) {
+            if (bitrate > 0 && bitrate < 96) {
+                bucket.push_back(&station);
+            }
+        }
+    }
+    std::sort(bucket.begin(), bucket.end(), [](const RadioBrowserClient::Station* a, const RadioBrowserClient::Station* b) {
+        return NameLess(*a, *b);
+    });
+    aTotalMatches = bucket.size();
+    TUint returned = 0;
+    for (TUint i = aStartingIndex; i < bucket.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
+        Bws<2048> entry;
+        WriteStationDidl(entry, *bucket[i], i);
+        // Reserve room for the closing </DIDL-Lite> epilogue appended by
+        // the handler after this loop; filling the buffer to the brim would
+        // overflow on the epilogue append (Bwx::Append asserts).
+        const TUint reserved = 64;
+        if (aDidl.Bytes() + entry.Bytes() + reserved <= aDidl.MaxBytes()) {
+            aDidl.Append(entry);
+            returned++;
+        }
+        else {
+            break;
+        }
+    }
+    aNumberReturned = returned;
+    if (returned < aRequestedCount || aRequestedCount == 0) {
+        aTotalMatches = aStartingIndex + returned;
+    }
+}
+
 void RadioBrowserMediaServer::BrowseGenreStations(const Brx& aGenre, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     const std::vector<RadioBrowserClient::Station>& stations = GenreStations(aGenre);
@@ -669,6 +830,28 @@ const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::TopStat
         iTopCacheTimeMs = now;
     }
     return iTopCache;
+}
+
+const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::LetterStations(const Brx& aLetter)
+{
+    Bws<16> key("name:");
+    key.Append(aLetter);
+    return CachedStations(key, [this, &aLetter](std::vector<RadioBrowserClient::Station>& v) {
+        std::vector<RadioBrowserClient::Station> raw;
+        iClient.SearchByName(aLetter, raw, kMaxStations * 4);
+        const TByte target = static_cast<TByte>(Ascii::ToUpperCase(aLetter.Bytes() > 0 ? aLetter[0] : ' '));
+        for (const auto& station : raw) {
+            if (station.Name().Bytes() > 0) {
+                const TByte first = static_cast<TByte>(Ascii::ToUpperCase(station.Name()[0]));
+                if (first == target) {
+                    v.push_back(station);
+                    if (v.size() >= kMaxStations) {
+                        break;
+                    }
+                }
+            }
+        }
+    });
 }
 
 const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::CountryStations(const Brx& aCountry)
