@@ -403,9 +403,19 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             Ascii::AppendHex(radioBrowserUdn, p[i]);
         }
     }
+    // Friendly name: use the effective room from the store (Product.Room is
+    // where the web ui / Product store it); fall back to the -r argument.
+    Bws<Product::kMaxRoomBytes> roomBuf;
+    static const Brn kKeyProductRoom("Product.Room");
+    try {
+        iConfigRamStore->Read(kKeyProductRoom, roomBuf);
+    }
+    catch (StoreKeyNotFound&) {
+        roomBuf.Replace(Brn(aRoom));
+    }
     iRadioBrowserMediaServer = std::make_unique<RadioBrowserMediaServer>(
         aDvStack, iMediaPlayer->Env(), iMediaPlayer->Ssl(), iUserAgent,
-        radioBrowserUdn, Brn(aRoom));
+        radioBrowserUdn, Brn(roomBuf.Ptr(), roomBuf.Bytes()));
     iRadioBrowserMediaServer->Start();
 
     // Register Linn Amp web config parameters (volume control choice and serial port)
