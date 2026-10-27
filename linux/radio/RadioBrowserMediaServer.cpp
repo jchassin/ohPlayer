@@ -314,18 +314,25 @@ void RadioBrowserMediaServer::BrowseRoot(Bws<16384>& aDidl, TUint aStartingIndex
     static const Brn kCountryTitle("By country");
     static const Brn kGenreTitle("By genre");
     static const Brn kSearchTitle("Search results");
-    struct Entry { const Brx* id; const Brx* title; };
+    // Control points use upnp:childCount to decide whether a container is
+    // worth browsing; announcing 0 makes the Linn app show an empty root.
+    // Report realistic counts (top may not be cached yet at first browse;
+    // use the cache size or the max as a hint).
+    const TUint topCount = (iTopCache.empty() ? kMaxStations : (TUint)iTopCache.size());
+    const TUint countryCount = (TUint)iCountries.size();
+    const TUint genreCount = (TUint)iGenres.size();
+    struct Entry { const Brx* id; const Brx* title; TUint childCount; };
     const Entry entries[] = {
-        { &kTopId, &kTopTitle },
-        { &kCountryId, &kCountryTitle },
-        { &kGenreId, &kGenreTitle },
-        { &kSearchId, &kSearchTitle },
+        { &kTopId, &kTopTitle, topCount },
+        { &kCountryId, &kCountryTitle, countryCount },
+        { &kGenreId, &kGenreTitle, genreCount },
+        { &kSearchId, &kSearchTitle, (TUint)iSearchCache.size() },
     };
     const TUint total = sizeof(entries) / sizeof(entries[0]);
     aTotalMatches = total;
     TUint returned = 0;
     for (TUint i = aStartingIndex; i < total && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
-        WriteContainerDidl(aDidl, *entries[i].id, *entries[i].title, 0);
+        WriteContainerDidl(aDidl, *entries[i].id, *entries[i].title, entries[i].childCount);
         returned++;
     }
     aNumberReturned = returned;
@@ -359,7 +366,8 @@ void RadioBrowserMediaServer::BrowseCountry(Bws<16384>& aDidl, TUint aStartingIn
     for (TUint i = aStartingIndex; i < total && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
         Bws<64> id("country/");
         id.Append(iCountries[i]);
-        WriteContainerDidl(aDidl, id, iCountries[i], 0);
+        // hint at the number of stations; the exact count requires an api call
+        WriteContainerDidl(aDidl, id, iCountries[i], kMaxStations);
         returned++;
     }
     aNumberReturned = returned;
@@ -392,7 +400,7 @@ void RadioBrowserMediaServer::BrowseGenre(Bws<16384>& aDidl, TUint aStartingInde
     for (TUint i = aStartingIndex; i < total && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
         Bws<64> id("genre/");
         id.Append(iGenres[i]);
-        WriteContainerDidl(aDidl, id, iGenres[i], 0);
+        WriteContainerDidl(aDidl, id, iGenres[i], kMaxStations);
         returned++;
     }
     aNumberReturned = returned;
