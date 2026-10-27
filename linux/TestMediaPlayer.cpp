@@ -384,7 +384,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // UPnP MediaServer UDN must be a canonical uuid (8-4-4-4-12 hex);
     // some control points (e.g. Linn app) ignore devices whose UDN is not a
     // well-formed uuid. Derive a stable one from the renderer udn.
-    Bws<64> radioBrowserUdn("uuid:");
+    // DvDeviceStandard adds the "uuid:" prefix itself; pass the bare uuid.
+    Bws<64> radioBrowserUdn;
     {
         // simple deterministic 128-bit hash of the renderer udn (FNV-1a x2)
         TUint64 h1 = 0xcbf29ce484222325ULL;
