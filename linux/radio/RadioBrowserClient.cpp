@@ -176,14 +176,14 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
             Station s;
             TBool haveUri = false;
             if (jsonParser.HasKey("url_resolved")) {
-                Brn url(jsonParser.String("url_resolved"));
+                Brn url(jsonParser.StringOptional("url_resolved"));
                 if (url.Bytes() > 0 && url.Bytes() <= s.iUri.MaxBytes()) {
                     s.iUri.Replace(url);
                     haveUri = true;
                 }
             }
             if (!haveUri && jsonParser.HasKey("url")) {
-                Brn url(jsonParser.String("url"));
+                Brn url(jsonParser.StringOptional("url"));
                 if (url.Bytes() > 0 && url.Bytes() <= s.iUri.MaxBytes()) {
                     s.iUri.Replace(url);
                     haveUri = true;
@@ -193,40 +193,40 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
                 continue; // unusable entry
             }
             if (jsonParser.HasKey("name")) {
-                Brn name(jsonParser.String("name"));
+                Brn name(jsonParser.StringOptional("name"));
                 const TUint max = std::min<TUint>(name.Bytes(), s.iName.MaxBytes());
                 s.iName.Replace(Brn(name.Ptr(), max));
             }
             if (jsonParser.HasKey("favicon")) {
-                Brn image(jsonParser.String("favicon"));
+                Brn image(jsonParser.StringOptional("favicon"));
                 const TUint max = std::min<TUint>(image.Bytes(), s.iImage.MaxBytes());
                 s.iImage.Replace(Brn(image.Ptr(), max));
             }
             if (jsonParser.HasKey("tags")) {
-                Brn tags(jsonParser.String("tags"));
+                Brn tags(jsonParser.StringOptional("tags"));
                 const TUint max = std::min<TUint>(tags.Bytes(), s.iTags.MaxBytes());
                 s.iTags.Replace(Brn(tags.Ptr(), max));
             }
             if (jsonParser.HasKey("countrycode")) {
-                Brn country(jsonParser.String("countrycode"));
+                Brn country(jsonParser.StringOptional("countrycode"));
                 const TUint max = std::min<TUint>(country.Bytes(), s.iCountry.MaxBytes());
                 s.iCountry.Replace(Brn(country.Ptr(), max));
             }
             if (jsonParser.HasKey("codec")) {
-                Brn codec(jsonParser.String("codec"));
+                Brn codec(jsonParser.StringOptional("codec"));
                 const TUint max = std::min<TUint>(codec.Bytes(), s.iCodec.MaxBytes());
                 s.iCodec.Replace(Brn(codec.Ptr(), max));
             }
             if (jsonParser.HasKey("bitrate")) {
                 try {
-                    s.iBitrate = Ascii::Uint(jsonParser.String("bitrate"));
+                    s.iBitrate = Ascii::Uint(jsonParser.StringOptional("bitrate"));
                 }
                 catch (AsciiError&) {}
             }
             if (jsonParser.HasKey("hls")) {
                 // numeric 0/1 or bool string
                 try {
-                    s.iHls = (Ascii::Uint(jsonParser.String("hls")) != 0);
+                    s.iHls = (Ascii::Uint(jsonParser.StringOptional("hls")) != 0);
                 }
                 catch (AsciiError&) {}
             }
