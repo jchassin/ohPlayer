@@ -6,6 +6,8 @@ Hardware references:
 
 * [Audiophonics Raspdac Mini LCD Kit](https://www.audiophonics.fr/fr/lecteurs-reseau-open-source/audiophonics-raspdac-mini-lcd-kit-diy-lecteur-reseau-pour-raspberry-pi-4-dac-es9038q2m-p-15148.html)
 * [Audiophonics DAC I-Sabre ES9038Q2M](https://www.audiophonics.fr/fr/modules-dac-et-interfaces/audiophonics-dac-i-sabre-es9038q2m-raspberry-pi-i2s-spdif-pcm-dsd-alimentation-usb-c-p-12795.html) — tested with the ES9028 version, which has since been replaced by this one.
+* [Linn RS232 specification (LR2)](https://docs.linn.co.uk/wiki/images/2/2d/LR2_RS232_Specification.pdf) — the serial protocol spoken to the Linn preamplifier (volume, bass/treble, standby, `$ID ?$`)
+* [Linn RS232 cables](https://docs.linn.co.uk/wiki/images/1/13/RS232_Cables_v102.pdf) — cabling reference for the USB-to-RS232 adapter
 
 ## 1. Raspdac Mini / OLED with fixed-gain amplifier
 
