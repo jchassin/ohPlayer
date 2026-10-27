@@ -116,7 +116,7 @@ private:
     std::vector<RadioBrowserClient::Station> iTopCache;
     TUint64 iTopCacheTimeMs;
     std::vector<RadioBrowserClient::Station> iSearchCache;
-    Brn iSearchTerm;
+    Bwh iSearchTerm;   // owned copy of the last search term (a Brn view would dangle)
     TUint64 iSearchCacheTimeMs;
     // Simple keyed cache for station lists (country/genre/letter): a page
     // request from a control point would otherwise trigger a fresh api call.

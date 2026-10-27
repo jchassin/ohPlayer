@@ -294,6 +294,7 @@ RadioBrowserMediaServer::RadioBrowserMediaServer(Net::DvStack& aDvStack,
     , iClient(aEnv, aSsl, aUserAgent, iTimerFactory)
     , iSystemUpdateId(1)
     , iTopCacheTimeMs(0)
+    , iSearchTerm(128)
     , iSearchCacheTimeMs(0)
 {
     iDevice = new Net::DvDeviceStandard(aDvStack, aUdn);
@@ -607,15 +608,14 @@ void RadioBrowserMediaServer::RunSearch(const Brx& aName)
         return;
     }
     // refresh the search cache if the term changed or the cache is stale
-    const TBool sameTerm = (iSearchTerm.Bytes() == aName.Bytes() &&
-                            Brn(iSearchTerm.Ptr(), iSearchTerm.Bytes()) == Brn(aName.Ptr(), aName.Bytes()));
+    const TBool sameTerm = (iSearchTerm == aName);
     const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     if (sameTerm && now - iSearchCacheTimeMs < kCacheLifetimeMs) {
         return;
     }
     iClient.SearchByName(aName, iSearchCache, kMaxStations);
-    iSearchTerm = Brn(aName.Ptr(), aName.Bytes());
+    iSearchTerm.Replace(aName);
     iSearchCacheTimeMs = now;
 }
 
