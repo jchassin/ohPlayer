@@ -70,7 +70,7 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
                                                        Net::IDvInvocationResponseString& aResult, Net::IDvInvocationResponseUint& aNumberReturned,
                                                        Net::IDvInvocationResponseUint& aTotalMatches, Net::IDvInvocationResponseUint& aUpdateID)
 {
-    Bws<16384> didl;
+    Bws<65536> didl;
     TUint numberReturned = 0;
     TUint totalMatches = 0;
     iServer.UpdateId();
@@ -199,7 +199,7 @@ void RadioBrowserMediaServer::ContentDirectory::Search(Net::IDvInvocation& aInvo
         }
     }
 
-    Bws<16384> didl;
+    Bws<65536> didl;
     TUint numberReturned = 0;
     TUint totalMatches = 0;
     iServer.UpdateId();
@@ -345,7 +345,7 @@ void RadioBrowserMediaServer::UpdateId()
     iSystemUpdateId++;
 }
 
-void RadioBrowserMediaServer::BrowseRoot(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseRoot(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     static const Brn kTopId("top");
     static const Brn kCountryId("country");
@@ -383,7 +383,7 @@ void RadioBrowserMediaServer::BrowseRoot(Bws<16384>& aDidl, TUint aStartingIndex
     aNumberReturned = returned;
 }
 
-void RadioBrowserMediaServer::BrowseTop(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseTop(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     // Note: didl buffer for stations is bigger; reuse via a local
     const std::vector<RadioBrowserClient::Station>& stations = TopStations();
@@ -392,7 +392,11 @@ void RadioBrowserMediaServer::BrowseTop(Bws<16384>& aDidl, TUint aStartingIndex,
     for (TUint i = aStartingIndex; i < stations.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
         Bws<2048> entry;
         WriteStationDidl(entry, stations[i], i);
-        if (aDidl.Bytes() + entry.Bytes() <= aDidl.MaxBytes()) {
+        // Reserve room for the closing </DIDL-Lite> epilogue appended by
+        // the handler after this loop; filling the buffer to the brim would
+        // overflow on the epilogue append (Bwx::Append asserts).
+        const TUint reserved = 64;
+        if (aDidl.Bytes() + entry.Bytes() + reserved <= aDidl.MaxBytes()) {
             aDidl.Append(entry);
             returned++;
         }
@@ -410,7 +414,7 @@ void RadioBrowserMediaServer::BrowseTop(Bws<16384>& aDidl, TUint aStartingIndex,
     }
 }
 
-void RadioBrowserMediaServer::BrowseCountry(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseCountry(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     const TUint total = iCountries.size();
     aTotalMatches = total;
@@ -425,7 +429,7 @@ void RadioBrowserMediaServer::BrowseCountry(Bws<16384>& aDidl, TUint aStartingIn
     aNumberReturned = returned;
 }
 
-void RadioBrowserMediaServer::BrowseCountryStations(const Brx& aCountry, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseCountryStations(const Brx& aCountry, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     const std::vector<RadioBrowserClient::Station>& stations = CountryStations(aCountry);
     aTotalMatches = stations.size();
@@ -433,7 +437,11 @@ void RadioBrowserMediaServer::BrowseCountryStations(const Brx& aCountry, Bws<163
     for (TUint i = aStartingIndex; i < stations.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
         Bws<2048> entry;
         WriteStationDidl(entry, stations[i], i);
-        if (aDidl.Bytes() + entry.Bytes() <= aDidl.MaxBytes()) {
+        // Reserve room for the closing </DIDL-Lite> epilogue appended by
+        // the handler after this loop; filling the buffer to the brim would
+        // overflow on the epilogue append (Bwx::Append asserts).
+        const TUint reserved = 64;
+        if (aDidl.Bytes() + entry.Bytes() + reserved <= aDidl.MaxBytes()) {
             aDidl.Append(entry);
             returned++;
         }
@@ -451,7 +459,7 @@ void RadioBrowserMediaServer::BrowseCountryStations(const Brx& aCountry, Bws<163
     }
 }
 
-void RadioBrowserMediaServer::BrowseGenre(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseGenre(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     const TUint total = iGenres.size();
     aTotalMatches = total;
@@ -465,7 +473,7 @@ void RadioBrowserMediaServer::BrowseGenre(Bws<16384>& aDidl, TUint aStartingInde
     aNumberReturned = returned;
 }
 
-void RadioBrowserMediaServer::BrowseName(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseName(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     // A-Z, using the ascii codes 0x41..0x5A
     const TUint total = 26;
@@ -482,7 +490,7 @@ void RadioBrowserMediaServer::BrowseName(Bws<16384>& aDidl, TUint aStartingIndex
     aNumberReturned = returned;
 }
 
-void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     // Search stations whose name starts with the letter (cached).
     // The api's name search is a 'contains' match; filter locally on the
@@ -512,7 +520,11 @@ void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<16384>&
     for (TUint i = aStartingIndex; i < filtered.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
         Bws<2048> entry;
         WriteStationDidl(entry, filtered[i], i);
-        if (aDidl.Bytes() + entry.Bytes() <= aDidl.MaxBytes()) {
+        // Reserve room for the closing </DIDL-Lite> epilogue appended by
+        // the handler after this loop; filling the buffer to the brim would
+        // overflow on the epilogue append (Bwx::Append asserts).
+        const TUint reserved = 64;
+        if (aDidl.Bytes() + entry.Bytes() + reserved <= aDidl.MaxBytes()) {
             aDidl.Append(entry);
             returned++;
         }
@@ -530,7 +542,7 @@ void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<16384>&
     }
 }
 
-void RadioBrowserMediaServer::BrowseGenreStations(const Brx& aGenre, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseGenreStations(const Brx& aGenre, Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     const std::vector<RadioBrowserClient::Station>& stations = GenreStations(aGenre);
     aTotalMatches = stations.size();
@@ -538,7 +550,11 @@ void RadioBrowserMediaServer::BrowseGenreStations(const Brx& aGenre, Bws<16384>&
     for (TUint i = aStartingIndex; i < stations.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
         Bws<2048> entry;
         WriteStationDidl(entry, stations[i], i);
-        if (aDidl.Bytes() + entry.Bytes() <= aDidl.MaxBytes()) {
+        // Reserve room for the closing </DIDL-Lite> epilogue appended by
+        // the handler after this loop; filling the buffer to the brim would
+        // overflow on the epilogue append (Bwx::Append asserts).
+        const TUint reserved = 64;
+        if (aDidl.Bytes() + entry.Bytes() + reserved <= aDidl.MaxBytes()) {
             aDidl.Append(entry);
             returned++;
         }
@@ -556,14 +572,18 @@ void RadioBrowserMediaServer::BrowseGenreStations(const Brx& aGenre, Bws<16384>&
     }
 }
 
-void RadioBrowserMediaServer::BrowseSearch(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseSearch(Bws<65536>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     aTotalMatches = iSearchCache.size();
     TUint returned = 0;
     for (TUint i = aStartingIndex; i < iSearchCache.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
         Bws<2048> entry;
         WriteStationDidl(entry, iSearchCache[i], i);
-        if (aDidl.Bytes() + entry.Bytes() <= aDidl.MaxBytes()) {
+        // Reserve room for the closing </DIDL-Lite> epilogue appended by
+        // the handler after this loop; filling the buffer to the brim would
+        // overflow on the epilogue append (Bwx::Append asserts).
+        const TUint reserved = 64;
+        if (aDidl.Bytes() + entry.Bytes() + reserved <= aDidl.MaxBytes()) {
             aDidl.Append(entry);
             returned++;
         }
@@ -699,7 +719,7 @@ void RadioBrowserMediaServer::WriteStationDidl(Bws<2048>& aDidl, const RadioBrow
     w.Write(Brn("</item>"));
 }
 
-void RadioBrowserMediaServer::WriteContainerDidl(Bws<16384>& aDidl, const Brx& aObjectId, const Brx& aTitle, TUint aChildCount)
+void RadioBrowserMediaServer::WriteContainerDidl(Bws<65536>& aDidl, const Brx& aObjectId, const Brx& aTitle, TUint aChildCount)
 {
     // WriterDIDLLite only covers items; containers are written directly.
     WriterBuffer w(aDidl);
