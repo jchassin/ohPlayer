@@ -135,13 +135,14 @@ private:
     static const TUint kMinWebUiResourceThreads = 4;
     static const TUint kMaxWebUiTabs = 4;
     // Web ui config message pool. Must cover the worst case: every config
-    // value notifying on session subscribe; values can also be held in the
-    // web framework send queue (up to its own SendQueueSize) while a slow
-    // client drains it, retaining their pool entries - several concurrent
-    // sessions (reloads, tabs, pollers) could starve a smaller pool.
-    // 512 messages / 768 x 64B buffers (~50KB) is ample for the ~60 fields.
+    // value notifying on session subscribe, times the number of concurrent
+    // web ui sessions (kMaxWebUiTabs), while a slow client drains its send
+    // queue (Send blocks, holding the allocated messages).
+    // 4 sessions x ~60 fields = ~240 messages, plus headroom => 512 messages.
+    // Buffers: preset values (long urls) chain 3-4 x 64B each, so
+    // 4 x (30 presets x 4 + 30 x 2) ~ 720 => 1024 buffers.
     static const TUint kUiSendQueueSize = 512;
-    static const TUint kUiMsgBufCount = kUiSendQueueSize + ((kUiSendQueueSize + 1) / 2);
+    static const TUint kUiMsgBufCount = 1024;
     static const TUint kUiMsgBufBytes = 64;
     static const TUint kMaxPinsDevice = 6;
     static const TUint kFsFlushFreqMs = 60 * 1000; // 1 minute
