@@ -405,7 +405,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     }
     iRadioBrowserMediaServer = std::make_unique<RadioBrowserMediaServer>(
         aDvStack, iMediaPlayer->Env(), iMediaPlayer->Ssl(), iUserAgent,
-        radioBrowserUdn, Brn(aProductName));
+        radioBrowserUdn, Brn(aRoom));
     iRadioBrowserMediaServer->Start();
 
     // Register Linn Amp web config parameters (volume control choice and serial port)
