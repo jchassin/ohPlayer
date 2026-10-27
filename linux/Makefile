@@ -52,8 +52,13 @@ LDFLAGS  = -L$(DEPS_DIR)/ohMediaPlayer/lib \
 
 # Workspace Source Track Aggregations
 # Sources at the top level and in subdirectories (e.g. radio/).
-SRCS     = $(wildcard *.cpp) $(wildcard radio/*.cpp)
-OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
+# The ContentDirectory / ConnectionManager device providers from the ohNetGenerated
+# sources are compiled here because the prebuilt ohNetGenerated library only
+# ships the device providers used by ohPipeline (no UPnP MediaServer support).
+OHNG_PROVIDER_DIR = $(DEPS_DIR)/Generated
+OHNG_PROVIDERS = DvUpnpOrgContentDirectory1 DvUpnpOrgConnectionManager1
+SRCS     = $(wildcard *.cpp) $(wildcard radio/*.cpp) $(addsuffix .cpp,$(addprefix $(OHNG_PROVIDER_DIR)/,$(OHNG_PROVIDERS)))
+OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 HEADERS  = $(wildcard *.h) $(wildcard radio/*.h)
 
 # ============================================================================
@@ -93,10 +98,11 @@ version:
 
 # vpath lets the implicit rule find sources in subdirectories.
 vpath %.cpp radio
+vpath %.cpp $(OHNG_PROVIDER_DIR)
 
 $(OBJ_DIR)/%.o: %.cpp $(HEADERS)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CFLAGS) $(INCLUDES) -I$(OHNG_PROVIDER_DIR) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
