@@ -101,7 +101,9 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
             didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID == kTop) {
+            didl.Append(Brn(kDidlPreamble));
             iServer.BrowseTop(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID == kCountry) {
             didl.Append(Brn(kDidlPreamble));
@@ -114,17 +116,23 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
             didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID == kSearch) {
+            didl.Append(Brn(kDidlPreamble));
             iServer.BrowseSearch(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID.Bytes() > kCountryPrefix.Bytes() &&
                  Brn(aObjectID.Ptr(), kCountryPrefix.Bytes()) == kCountryPrefix) {
             Brn country(aObjectID.Ptr() + kCountryPrefix.Bytes(), aObjectID.Bytes() - kCountryPrefix.Bytes());
+            didl.Append(Brn(kDidlPreamble));
             iServer.BrowseCountryStations(country, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID.Bytes() > kGenrePrefix.Bytes() &&
                  Brn(aObjectID.Ptr(), kGenrePrefix.Bytes()) == kGenrePrefix) {
             Brn genre(aObjectID.Ptr() + kGenrePrefix.Bytes(), aObjectID.Bytes() - kGenrePrefix.Bytes());
+            didl.Append(Brn(kDidlPreamble));
             iServer.BrowseGenreStations(genre, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
         }
         else {
             // unknown object: empty result
@@ -184,7 +192,9 @@ void RadioBrowserMediaServer::ContentDirectory::Search(Net::IDvInvocation& aInvo
     try {
         std::lock_guard<std::mutex> lock(iServer.iLock);
         iServer.RunSearch(term);
+        didl.Append(Brn(kDidlPreamble));
         iServer.BrowseSearch(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+        didl.Append(Brn(kDidlEpilogue));
     }
     catch (UriLoaderError&) {
         Log::Print("RadioBrowserMediaServer: search request failed\n");
@@ -506,18 +516,29 @@ const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::GenreSt
 
 void RadioBrowserMediaServer::WriteStationDidl(Bws<2048>& aDidl, const RadioBrowserClient::Station& aStation, TUint aIndex)
 {
-    // object id: "station/<index within the enclosing list>" is not stable
-    // across requests; use the stream uri itself as the id (unique enough for
-    // browsing purposes; the CP only needs the res uri to play).
+    // Write a bare <item> fragment; the caller wraps the response (once) in a
+    // single DIDL-Lite document. (WriterDIDLLite writes a complete xml
+    // document per item, which cannot be concatenated for a multi-item
+    // response.)
     WriterBuffer w(aDidl);
-    WriterDIDLLite writer(Brx::Empty(), DIDLLite::kItemTypeAudioItem, w);
-    writer.WriteTitle(aStation.Name());
-    WriterDIDLLite::StreamingDetails details;
-    writer.WriteStreamingDetails(kProtocolInfoSink, details, aStation.Uri());
+    w.Write(Brn("<item id=\"station-"));
+    Ascii::StreamWriteUint(w, aIndex);
+    w.Write(Brn("\" parentID=\"-1\" restricted=\"1\">"));
+    w.Write(Brn("<dc:title>"));
+    Converter::ToXmlEscaped(w, aStation.Name());
+    w.Write(Brn("</dc:title>"));
+    w.Write(Brn("<upnp:class>object.item.audioItem</upnp:class>"));
     if (aStation.ImageUri().Bytes() > 0) {
-        writer.WriteArtwork(aStation.ImageUri());
+        w.Write(Brn("<upnp:albumArtURI>"));
+        Converter::ToXmlEscaped(w, aStation.ImageUri());
+        w.Write(Brn("</upnp:albumArtURI>"));
     }
-    writer.WriteEnd();
+    w.Write(Brn("<res protocolInfo=\""));
+    w.Write(kProtocolInfoSink);
+    w.Write(Brn("\">"));
+    Converter::ToXmlEscaped(w, aStation.Uri());
+    w.Write(Brn("</res>"));
+    w.Write(Brn("</item>"));
 }
 
 void RadioBrowserMediaServer::WriteContainerDidl(Bws<16384>& aDidl, const Brx& aObjectId, const Brx& aTitle, TUint aChildCount)
