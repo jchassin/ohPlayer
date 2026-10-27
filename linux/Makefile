@@ -114,11 +114,13 @@ $(OBJ_DIR)/%.o: %.cpp
 
 -include $(DEPS)
 
-# Generate missing .d files (preprocess-only; fast) so that every object
-# gets proper dependency tracking from its next rebuild onward.
-$(DEPS_MISSING): $(OBJ_DIR)/%.d: %.cpp
+# Generate missing .d files (preprocess-only, fast) so that every object
+# gets proper dependency tracking. Without this, objects built before
+# dependency tracking was introduced never rebuild on header changes.
+$(OBJ_DIR)/%.d: %.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CFLAGS) -MMD -MP $(INCLUDES) -I$(OHNG_PROVIDER_DIR) -M -MQ $(patsubst %.d,%.o,$@) $< -o $@ 2>/dev/null || rm -f $@
+	@$(CXX) $(CFLAGS) $(INCLUDES) -I$(OHNG_PROVIDER_DIR) -MM -MG -MP -MT $(@:.d=.o) $< > $@.tmp 2>/dev/null && mv $@.tmp $@ || rm -f $@.tmp $@
+
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
