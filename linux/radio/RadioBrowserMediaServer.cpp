@@ -3,7 +3,6 @@
 #include <OpenHome/Net/Private/DviStack.h>
 #include <OpenHome/Net/Core/DvDevice.h>
 #include <OpenHome/DidlLite.h>
-#include <OpenHome/Ascii.h>
 #include <OpenHome/Private/Ascii.h>
 #include <OpenHome/Private/Printer.h>
 #include <OpenHome/Private/Converter.h>

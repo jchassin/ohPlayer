@@ -4,7 +4,7 @@
 #include <OpenHome/Buffer.h>
 // UriLoader (from ProtocolHls.h) is held by pointer to avoid leaking that
 // header (and its exceptions) into every including translation unit.
-#include <OpenHome/Uri.h>
+#include <OpenHome/Private/Uri.h>
 #include <vector>
 
 namespace OpenHome {
