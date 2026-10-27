@@ -18,7 +18,7 @@ static const Brn kProtocolInfoSink("*:*:*:*"); // accept anything; playback is d
 // RadioBrowserMediaServer::ContentDirectory
 
 RadioBrowserMediaServer::ContentDirectory::ContentDirectory(Net::DvDeviceStandard& aDevice, RadioBrowserMediaServer& aServer)
-    : DvUpnpOrgContentDirectory1(aDevice)
+    : DvProviderUpnpOrgContentDirectory1(aDevice)
     , iServer(aServer)
 {
     EnableActionGetSearchCapabilities();
@@ -48,7 +48,6 @@ void RadioBrowserMediaServer::ContentDirectory::GetSystemUpdateID(Net::IDvInvoca
 {
     aInvocation.StartResponse();
     aId.Write(iServer.iSystemUpdateId);
-    aId.WriteFlush();
     aInvocation.EndResponse();
 }
 
@@ -109,11 +108,8 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
     aResult.Write(didl);
     aResult.WriteFlush();
     aNumberReturned.Write(numberReturned);
-    aNumberReturned.WriteFlush();
     aTotalMatches.Write(totalMatches);
-    aTotalMatches.WriteFlush();
     aUpdateID.Write(iServer.iSystemUpdateId);
-    aUpdateID.WriteFlush();
     aInvocation.EndResponse();
 }
 
@@ -166,18 +162,15 @@ void RadioBrowserMediaServer::ContentDirectory::Search(Net::IDvInvocation& aInvo
     aResult.Write(didl);
     aResult.WriteFlush();
     aNumberReturned.Write(numberReturned);
-    aNumberReturned.WriteFlush();
     aTotalMatches.Write(totalMatches);
-    aTotalMatches.WriteFlush();
     aUpdateID.Write(iServer.iSystemUpdateId);
-    aUpdateID.WriteFlush();
     aInvocation.EndResponse();
 }
 
 // RadioBrowserMediaServer::ConnectionManager
 
 RadioBrowserMediaServer::ConnectionManager::ConnectionManager(Net::DvDeviceStandard& aDevice)
-    : DvUpnpOrgConnectionManager1(aDevice)
+    : DvProviderUpnpOrgConnectionManager1(aDevice)
 {
     EnableActionGetProtocolInfo();
     EnableActionGetCurrentConnectionIDs();
@@ -210,15 +203,12 @@ void RadioBrowserMediaServer::ConnectionManager::GetCurrentConnectionInfo(Net::I
 {
     aInvocation.StartResponse();
     aRcsID.Write(0);
-    aRcsID.WriteFlush();
     aAVTransportID.Write(0);
-    aAVTransportID.WriteFlush();
     aProtocolInfo.Write(Brx::Empty());
     aProtocolInfo.WriteFlush();
     aPeerConnectionManager.Write(Brx::Empty());
     aPeerConnectionManager.WriteFlush();
     aPeerConnectionID.Write(0);
-    aPeerConnectionID.WriteFlush();
     aDirection.Write(Brn("Output"));
     aDirection.WriteFlush();
     aStatus.Write(Brn("OK"));
@@ -288,7 +278,7 @@ void RadioBrowserMediaServer::UpdateId()
     iSystemUpdateId++;
 }
 
-void RadioBrowserMediaServer::BrowseRoot(Bws<8192>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseRoot(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     static const Brn kTopTitle("Most popular");
     static const Brn kCountryTitle("By country");
@@ -331,7 +321,7 @@ void RadioBrowserMediaServer::BrowseTop(Bws<16384>& aDidl, TUint aStartingIndex,
     aNumberReturned = returned;
 }
 
-void RadioBrowserMediaServer::BrowseCountry(Bws<8192>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseCountry(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     const TUint total = iCountries.size();
     aTotalMatches = total;
@@ -364,7 +354,7 @@ void RadioBrowserMediaServer::BrowseCountryStations(const Brx& aCountry, Bws<163
     aNumberReturned = returned;
 }
 
-void RadioBrowserMediaServer::BrowseGenre(Bws<8192>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+void RadioBrowserMediaServer::BrowseGenre(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
     const TUint total = iGenres.size();
     aTotalMatches = total;
@@ -475,7 +465,7 @@ void RadioBrowserMediaServer::WriteStationDidl(Bws<2048>& aDidl, const RadioBrow
     writer.WriteEnd();
 }
 
-void RadioBrowserMediaServer::WriteContainerDidl(Bws<8192>& aDidl, const Brx& aObjectId, const Brx& aTitle, TUint aChildCount)
+void RadioBrowserMediaServer::WriteContainerDidl(Bws<16384>& aDidl, const Brx& aObjectId, const Brx& aTitle, TUint aChildCount)
 {
     // WriterDIDLLite only covers items; containers are written directly.
     WriterBuffer w(aDidl);
