@@ -134,15 +134,16 @@ private:
     static const TUint kNumOdpSessions = 4;
     static const TUint kMinWebUiResourceThreads = 4;
     static const TUint kMaxWebUiTabs = 4;
-    // Web ui config message pool. Must cover the worst case: every config
-    // value notifying on session subscribe, times the number of concurrent
-    // web ui sessions (kMaxWebUiTabs), while a slow client drains its send
-    // queue (Send blocks, holding the allocated messages).
-    // 4 sessions x ~60 fields = ~240 messages, plus headroom => 512 messages.
-    // Buffers: preset values (long urls) chain 3-4 x 64B each, so
-    // 4 x (30 presets x 4 + 30 x 2) ~ 720 => 1024 buffers.
+    // Web ui config message pool. Must cover the worst case of the whole
+    // pipeline: a session's values can stay held in a framework send fifo
+    // (Send blocks, holding the allocated messages; ohPipeline's ConfigTab
+    // FIXME keeps a dead handler's messages until the tab is re-allocated),
+    // so with kMaxWebUiTabs fifos of kUiSendQueueSize slots, held messages
+    // can accumulate up to the fifo capacity times the buffers per message.
+    // Size the pool to comfortably cover 4 fifos worth of typical messages
+    // (~3 buffers each) plus re-subscribe bursts.
     static const TUint kUiSendQueueSize = 512;
-    static const TUint kUiMsgBufCount = 1024;
+    static const TUint kUiMsgBufCount = 4096;
     static const TUint kUiMsgBufBytes = 64;
     static const TUint kMaxPinsDevice = 6;
     static const TUint kFsFlushFreqMs = 60 * 1000; // 1 minute
