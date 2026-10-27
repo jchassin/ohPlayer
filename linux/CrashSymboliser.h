@@ -24,15 +24,15 @@ namespace Av {
 class CrashSymboliser
 {
 public:
-    // Parses the crash text for "(+0xNNN) [0x...]" offsets and prints the
-    // symbolised frames. Safe to call from a signal/fatal handler (uses
-    // only async-signal-safe libc calls: popen/system are not, so this
-    // is intended for the ohNet fatal error path, which runs on a normal
-    // thread).
+    // Singleton instance (the fatal error handler functor needs an object).
+    static CrashSymboliser& Instance();
+
     // ohNet fatal error handler: prints the crash message (exception type,
     // file:line, thread, raw stack) then the symbolicated stack.
-    static void FatalErrorHandler(const char* aMsg);
-    static void Symbolise(const char* aCrashText);
+    void FatalErrorHandler(const char* aMsg);
+
+private:
+    void Symbolise(const char* aCrashText);
 };
 
 } // namespace Av
