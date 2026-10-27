@@ -38,7 +38,8 @@ LIBS = $(shell pkg-config --libs glib-2.0) \
 
 # Static Search Path Directories
 DEPS_DIR = ../dependencies/$(TARG_ARCH)
-INCLUDES = -I$(DEPS_DIR)/ohMediaPlayer/include \
+INCLUDES = -I. -Iradio \
+           -I$(DEPS_DIR)/ohMediaPlayer/include \
            -I$(DEPS_DIR)/ohNetmon/include \
            -I$(DEPS_DIR)/ohNetGenerated-$(TARG_ARCH)-$(BUILD_TYPE)/include/ohnet/OpenHome/Net/Core \
            -I$(DEPS_DIR)/ohNet/include/ohnet \
@@ -50,8 +51,10 @@ LDFLAGS  = -L$(DEPS_DIR)/ohMediaPlayer/lib \
            -L$(DEPS_DIR)/ohNetGenerated-$(TARG_ARCH)-$(BUILD_TYPE)/lib
 
 # Workspace Source Track Aggregations
-OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
-HEADERS  = $(wildcard *.h)
+# Sources at the top level and in subdirectories (e.g. radio/).
+SRCS     = $(wildcard *.cpp) $(wildcard radio/*.cpp)
+OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
+HEADERS  = $(wildcard *.h) $(wildcard radio/*.h)
 
 # ============================================================================
 # Compilation Build Automation Targets
@@ -88,7 +91,11 @@ version:
 
 .PHONY: version
 
+# vpath lets the implicit rule find sources in subdirectories.
+vpath %.cpp radio
+
 $(OBJ_DIR)/%.o: %.cpp $(HEADERS)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
