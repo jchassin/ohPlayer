@@ -127,8 +127,12 @@ void RadioBrowserClient::Execute(const Brx& aPathAndQuery, std::vector<Station>&
     Uri uri(iRequestUri);
     Log::Print("RadioBrowserClient: requesting %.*s\n", PBUF(iRequestUri));
     IReader& reader = iLoader->Load(uri); // THROWS UriLoaderError
-    iLoader->Reset();
+    // NOTE: do NOT call iLoader->Reset() here - it disconnects the socket
+    // (UriLoader::Reset is only safe between Load calls, not while reading).
     ParseStations(reader, aResults, aMaxResults);
+    // Reading is complete; the socket is disconnected on the next Load or by
+    // the UriLoader destructor.
+    iLoader->Reset();
 }
 
 void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& aResults,
