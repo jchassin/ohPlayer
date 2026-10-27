@@ -984,6 +984,7 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     // (every HLS segment fetch / pipeline element transition is logged)
     // and were only useful during bring-up.
     Debug::SetLevel(Debug::kSources);
+    Debug::AddLevel(Debug::kDvInvocation); // TEMP: see what control points push to the renderer
     //Debug::AddLevel(Debug::kPipeline);
     //Debug::AddLevel(Debug::kMedia);
     Debug::AddLevel(Debug::kRaat);
