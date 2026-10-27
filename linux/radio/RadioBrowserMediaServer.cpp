@@ -224,14 +224,12 @@ RadioBrowserMediaServer::RadioBrowserMediaServer(Net::DvStack& aDvStack,
                                                  const Brx& aUserAgent,
                                                  const Brx& aUdn,
                                                  const Brx& aFriendlyName)
-    : iDvStack(aDvStack)
-    , iDevice(nullptr)
-    , iClient(aEnv, aSsl, aUserAgent, iTimerFactory)
+    : iDevice(nullptr)
     , iTimerFactory(aEnv)
+    , iClient(aEnv, aSsl, aUserAgent, iTimerFactory)
     , iSystemUpdateId(1)
     , iTopCacheTimeMs(0)
     , iSearchCacheTimeMs(0)
-    , iNextObjectId(1)
 {
     iDevice = new Net::DvDeviceStandard(aDvStack, aUdn);
     iDevice->SetAttribute("Upnp.Domain", "upnp.org");
@@ -280,16 +278,20 @@ void RadioBrowserMediaServer::UpdateId()
 
 void RadioBrowserMediaServer::BrowseRoot(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
+    static const Brn kTopId("top");
+    static const Brn kCountryId("country");
+    static const Brn kGenreId("genre");
+    static const Brn kSearchId("search");
     static const Brn kTopTitle("Most popular");
     static const Brn kCountryTitle("By country");
     static const Brn kGenreTitle("By genre");
     static const Brn kSearchTitle("Search results");
     struct Entry { const Brx* id; const Brx* title; };
     const Entry entries[] = {
-        { &Brn("top"), &kTopTitle },
-        { &Brn("country"), &kCountryTitle },
-        { &Brn("genre"), &kGenreTitle },
-        { &Brn("search"), &kSearchTitle },
+        { &kTopId, &kTopTitle },
+        { &kCountryId, &kCountryTitle },
+        { &kGenreId, &kGenreTitle },
+        { &kSearchId, &kSearchTitle },
     };
     const TUint total = sizeof(entries) / sizeof(entries[0]);
     aTotalMatches = total;

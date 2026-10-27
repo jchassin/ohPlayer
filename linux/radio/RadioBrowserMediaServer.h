@@ -102,7 +102,6 @@ private:
     void UpdateId();
 
 private:
-    Net::DvStack& iDvStack;
     Net::DvDeviceStandard* iDevice;
     std::unique_ptr<ContentDirectory> iContentDirectory;
     std::unique_ptr<ConnectionManager> iConnectionManager;
@@ -120,7 +119,6 @@ private:
     std::vector<RadioBrowserClient::Station> iGenreScratch;
     std::vector<Brn> iCountries;
     std::vector<Brn> iGenres;
-    TUint iNextObjectId;
 };
 
 } // namespace Av
