@@ -1,4 +1,5 @@
 #include "RadioBrowserClient.h"
+#include <OpenHome/Media/Protocol/ProtocolHls.h>
 #include <OpenHome/Json.h>
 #include <OpenHome/Private/Ascii.h>
 #include <OpenHome/Private/Converter.h>
@@ -35,7 +36,7 @@ RadioBrowserClient::RadioBrowserClient(Environment& aEnv, SslContext& aSsl, cons
     : iEnv(aEnv)
     , iSsl(aSsl)
     , iUserAgent(aUserAgent)
-    , iLoader(aEnv, aSsl, aUserAgent, aTimerFactory, 0 /* retry immediately */)
+    , iLoader(new UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, 0 /* retry immediately */))
     , iServer(kUriMaxBytes)
     , iRequestUri(kUriMaxBytes)
 {
@@ -44,6 +45,7 @@ RadioBrowserClient::RadioBrowserClient(Environment& aEnv, SslContext& aSsl, cons
 
 RadioBrowserClient::~RadioBrowserClient()
 {
+    delete iLoader;
 }
 
 void RadioBrowserClient::SetServer(const Brx& aServer)
@@ -123,8 +125,8 @@ void RadioBrowserClient::Execute(const Brx& aPathAndQuery, std::vector<Station>&
     iRequestUri.Append(limitBuf);
 
     Uri uri(iRequestUri);
-    IReader& reader = iLoader.Load(uri); // THROWS UriLoaderError
-    iLoader.Reset();
+    IReader& reader = iLoader->Load(uri); // THROWS UriLoaderError
+    iLoader->Reset();
     ParseStations(reader, aResults, aMaxResults);
 }
 

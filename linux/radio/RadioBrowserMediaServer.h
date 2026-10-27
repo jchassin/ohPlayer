@@ -6,7 +6,6 @@
 #include <OpenHome/Net/Core/DvInvocationResponse.h>
 #include <Generated/DvUpnpOrgContentDirectory1.h>
 #include <Generated/DvUpnpOrgConnectionManager1.h>
-#include <OpenHome/Media/Protocol/ProtocolHls.h>
 #include "RadioBrowserClient.h"
 
 #include <vector>

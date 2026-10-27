@@ -2,7 +2,8 @@
 
 #include <OpenHome/Types.h>
 #include <OpenHome/Buffer.h>
-#include <OpenHome/Media/Protocol/ProtocolHls.h>
+// UriLoader (from ProtocolHls.h) is held by pointer to avoid leaking that
+// header (and its exceptions) into every including translation unit.
 #include <OpenHome/Uri.h>
 #include <vector>
 
@@ -90,7 +91,7 @@ private:
     Environment& iEnv;
     SslContext& iSsl;
     const Brx& iUserAgent;
-    UriLoader iLoader;
+    Media::UriLoader* iLoader;
     Bwh iServer;      // host name of the API server
     Bwh iRequestUri;  // scratch for building request uris
 };

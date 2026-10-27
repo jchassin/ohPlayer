@@ -1,4 +1,5 @@
 #include "RadioBrowserMediaServer.h"
+#include <OpenHome/Media/Protocol/ProtocolHls.h>  // UriLoaderError
 #include <OpenHome/Net/Private/DviStack.h>
 #include <OpenHome/Net/Core/DvDevice.h>
 #include <OpenHome/DidlLite.h>
