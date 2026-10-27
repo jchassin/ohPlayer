@@ -134,13 +134,13 @@ private:
     static const TUint kNumOdpSessions = 4;
     static const TUint kMinWebUiResourceThreads = 4;
     static const TUint kMaxWebUiTabs = 4;
-    // Web ui config message pool. Sized for the full config app field set,
-    // including the 30 radio preset fields (name/uri/image per preset):
-    // opening the config ui notifies every field at once, and each
-    // notification takes one message plus ceil(valueBytes/kUiMsgBufBytes)
-    // buffers. 64-byte buffers keep a 256-byte value at 4 buffers instead
-    // of 16 with the original 16-byte buffers.
-    static const TUint kUiSendQueueSize = 200;
+    // Web ui config message pool. Must cover the worst case: every config
+    // value notifying on session subscribe; values can also be held in the
+    // web framework send queue (up to its own SendQueueSize) while a slow
+    // client drains it, retaining their pool entries - several concurrent
+    // sessions (reloads, tabs, pollers) could starve a smaller pool.
+    // 512 messages / 768 x 64B buffers (~50KB) is ample for the ~60 fields.
+    static const TUint kUiSendQueueSize = 512;
     static const TUint kUiMsgBufCount = kUiSendQueueSize + ((kUiSendQueueSize + 1) / 2);
     static const TUint kUiMsgBufBytes = 64;
     static const TUint kMaxPinsDevice = 6;
