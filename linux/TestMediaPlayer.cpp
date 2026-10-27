@@ -381,8 +381,27 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // Radio Browser media server: exposes the community radio directory
     // (radio-browser.info) to UPnP/DLNA control points for browsing/search;
     // stations play on this renderer through its usual protocols (http/hls).
-    Bws<256> radioBrowserUdn(aUdn);
-    radioBrowserUdn.Append(Brn("-RadioBrowser"));
+    // UPnP MediaServer UDN must be a canonical uuid (8-4-4-4-12 hex);
+    // some control points (e.g. Linn app) ignore devices whose UDN is not a
+    // well-formed uuid. Derive a stable one from the renderer udn.
+    Bws<64> radioBrowserUdn("uuid:");
+    {
+        // simple deterministic 128-bit hash of the renderer udn (FNV-1a x2)
+        TUint64 h1 = 0xcbf29ce484222325ULL;
+        TUint64 h2 = 0x9e3779b97f4a7c15ULL;
+        for (TUint i = 0; i < aUdn.Bytes(); i++) {
+            h1 ^= aUdn[i]; h1 *= 0x100000001b3ULL;
+            h2 ^= (TUint64(aUdn[i]) << 32) | aUdn[i]; h2 *= 0x100000001b3ULL;
+        }
+        const TUint64 ms[] = { h1, h2 };
+        const TByte* p = reinterpret_cast<const TByte*>(ms);
+        for (TUint i = 0; i < 16; i++) {
+            if (i == 4 || i == 6 || i == 8 || i == 10) {
+                radioBrowserUdn.Append('-');
+            }
+            Ascii::AppendHex(radioBrowserUdn, p[i]);
+        }
+    }
     iRadioBrowserMediaServer = std::make_unique<RadioBrowserMediaServer>(
         aDvStack, iMediaPlayer->Env(), iMediaPlayer->Ssl(), iUserAgent,
         radioBrowserUdn, Brn(aProductName));
