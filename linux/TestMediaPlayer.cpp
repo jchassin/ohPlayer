@@ -378,6 +378,16 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                    aUdn, mpInit);
     delete mpInit;
 
+    // Radio Browser media server: exposes the community radio directory
+    // (radio-browser.info) to UPnP/DLNA control points for browsing/search;
+    // stations play on this renderer through its usual protocols (http/hls).
+    Bws<256> radioBrowserUdn(aUdn);
+    radioBrowserUdn.Append(Brn("-RadioBrowser"));
+    iRadioBrowserMediaServer = std::make_unique<RadioBrowserMediaServer>(
+        aDvStack, iMediaPlayer->Env(), iMediaPlayer->Ssl(), iUserAgent,
+        radioBrowserUdn, Brn(aProductName));
+    iRadioBrowserMediaServer->Start();
+
     // Register Linn Amp web config parameters (volume control choice and serial port)
     iLinnAmpConfig = std::make_unique<LinnAmpConfig>(iMediaPlayer->ConfigInitialiser());
 
