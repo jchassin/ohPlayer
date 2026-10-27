@@ -992,7 +992,7 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     // Symbolise crash stacks in the log: ohNet prints raw module+0xoffset
     // addresses; the handler pipes them through addr2line so the log shows
     // thread/function/file:line directly (no manual address copying).
-    initParams->SetFatalErrorHandler(MakeFunctorMsg(CrashSymboliser, &CrashSymboliser::FatalErrorHandler));
+    initParams->SetFatalErrorHandler(MakeFunctorMsg(CrashSymboliser::Instance(), &CrashSymboliser::FatalErrorHandler));
     initParams->SetEnableShell(aShellPort);
     initParams->SetIPv6Supported(false);
 #ifdef LPEC_ENABLE

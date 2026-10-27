@@ -13,6 +13,12 @@ namespace Av {
 // Extract "(+0xHEX)" offsets from the crash text, then run one addr2line
 // invocation over all of them against /proc/self/exe (the running binary,
 // which embeds the debug info when built with -g).
+CrashSymboliser& CrashSymboliser::Instance()
+{
+    static CrashSymboliser s;
+    return s;
+}
+
 void CrashSymboliser::FatalErrorHandler(const char* aMsg)
 {
     if (aMsg != nullptr) {
