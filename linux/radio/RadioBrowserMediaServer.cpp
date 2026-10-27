@@ -51,7 +51,7 @@ void RadioBrowserMediaServer::ContentDirectory::GetSystemUpdateID(Net::IDvInvoca
     aInvocation.EndResponse();
 }
 
-void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvocation, const Brx& aObjectID, const Brx& /*aBrowseFlag*/, const Brx& /*aFilter*/,
+void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvocation, const Brx& aObjectID, const Brx& aBrowseFlag, const Brx& /*aFilter*/,
                                                        TUint aStartingIndex, TUint aRequestedCount, const Brx& /*aSortCriteria*/,
                                                        Net::IDvInvocationResponseString& aResult, Net::IDvInvocationResponseUint& aNumberReturned,
                                                        Net::IDvInvocationResponseUint& aTotalMatches, Net::IDvInvocationResponseUint& aUpdateID)
@@ -61,6 +61,15 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
     TUint totalMatches = 0;
     iServer.UpdateId();
     try {
+        // BrowseMetadata: return the object itself (as a container).
+        static const Brn kBrowseMetadata("BrowseMetadata");
+        if (aBrowseFlag == kBrowseMetadata) {
+            std::lock_guard<std::mutex> lock(iServer.iLock);
+            iServer.WriteContainerDidl(didl, aObjectID, aObjectID, 0);
+            numberReturned = 1;
+            totalMatches = 1;
+        }
+        else {
         std::lock_guard<std::mutex> lock(iServer.iLock);
         static const Brn kRoot("0");
         static const Brn kTop("top");
@@ -97,6 +106,7 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         }
         else {
             // unknown object: empty result
+        }
         }
     }
     catch (UriLoaderError&) {
@@ -238,6 +248,9 @@ RadioBrowserMediaServer::RadioBrowserMediaServer(Net::DvStack& aDvStack,
     iDevice->SetAttribute("Upnp.Manufacturer", "OpenHome");
     iDevice->SetAttribute("Upnp.ModelName", "Radio Browser");
     iDevice->SetAttribute("Upnp.ModelDescription", "Community radio directory (radio-browser.info)");
+    Bws<128> friendlyName("Radio Browser ");
+    friendlyName.Append(aFriendlyName);
+    iDevice->SetAttribute("Upnp.FriendlyName", Brn(friendlyName.Ptr(), friendlyName.Bytes()));
 
     iContentDirectory = std::make_unique<ContentDirectory>(*iDevice, *this);
     iConnectionManager = std::make_unique<ConnectionManager>(*iDevice);
