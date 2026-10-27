@@ -352,12 +352,10 @@ void RadioBrowserMediaServer::BrowseRoot(Bws<65536>& aDidl, TUint aStartingIndex
     static const Brn kCountryId("country");
     static const Brn kGenreId("genre");
     static const Brn kNameId("name");
-    static const Brn kSearchId("search");
     static const Brn kTopTitle("Most popular");
     static const Brn kCountryTitle("By country");
     static const Brn kGenreTitle("By genre");
     static const Brn kNameTitle("By name");
-    static const Brn kSearchTitle("Search results");
     // Control points use upnp:childCount to decide whether a container is
     // worth browsing; announcing 0 makes the Linn app show an empty root.
     // Report realistic counts (top may not be cached yet at first browse;
@@ -372,7 +370,6 @@ void RadioBrowserMediaServer::BrowseRoot(Bws<65536>& aDidl, TUint aStartingIndex
         { &kCountryId, &kCountryTitle, countryCount },
         { &kGenreId, &kGenreTitle, genreCount },
         { &kNameId, &kNameTitle, nameCount },
-        { &kSearchId, &kSearchTitle, (TUint)iSearchCache.size() },
     };
     const TUint total = sizeof(entries) / sizeof(entries[0]);
     aTotalMatches = total;
