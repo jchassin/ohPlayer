@@ -239,6 +239,20 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
             if (!s.iLastCheckOk) {
                 continue; // station known to be down at last check
             }
+            // The radio-browser database commonly contains multiple entries
+            // for the same station (same stream submitted several times).
+            // Results are popularity-ordered, so the first occurrence is the
+            // most popular; skip subsequent entries with the same uri.
+            TBool duplicate = false;
+            for (TUint k = 0; k < aResults.size(); k++) {
+                if (aResults[k].Uri() == s.Uri()) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (duplicate) {
+                continue;
+            }
             aResults.push_back(s);
             if (aResults.size() >= aMaxResults) {
                 break;
