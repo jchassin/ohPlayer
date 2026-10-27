@@ -140,22 +140,23 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
 {
     // Read the whole response into memory; station lists are up to a few
     // hundred KB for 100 entries.
+    // NOTE: partial reads are normal on a TCP stream; only a zero-length read
+    // signals end-of-stream (per the IReader interface). Do NOT break on
+    // short reads.
     std::vector<TByte> data;
     for (;;) {
         const TUint chunk = 2048;
         Brn read = aReader.Read(chunk);
         if (read.Bytes() == 0) {
-            break;
+            break; // end of stream
         }
         data.insert(data.end(), read.Ptr(), read.Ptr() + read.Bytes());
         if (data.size() > 4 * 1024 * 1024) {
+            Log::Print("RadioBrowserClient: response exceeds 4MB cap\n");
             break; // safety cap
         }
-        if (read.Bytes() < chunk) {
-            // short read: server closed the connection
-            break;
-        }
     }
+    Log::Print("RadioBrowserClient: read %u response bytes\n", (TUint)data.size());
     Brn input(reinterpret_cast<const TByte*>(data.data()), data.size());
     if (input.Bytes() == 0) {
         return;
