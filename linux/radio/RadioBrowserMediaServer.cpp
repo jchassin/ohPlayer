@@ -250,7 +250,8 @@ RadioBrowserMediaServer::RadioBrowserMediaServer(Net::DvStack& aDvStack,
     iDevice->SetAttribute("Upnp.ModelDescription", "Community radio directory (radio-browser.info)");
     Bws<128> friendlyName("Radio Browser ");
     friendlyName.Append(aFriendlyName);
-    iDevice->SetAttribute("Upnp.FriendlyName", Brn(friendlyName.Ptr(), friendlyName.Bytes()));
+    friendlyName.PtrZ(); // ensure null termination for SetAttribute
+    iDevice->SetAttribute("Upnp.FriendlyName", reinterpret_cast<const TChar*>(friendlyName.Ptr()));
 
     iContentDirectory = std::make_unique<ContentDirectory>(*iDevice, *this);
     iConnectionManager = std::make_unique<ConnectionManager>(*iDevice);
