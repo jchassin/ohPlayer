@@ -25,6 +25,10 @@ static const char* kDidlPreamble =
 static const char* kDidlEpilogue = "</DIDL-Lite>";
 
 
+static const Brn kQualitySuffixHi("/hi");
+static const Brn kQualitySuffixMid("/mid");
+static const Brn kQualitySuffixLow("/low");
+
 static TBool SplitQuality(const Brx& aId, const Brx& aPrefix, Brn& aKey, Brn& aQuality)
 {
     // aId: "<prefix><key>[/hi|/mid|/low]" ; returns false if prefix doesn't match
@@ -128,9 +132,6 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         static const Brn kCountryPrefix("country/");
         static const Brn kGenrePrefix("genre/");
         static const Brn kNamePrefix("name/");
-        static const Brn kQualitySuffixHi("/hi");
-        static const Brn kQualitySuffixMid("/mid");
-        static const Brn kQualitySuffixLow("/low");
 
         if (aObjectID == kRoot) {
             didl.Append(Brn(kDidlPreamble));
