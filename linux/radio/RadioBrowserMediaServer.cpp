@@ -15,6 +15,15 @@ namespace Av {
 
 static const Brn kProtocolInfoSink("*:*:*:*"); // accept anything; playback is done by the renderer's own protocols
 
+
+static const char* kDidlPreamble =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    "<DIDL-Lite xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\""
+    " xmlns:dc=\"http://purl.org/dc/elements/1.1/\""
+    " xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\">";
+
+static const char* kDidlEpilogue = "</DIDL-Lite>";
+
 // RadioBrowserMediaServer::ContentDirectory
 
 RadioBrowserMediaServer::ContentDirectory::ContentDirectory(Net::DvDeviceStandard& aDevice, RadioBrowserMediaServer& aServer)
@@ -70,7 +79,9 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         static const Brn kBrowseMetadata("BrowseMetadata");
         if (aBrowseFlag == kBrowseMetadata) {
             std::lock_guard<std::mutex> lock(iServer.iLock);
+            didl.Append(Brn(kDidlPreamble));
             iServer.WriteContainerDidl(didl, aObjectID, aObjectID, 0);
+            didl.Append(Brn(kDidlEpilogue));
             numberReturned = 1;
             totalMatches = 1;
         }
@@ -85,16 +96,22 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         static const Brn kGenrePrefix("genre/");
 
         if (aObjectID == kRoot) {
+            didl.Append(Brn(kDidlPreamble));
             iServer.BrowseRoot(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID == kTop) {
             iServer.BrowseTop(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
         }
         else if (aObjectID == kCountry) {
+            didl.Append(Brn(kDidlPreamble));
             iServer.BrowseCountry(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID == kGenre) {
+            didl.Append(Brn(kDidlPreamble));
             iServer.BrowseGenre(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
         }
         else if (aObjectID == kSearch) {
             iServer.BrowseSearch(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
