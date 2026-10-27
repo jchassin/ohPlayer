@@ -46,6 +46,7 @@ public:
         const Brx& Codec() const { return iCodec; }
         TUint Bitrate() const { return iBitrate; }
         TBool Hls() const { return iHls; }
+        TBool LastCheckOk() const { return iLastCheckOk; }
     private:
         friend class RadioBrowserClient;
         Bwh iName;
@@ -56,6 +57,7 @@ public:
         Bwh iCodec;
         TUint iBitrate;
         TBool iHls;
+        TBool iLastCheckOk;
     };
 
 public:
