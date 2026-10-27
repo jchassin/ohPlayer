@@ -13,6 +13,9 @@ namespace Av {
 
 static const Brn kDefaultServer("de1.api.radio-browser.info");
 static const TUint kRetryIntervalMs = 5 * 1000; // avoid a tight retry loop in synchronous handlers
+// radio-browser.info requires clients to identify themselves; requests
+// without a User-Agent are rejected.
+static const Brn kUserAgent("ohPlayer/1.0 (github.com/jchassin/ohPlayer)");
 static const Brn kSchemeHttps("https://");
 
 // RadioBrowserClient::Station
@@ -33,7 +36,7 @@ RadioBrowserClient::Station::Station()
 
 RadioBrowserClient::RadioBrowserClient(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent,
                                        ITimerFactory& aTimerFactory)
-    : iLoader(new Media::UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, kRetryIntervalMs))
+    : iLoader(new Media::UriLoader(aEnv, aSsl, kUserAgent, aTimerFactory, kRetryIntervalMs))
     , iServer(kUriMaxBytes)
     , iRequestUri(kUriMaxBytes)
 {
