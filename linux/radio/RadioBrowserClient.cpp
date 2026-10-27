@@ -192,9 +192,6 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
             if (!haveUri) {
                 continue; // unusable entry
             }
-            if (!s.iLastCheckOk) {
-                continue; // station known to be down at last check
-            }
             if (jsonParser.HasKey("name")) {
                 Brn name(jsonParser.StringOptional("name"));
                 const TUint max = std::min<TUint>(name.Bytes(), s.iName.MaxBytes());
@@ -238,6 +235,9 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
                     s.iLastCheckOk = (Ascii::Uint(jsonParser.StringOptional("lastcheckok")) != 0);
                 }
                 catch (AsciiError&) {}
+            }
+            if (!s.iLastCheckOk) {
+                continue; // station known to be down at last check
             }
             aResults.push_back(s);
             if (aResults.size() >= aMaxResults) {
