@@ -91,9 +91,11 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         static const Brn kTop("top");
         static const Brn kCountry("country");
         static const Brn kGenre("genre");
+        static const Brn kName("name");
         static const Brn kSearch("search");
         static const Brn kCountryPrefix("country/");
         static const Brn kGenrePrefix("genre/");
+        static const Brn kNamePrefix("name/");
 
         if (aObjectID == kRoot) {
             didl.Append(Brn(kDidlPreamble));
@@ -115,6 +117,11 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
             iServer.BrowseGenre(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
             didl.Append(Brn(kDidlEpilogue));
         }
+        else if (aObjectID == kName) {
+            didl.Append(Brn(kDidlPreamble));
+            iServer.BrowseName(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
+        }
         else if (aObjectID == kSearch) {
             didl.Append(Brn(kDidlPreamble));
             iServer.BrowseSearch(didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
@@ -132,6 +139,13 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
             Brn genre(aObjectID.Ptr() + kGenrePrefix.Bytes(), aObjectID.Bytes() - kGenrePrefix.Bytes());
             didl.Append(Brn(kDidlPreamble));
             iServer.BrowseGenreStations(genre, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
+            didl.Append(Brn(kDidlEpilogue));
+        }
+        else if (aObjectID.Bytes() > kNamePrefix.Bytes() &&
+                 Brn(aObjectID.Ptr(), kNamePrefix.Bytes()) == kNamePrefix) {
+            Brn letter(aObjectID.Ptr() + kNamePrefix.Bytes(), aObjectID.Bytes() - kNamePrefix.Bytes());
+            didl.Append(Brn(kDidlPreamble));
+            iServer.BrowseNameStations(letter, didl, aStartingIndex, aRequestedCount, numberReturned, totalMatches);
             didl.Append(Brn(kDidlEpilogue));
         }
         else {
@@ -336,10 +350,12 @@ void RadioBrowserMediaServer::BrowseRoot(Bws<16384>& aDidl, TUint aStartingIndex
     static const Brn kTopId("top");
     static const Brn kCountryId("country");
     static const Brn kGenreId("genre");
+    static const Brn kNameId("name");
     static const Brn kSearchId("search");
     static const Brn kTopTitle("Most popular");
     static const Brn kCountryTitle("By country");
     static const Brn kGenreTitle("By genre");
+    static const Brn kNameTitle("By name");
     static const Brn kSearchTitle("Search results");
     // Control points use upnp:childCount to decide whether a container is
     // worth browsing; announcing 0 makes the Linn app show an empty root.
@@ -348,11 +364,13 @@ void RadioBrowserMediaServer::BrowseRoot(Bws<16384>& aDidl, TUint aStartingIndex
     const TUint topCount = (iTopCache.empty() ? kMaxStations : (TUint)iTopCache.size());
     const TUint countryCount = (TUint)iCountries.size();
     const TUint genreCount = (TUint)iGenres.size();
+    const TUint nameCount = 26; // A-Z
     struct Entry { const Brx* id; const Brx* title; TUint childCount; };
     const Entry entries[] = {
         { &kTopId, &kTopTitle, topCount },
         { &kCountryId, &kCountryTitle, countryCount },
         { &kGenreId, &kGenreTitle, genreCount },
+        { &kNameId, &kNameTitle, nameCount },
         { &kSearchId, &kSearchTitle, (TUint)iSearchCache.size() },
     };
     const TUint total = sizeof(entries) / sizeof(entries[0]);
@@ -429,6 +447,59 @@ void RadioBrowserMediaServer::BrowseGenre(Bws<16384>& aDidl, TUint aStartingInde
         id.Append(iGenres[i]);
         WriteContainerDidl(aDidl, id, iGenres[i], kMaxStations);
         returned++;
+    }
+    aNumberReturned = returned;
+}
+
+void RadioBrowserMediaServer::BrowseName(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+{
+    // A-Z, using the ascii codes 0x41..0x5A
+    const TUint total = 26;
+    aTotalMatches = total;
+    TUint returned = 0;
+    for (TUint i = aStartingIndex; i < total && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
+        Bws<8> id("name/");
+        Bws<2> letter;
+        letter.Append(static_cast<TByte>('A' + i));
+        id.Append(letter);
+        WriteContainerDidl(aDidl, id, letter, kMaxStations);
+        returned++;
+    }
+    aNumberReturned = returned;
+}
+
+void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
+{
+    // Search stations whose name starts with the letter.
+    // The api's name search is a 'contains' match; filter locally on the
+    // first character (case-insensitive) to get a true 'starts with'.
+    iNameScratch.clear();
+    iClient.SearchByName(aLetter, iNameScratch, kMaxStations * 4);
+    std::vector<RadioBrowserClient::Station> filtered;
+    const TByte target = static_cast<TByte>(Ascii::ToUpperCase(aLetter.Bytes() > 0 ? aLetter[0] : ' '));
+    for (const auto& station : iNameScratch) {
+        if (station.Name().Bytes() > 0) {
+            const TByte first = static_cast<TByte>(Ascii::ToUpperCase(station.Name()[0]));
+            if (first == target) {
+                filtered.push_back(station);
+                if (filtered.size() >= kMaxStations) {
+                    break;
+                }
+            }
+        }
+    }
+    aTotalMatches = filtered.size();
+    TUint returned = 0;
+    for (TUint i = aStartingIndex; i < filtered.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
+        Bws<2048> entry;
+        WriteStationDidl(entry, filtered[i], i);
+        if (aDidl.Bytes() + entry.Bytes() <= aDidl.MaxBytes()) {
+            aDidl.Append(entry);
+            returned++;
+        }
+        else {
+            break;
+        }
     }
     aNumberReturned = returned;
 }

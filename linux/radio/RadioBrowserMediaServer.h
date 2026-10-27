@@ -91,6 +91,8 @@ private:
     void BrowseCountry(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseCountryStations(const Brx& aCountry, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseGenre(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
+    void BrowseName(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
+    void BrowseNameStations(const Brx& aLetter, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseGenreStations(const Brx& aGenre, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void BrowseSearch(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches);
     void RunSearch(const Brx& aName);
@@ -117,6 +119,7 @@ private:
     TUint64 iSearchCacheTimeMs;
     std::vector<RadioBrowserClient::Station> iCountryScratch;
     std::vector<RadioBrowserClient::Station> iGenreScratch;
+    std::vector<RadioBrowserClient::Station> iNameScratch;
     std::vector<Brn> iCountries;
     std::vector<Brn> iGenres;
 };
