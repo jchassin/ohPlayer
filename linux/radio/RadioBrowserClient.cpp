@@ -125,6 +125,7 @@ void RadioBrowserClient::Execute(const Brx& aPathAndQuery, std::vector<Station>&
     iRequestUri.Append(limitBuf);
 
     Uri uri(iRequestUri);
+    Log::Print("RadioBrowserClient: requesting %.*s\n", PBUF(iRequestUri));
     IReader& reader = iLoader->Load(uri); // THROWS UriLoaderError
     iLoader->Reset();
     ParseStations(reader, aResults, aMaxResults);
