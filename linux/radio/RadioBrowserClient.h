@@ -11,6 +11,7 @@ namespace OpenHome {
     class Environment;
     class SslContext;
     class ITimerFactory;
+    class IReader;
 namespace Media {
 class UriLoader;
 }

@@ -36,7 +36,7 @@ RadioBrowserClient::RadioBrowserClient(Environment& aEnv, SslContext& aSsl, cons
     : iEnv(aEnv)
     , iSsl(aSsl)
     , iUserAgent(aUserAgent)
-    , iLoader(new UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, 0 /* retry immediately */))
+    , iLoader(new Media::UriLoader(aEnv, aSsl, aUserAgent, aTimerFactory, 0 /* retry immediately */))
     , iServer(kUriMaxBytes)
     , iRequestUri(kUriMaxBytes)
 {
@@ -66,7 +66,7 @@ void RadioBrowserClient::SearchByName(const Brx& aName, std::vector<Station>& aR
         if (ch == ' ') {
             query.Append('+');
         }
-        else if (Ascii::IsAlnum(ch) || ch == '-' || ch == '_') {
+        else if (Ascii::IsDigit(ch) || Ascii::IsAlphabetic(ch) || ch == '-' || ch == '_') {
             query.Append(ch);
         }
         // other characters are dropped to keep the request valid
@@ -137,14 +137,18 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
     // hundred KB for 100 entries.
     std::vector<TByte> data;
     for (;;) {
-        TByte buf[2048];
-        const TUint bytes = aReader.Read(Brn(buf, sizeof(buf)));
-        if (bytes == 0) {
+        const TUint chunk = 2048;
+        Brn read = aReader.Read(chunk);
+        if (read.Bytes() == 0) {
             break;
         }
-        data.insert(data.end(), buf, buf + bytes);
+        data.insert(data.end(), read.Ptr(), read.Ptr() + read.Bytes());
         if (data.size() > 4 * 1024 * 1024) {
             break; // safety cap
+        }
+        if (read.Bytes() < chunk) {
+            // short read: server closed the connection
+            break;
         }
     }
     Brn input(reinterpret_cast<const TByte*>(data.data()), data.size());
