@@ -611,22 +611,36 @@ const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::CachedS
             if (now - entry.iTimeMs < kCacheLifetimeMs) {
                 return entry.iStations;
             }
+            // refresh in place
             entry.iStations.clear();
             aFetcher(entry.iStations);
             entry.iTimeMs = now;
             return entry.iStations;
         }
     }
-    // new entry (bounded: drop the oldest when exceeding 8 cached lists)
-    if (iListCache.size() >= 8) {
-        iListCache.erase(iListCache.begin());
+    // New entry. ListCacheEntry is not move-assignable (ohNet buffers), so
+    // replace the oldest entry in place instead of erasing.
+    if (iListCache.empty()) {
+        iListCache.emplace_back();
     }
-    ListCacheEntry entry;
+    TUint oldest = 0;
+    if (iListCache.size() >= 8) {
+        for (TUint i = 1; i < iListCache.size(); i++) {
+            if (iListCache[i].iTimeMs < iListCache[oldest].iTimeMs) {
+                oldest = i;
+            }
+        }
+    }
+    else {
+        iListCache.emplace_back();
+        oldest = (TUint)(iListCache.size() - 1);
+    }
+    auto& entry = iListCache[oldest];
     entry.iKey.Replace(aKey);
+    entry.iStations.clear();
     aFetcher(entry.iStations);
     entry.iTimeMs = now;
-    iListCache.push_back(std::move(entry));
-    return iListCache.back().iStations;
+    return entry.iStations;
 }
 
 const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::TopStations()

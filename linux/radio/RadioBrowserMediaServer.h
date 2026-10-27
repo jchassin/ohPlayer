@@ -121,7 +121,7 @@ private:
     // Simple keyed cache for station lists (country/genre/letter): a page
     // request from a control point would otherwise trigger a fresh api call.
     struct ListCacheEntry {
-        Bwh iKey;
+        Bwh iKey {64};
         std::vector<RadioBrowserClient::Station> iStations;
         TUint64 iTimeMs;
     };
