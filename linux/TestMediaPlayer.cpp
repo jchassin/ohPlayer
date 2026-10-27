@@ -990,6 +990,7 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     // and were only useful during bring-up.
     Debug::SetLevel(Debug::kSources);
     Debug::AddLevel(Debug::kDvInvocation); // TEMP: see what control points push to the renderer
+    Debug::AddLevel(Debug::kHttp);          // TEMP: see request urls
     //Debug::AddLevel(Debug::kPipeline);
     //Debug::AddLevel(Debug::kMedia);
     Debug::AddLevel(Debug::kRaat);
