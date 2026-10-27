@@ -16,6 +16,37 @@ static const TUint kRetryIntervalMs = 5 * 1000; // avoid a tight retry loop in s
 // radio-browser.info requires clients to identify themselves; requests
 // without a User-Agent are rejected.
 static const Brn kUserAgent("ohPlayer/1.0 (github.com/jchassin/ohPlayer)");
+
+// Normalised comparison key for stream urls: scheme, host case and any
+// query string/fragment are ignored, so the same stream submitted as
+// e.g. http://Host/stream.aac, https://host/stream.aac and
+// https://host/stream.aac?id=x deduplicates to one entry.
+static void AppendUriKey(Bwx& aKey, const Brx& aUri)
+{
+    // strip scheme
+    TUint start = 0;
+    if (aUri.Bytes() > 7 && Brn(aUri.Ptr(), 7) == Brn("http://")) {
+        start = 7;
+    }
+    else if (aUri.Bytes() > 8 && Brn(aUri.Ptr(), 8) == Brn("https://")) {
+        start = 8;
+    }
+    TUint end = aUri.Bytes();
+    for (TUint i = start; i < aUri.Bytes(); i++) {
+        const TByte ch = aUri[i];
+        if (ch == '?' || ch == '#') {
+            end = i;
+            break;
+        }
+    }
+    for (TUint i = start; i < end; i++) {
+        TByte ch = aUri[i];
+        if (ch >= 'A' && ch <= 'Z') {
+            ch = static_cast<TByte>(ch - 'A' + 'a'); // lowercase host (and rest; harmless)
+        }
+        aKey.Append(ch);
+    }
+}
 static const Brn kSchemeHttps("https://");
 
 // RadioBrowserClient::Station
@@ -240,12 +271,17 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
                 continue; // station known to be down at last check
             }
             // The radio-browser database commonly contains multiple entries
-            // for the same station (same stream submitted several times).
-            // Results are popularity-ordered, so the first occurrence is the
-            // most popular; skip subsequent entries with the same uri.
+            // for the same station (the same stream submitted several times,
+            // often with slightly different urls or artworks). Results are
+            // popularity-ordered, so the first occurrence is the most
+            // popular; skip subsequent entries resolving to the same stream.
+            Bws<RadioBrowserClient::kUriMaxBytes * 2> newKey;
+            AppendUriKey(newKey, s.Uri());
             TBool duplicate = false;
             for (TUint k = 0; k < aResults.size(); k++) {
-                if (aResults[k].Uri() == s.Uri()) {
+                Bws<RadioBrowserClient::kUriMaxBytes * 2> existingKey;
+                AppendUriKey(existingKey, aResults[k].Uri());
+                if (existingKey == newKey) {
                     duplicate = true;
                     break;
                 }
