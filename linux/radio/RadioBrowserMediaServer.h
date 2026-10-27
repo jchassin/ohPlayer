@@ -11,6 +11,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <functional>
 
 namespace OpenHome {
     class Environment;
@@ -117,9 +118,17 @@ private:
     std::vector<RadioBrowserClient::Station> iSearchCache;
     Brn iSearchTerm;
     TUint64 iSearchCacheTimeMs;
-    std::vector<RadioBrowserClient::Station> iCountryScratch;
-    std::vector<RadioBrowserClient::Station> iGenreScratch;
-    std::vector<RadioBrowserClient::Station> iNameScratch;
+    // Simple keyed cache for station lists (country/genre/letter): a page
+    // request from a control point would otherwise trigger a fresh api call.
+    struct ListCacheEntry {
+        Bwh iKey;
+        std::vector<RadioBrowserClient::Station> iStations;
+        TUint64 iTimeMs;
+    };
+    std::vector<ListCacheEntry> iListCache;
+    const std::vector<RadioBrowserClient::Station>& CachedStations(
+        const Brx& aKey,
+        std::function<void(std::vector<RadioBrowserClient::Station>&)> aFetcher);
     std::vector<Brn> iCountries;
     std::vector<Brn> iGenres;
 };

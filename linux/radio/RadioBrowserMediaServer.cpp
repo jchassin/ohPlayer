@@ -401,6 +401,13 @@ void RadioBrowserMediaServer::BrowseTop(Bws<16384>& aDidl, TUint aStartingIndex,
         }
     }
     aNumberReturned = returned;
+    // Do not advertise more than this page can serve: the 16KB didl buffer
+    // caps the number of items per response; announcing the full list
+    // invites control points to page through (each page = a fresh slow api
+    // call), which times out. Clamp to what is here.
+    if (returned < aRequestedCount || aRequestedCount == 0) {
+        aTotalMatches = aStartingIndex + returned;
+    }
 }
 
 void RadioBrowserMediaServer::BrowseCountry(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
@@ -435,6 +442,13 @@ void RadioBrowserMediaServer::BrowseCountryStations(const Brx& aCountry, Bws<163
         }
     }
     aNumberReturned = returned;
+    // Do not advertise more than this page can serve: the 16KB didl buffer
+    // caps the number of items per response; announcing the full list
+    // invites control points to page through (each page = a fresh slow api
+    // call), which times out. Clamp to what is here.
+    if (returned < aRequestedCount || aRequestedCount == 0) {
+        aTotalMatches = aStartingIndex + returned;
+    }
 }
 
 void RadioBrowserMediaServer::BrowseGenre(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
@@ -470,24 +484,29 @@ void RadioBrowserMediaServer::BrowseName(Bws<16384>& aDidl, TUint aStartingIndex
 
 void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
 {
-    // Search stations whose name starts with the letter.
+    // Search stations whose name starts with the letter (cached).
     // The api's name search is a 'contains' match; filter locally on the
     // first character (case-insensitive) to get a true 'starts with'.
-    iNameScratch.clear();
-    iClient.SearchByName(aLetter, iNameScratch, kMaxStations * 4);
-    std::vector<RadioBrowserClient::Station> filtered;
-    const TByte target = static_cast<TByte>(Ascii::ToUpperCase(aLetter.Bytes() > 0 ? aLetter[0] : ' '));
-    for (const auto& station : iNameScratch) {
-        if (station.Name().Bytes() > 0) {
-            const TByte first = static_cast<TByte>(Ascii::ToUpperCase(station.Name()[0]));
-            if (first == target) {
-                filtered.push_back(station);
-                if (filtered.size() >= kMaxStations) {
-                    break;
+    Bws<16> key("name:");
+    key.Append(aLetter);
+    const std::vector<RadioBrowserClient::Station>& filteredRef = CachedStations(
+        key, [this, &aLetter](std::vector<RadioBrowserClient::Station>& v) {
+            std::vector<RadioBrowserClient::Station> raw;
+            iClient.SearchByName(aLetter, raw, kMaxStations * 4);
+            const TByte target = static_cast<TByte>(Ascii::ToUpperCase(aLetter.Bytes() > 0 ? aLetter[0] : ' '));
+            for (const auto& station : raw) {
+                if (station.Name().Bytes() > 0) {
+                    const TByte first = static_cast<TByte>(Ascii::ToUpperCase(station.Name()[0]));
+                    if (first == target) {
+                        v.push_back(station);
+                        if (v.size() >= kMaxStations) {
+                            break;
+                        }
+                    }
                 }
             }
-        }
-    }
+        });
+    const std::vector<RadioBrowserClient::Station>& filtered = filteredRef;
     aTotalMatches = filtered.size();
     TUint returned = 0;
     for (TUint i = aStartingIndex; i < filtered.size() && (aRequestedCount == 0 || returned < aRequestedCount); i++) {
@@ -502,6 +521,13 @@ void RadioBrowserMediaServer::BrowseNameStations(const Brx& aLetter, Bws<16384>&
         }
     }
     aNumberReturned = returned;
+    // Do not advertise more than this page can serve: the 16KB didl buffer
+    // caps the number of items per response; announcing the full list
+    // invites control points to page through (each page = a fresh slow api
+    // call), which times out. Clamp to what is here.
+    if (returned < aRequestedCount || aRequestedCount == 0) {
+        aTotalMatches = aStartingIndex + returned;
+    }
 }
 
 void RadioBrowserMediaServer::BrowseGenreStations(const Brx& aGenre, Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
@@ -521,6 +547,13 @@ void RadioBrowserMediaServer::BrowseGenreStations(const Brx& aGenre, Bws<16384>&
         }
     }
     aNumberReturned = returned;
+    // Do not advertise more than this page can serve: the 16KB didl buffer
+    // caps the number of items per response; announcing the full list
+    // invites control points to page through (each page = a fresh slow api
+    // call), which times out. Clamp to what is here.
+    if (returned < aRequestedCount || aRequestedCount == 0) {
+        aTotalMatches = aStartingIndex + returned;
+    }
 }
 
 void RadioBrowserMediaServer::BrowseSearch(Bws<16384>& aDidl, TUint aStartingIndex, TUint aRequestedCount, TUint& aNumberReturned, TUint& aTotalMatches)
@@ -539,6 +572,13 @@ void RadioBrowserMediaServer::BrowseSearch(Bws<16384>& aDidl, TUint aStartingInd
         }
     }
     aNumberReturned = returned;
+    // Do not advertise more than this page can serve: the 16KB didl buffer
+    // caps the number of items per response; announcing the full list
+    // invites control points to page through (each page = a fresh slow api
+    // call), which times out. Clamp to what is here.
+    if (returned < aRequestedCount || aRequestedCount == 0) {
+        aTotalMatches = aStartingIndex + returned;
+    }
 }
 
 void RadioBrowserMediaServer::RunSearch(const Brx& aName)
@@ -559,6 +599,36 @@ void RadioBrowserMediaServer::RunSearch(const Brx& aName)
     iSearchCacheTimeMs = now;
 }
 
+
+const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::CachedStations(
+    const Brx& aKey,
+    std::function<void(std::vector<RadioBrowserClient::Station>&)> aFetcher)
+{
+    const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    for (auto& entry : iListCache) {
+        if (entry.iKey == aKey) {
+            if (now - entry.iTimeMs < kCacheLifetimeMs) {
+                return entry.iStations;
+            }
+            entry.iStations.clear();
+            aFetcher(entry.iStations);
+            entry.iTimeMs = now;
+            return entry.iStations;
+        }
+    }
+    // new entry (bounded: drop the oldest when exceeding 8 cached lists)
+    if (iListCache.size() >= 8) {
+        iListCache.erase(iListCache.begin());
+    }
+    ListCacheEntry entry;
+    entry.iKey.Replace(aKey);
+    aFetcher(entry.iStations);
+    entry.iTimeMs = now;
+    iListCache.push_back(std::move(entry));
+    return iListCache.back().iStations;
+}
+
 const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::TopStations()
 {
     const auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -572,17 +642,20 @@ const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::TopStat
 
 const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::CountryStations(const Brx& aCountry)
 {
-    // no per-country cache: short lists, browse events are rare
-    iCountryScratch.clear();
-    iClient.ByCountryCode(aCountry, iCountryScratch, kMaxStations);
-    return iCountryScratch;
+    Bws<32> key("country:");
+    key.Append(aCountry);
+    return CachedStations(key, [this, &aCountry](std::vector<RadioBrowserClient::Station>& v) {
+        iClient.ByCountryCode(aCountry, v, kMaxStations);
+    });
 }
 
 const std::vector<RadioBrowserClient::Station>& RadioBrowserMediaServer::GenreStations(const Brx& aGenre)
 {
-    iGenreScratch.clear();
-    iClient.ByTag(aGenre, iGenreScratch, kMaxStations);
-    return iGenreScratch;
+    Bws<64> key("genre:");
+    key.Append(aGenre);
+    return CachedStations(key, [this, &aGenre](std::vector<RadioBrowserClient::Station>& v) {
+        iClient.ByTag(aGenre, v, kMaxStations);
+    });
 }
 
 void RadioBrowserMediaServer::WriteStationDidl(Bws<2048>& aDidl, const RadioBrowserClient::Station& aStation, TUint aIndex)
