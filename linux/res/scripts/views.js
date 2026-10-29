@@ -410,7 +410,8 @@ Views = function($){
             return;
           }
 
-          var groupDiv = $("<div class='" + groupClass + "'/>");
+          var collectionToggleClass = params[0].CollectionId ? "Toggle_" + params[0].CollectionId : null;
+          var groupDiv = $("<div class='" + groupClass + " Expandable" + (collectionToggleClass ? " " + collectionToggleClass : "") + "'/>");
           var groupHeader = $("<h3 class='RadioPresetGroupHeader'/>").appendTo(groupDiv);
           var groupTitleRef = $("<a title='Expand' href='#' class='SectionHeader RadioPresetGroupTitle_" + presetIndex + "'></a>").appendTo(groupHeader);
           var groupBody = $("<div class='RadioPresetGroupBody RadioPresetGroupBody_" + presetIndex + " Expandable'/>").appendTo(groupDiv);
@@ -431,7 +432,12 @@ Views = function($){
           }
           firstParamElement.before(groupDiv);
           for (var i = 0; i < params.length; i++){
-            groupBody.append($("#" + params[i].Id));
+            var fieldElement = $("#" + params[i].Id);
+            fieldElement.removeClass("Expandable");
+            if (collectionToggleClass){
+              fieldElement.removeClass(collectionToggleClass);
+            }
+            groupBody.append(fieldElement);
           }
 
           BindRadioPresetNameInput(presetIndex);
