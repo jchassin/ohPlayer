@@ -345,6 +345,100 @@ Views = function($){
       RenderParameters(parameters, aServiceName);
 
       UpdateSectionHeadersAndFooters();
+
+      GroupRadioPresets();
+    }
+
+    function GetRadioPresetNameInputElement(aPresetIndex){
+      var parameter = iParametersLookup["Radio.Preset" + aPresetIndex + ".Name"];
+      if (parameter){
+        var input = $("#" + parameter.Id).find("input[parameterName='" + parameter.Name + "']");
+        if (input.length > 0){
+          return input;
+        }
+      }
+      return null;
+    }
+
+    function UpdateRadioPresetGroupTitle(aPresetIndex){
+      var input = GetRadioPresetNameInputElement(aPresetIndex);
+      if (!input){
+        return;
+      }
+      var title = "Preset " + aPresetIndex + " - " + input.val();
+      $(".RadioPresetGroupTitle_" + aPresetIndex).each(function(){
+        var expanded = $(this).data("expanded");
+        $(this).empty();
+        $(this).append((expanded ? " &minus; " : " + ") + " &nbsp;&nbsp;" + title);
+      });
+    }
+
+    function BindRadioPresetNameInput(aPresetIndex){
+      var input = GetRadioPresetNameInputElement(aPresetIndex);
+      if (!input){
+        return;
+      }
+      if (input.data("presetIndex") == aPresetIndex){
+        return; // already bound
+      }
+      input.data("presetIndex", aPresetIndex);
+      input.on("input", function(){
+        UpdateRadioPresetGroupTitle(aPresetIndex);
+      });
+    }
+
+    function GroupRadioPresets(){
+      var numPresets = 10;
+      for (var presetIdx = 1; presetIdx <= numPresets; presetIdx++){
+        (function(presetIndex){
+          var fields = ["Name", "Uri", "Image"];
+          var params = [];
+          for (var i = 0; i < fields.length; i++){
+            var parameter = iParametersLookup["Radio.Preset" + presetIndex + "." + fields[i]];
+            if (parameter && "Container" in parameter){
+              params.push(parameter);
+            }
+          }
+          if (params.length != fields.length){
+            return;
+          }
+
+          var groupClass = "RadioPresetGroup RadioPresetGroup_" + presetIndex;
+          if ($("." + groupClass.split(" ").join(".")).length > 0){
+            BindRadioPresetNameInput(presetIndex);
+            UpdateRadioPresetGroupTitle(presetIndex);
+            return;
+          }
+
+          var groupDiv = $("<div class='" + groupClass + "'/>");
+          var groupHeader = $("<h3 class='RadioPresetGroupHeader'/>").appendTo(groupDiv);
+          var groupTitleRef = $("<a title='Expand' href='#' class='SectionHeader RadioPresetGroupTitle_" + presetIndex + "'></a>").appendTo(groupHeader);
+          var groupBody = $("<div class='RadioPresetGroupBody RadioPresetGroupBody_" + presetIndex + " Expandable'/>").appendTo(groupDiv);
+
+          groupTitleRef.data("presetIndex", presetIndex);
+          groupTitleRef.click(function(){
+            var expanded = groupTitleRef.data("expanded") ? false : true;
+            groupTitleRef.data("expanded", expanded);
+            groupTitleRef.attr('title', expanded ? 'Collapse' : 'Expand');
+            UpdateRadioPresetGroupTitle(presetIndex);
+            groupBody.toggle();
+            return false;
+          });
+
+          var firstParamElement = $("#" + params[0].Id);
+          if (firstParamElement.length == 0){
+            return;
+          }
+          firstParamElement.before(groupDiv);
+          for (var i = 0; i < params.length; i++){
+            groupBody.append($("#" + params[i].Id));
+          }
+
+          BindRadioPresetNameInput(presetIndex);
+
+          UpdateRadioPresetGroupTitle(presetIndex);
+        })(presetIdx);
+      }
     }
 
     function RenderParameters(aParameters, aServiceName){
