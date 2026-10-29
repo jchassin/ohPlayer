@@ -154,7 +154,7 @@ private:
 public:
     TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack, const Brx& aUdn, const TChar* aRoom, const TChar* aProductName,
                     const Brx& aTuneInPartnerId, const Brx& aTidalId, const Brx& aQobuzIdSecret, const Brx& aUserAgent,
-                    const TChar* aStoreFile, TUint aOdpPort=0, TUint aWebUiPort=0,
+                    const TChar* aStoreFile, TUint aOdpPort=0, TUint aWebUiPort=0, TBool aEnableRadioBrowser=false,
                     TUint aMinWebUiResourceThreads=kMinWebUiResourceThreads, TUint aMaxWebUiTabs=kMaxWebUiTabs, TUint aUiSendQueueSize=kUiSendQueueSize, TUint aUiMsgBufCount=kUiMsgBufCount, TUint aUiMsgBufBytes=kUiMsgBufBytes );
     virtual ~TestMediaPlayer();
     void RequestExit();
@@ -277,6 +277,7 @@ public:
     const TestFramework::OptionUint& OptionOdp() const;
     const TestFramework::OptionUint& OptionWebUi() const;
     const TestFramework::OptionUint& Shell() const;
+    const TestFramework::OptionBool& RadioBrowser() const;
 private:
     TestFramework::OptionParser iParser;
     TestFramework::OptionString iOptionRoom;
@@ -294,6 +295,7 @@ private:
     TestFramework::OptionUint iOptionOdp;
     TestFramework::OptionUint iOptionWebUi;
     TestFramework::OptionUint iOptionShell;
+    TestFramework::OptionBool iOptionRadioBrowser;
 };
 
 // Not very nice, but only to allow reusable test functions.

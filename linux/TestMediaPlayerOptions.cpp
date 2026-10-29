@@ -24,6 +24,7 @@ TestMediaPlayerOptions::TestMediaPlayerOptions()
     , iOptionOdp("", "--odp", 0, "Port for ODP server")
     , iOptionWebUi("", "--webui", 0, "Port for Web UI server")
     , iOptionShell("", "--shell", 0, "Port for shell")
+    , iOptionRadioBrowser("", "--radiobrowser", "Enable the Radio Browser UPnP media server (radio-browser.info directory)")
 {
     iParser.AddOption(&iOptionRoom);
     iParser.AddOption(&iOptionName);
@@ -40,6 +41,7 @@ TestMediaPlayerOptions::TestMediaPlayerOptions()
     iParser.AddOption(&iOptionOdp);
     iParser.AddOption(&iOptionWebUi);
     iParser.AddOption(&iOptionShell);
+    iParser.AddOption(&iOptionRadioBrowser);
 }
 
 void TestMediaPlayerOptions::AddOption(Option* aOption)
@@ -125,4 +127,9 @@ const OptionUint& TestMediaPlayerOptions::OptionWebUi() const
 const OptionUint& TestMediaPlayerOptions::Shell() const
 {
     return iOptionShell;
+}
+
+const OptionBool& TestMediaPlayerOptions::RadioBrowser() const
+{
+    return iOptionRadioBrowser;
 }

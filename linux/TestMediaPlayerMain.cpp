@@ -90,7 +90,7 @@ void TestMediaPlayerThread::RunInThread()
     // Create TestMediaPlayer.
     tmp = new TestMediaPlayer(*dvStack, *cpStack, udn, iOptions.Room().CString(), iOptions.Name().CString(),
         iOptions.TuneIn().Value(), iOptions.Tidal().Value(), iOptions.Qobuz().Value(),
-        iOptions.UserAgent().Value(), iOptions.StoreFile().CString(), iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value());
+        iOptions.UserAgent().Value(), iOptions.StoreFile().CString(), iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value(), iOptions.RadioBrowser().Value());
     Log::Print("%s:%d\n", __FILE__, __LINE__);
 #if 0
     // Add the audio driver to the pipeline.
