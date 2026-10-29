@@ -20,6 +20,8 @@ Presets can be pinned from control point apps; pins reference the preset number.
 
 A DLNA Media Server device exposing the [radio-browser.info](https://www.radio-browser.info) community radio directory (45,000+ internet radio stations, no account, no key). It appears in UPnP control points as **Radio Browser \<room\>**, alongside other media servers (e.g. MinimServer).
 
+The media server is **disabled by default**; start the player with the `--radiobrowser` command line option to enable it (e.g. add it to `ExecStart` in `ohPlayer.service`).
+
 ### Navigation
 
 ```
