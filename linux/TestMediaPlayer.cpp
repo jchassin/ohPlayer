@@ -4,6 +4,7 @@
 #include "OhLinnAmpVolume.h"
 #include "LinnAmpConfig.h"
 #include "PipelineConfig.h"
+#include "CrashSymboliser.h"
 #include "RadioPresetsStatic.h"
 #include "StoreWithOverriddenValue.h"
 #include "ConfigAppPlayerLinn.h"
@@ -990,6 +991,10 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     // handlers do synchronous API calls taking seconds) while the renderer
     // and web ui share the same session pool. 12 threads leave ample room.
     initParams->SetDvNumServerThreads(12);
+    // Symbolise crash stacks in the log: ohNet prints raw module+0xoffset
+    // addresses; the handler pipes them through addr2line so the log shows
+    // thread/function/file:line directly (no manual address copying).
+    initParams->SetFatalErrorHandler(MakeFunctorMsg(CrashSymboliser::Instance(), &CrashSymboliser::FatalErrorHandler));
     initParams->SetEnableShell(aShellPort);
     initParams->SetIPv6Supported(false);
 #ifdef LPEC_ENABLE
