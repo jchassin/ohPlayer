@@ -696,11 +696,7 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
         Parser p(iQobuzIdSecret);
         Brn appId(p.Next(':'));
         Brn appSecret(p.Remaining());
-        OhLog::Print("Qobuz: appId = ");
-        OhLog::Print(appId);
-        OhLog::Print(", appSecret = ");
-        OhLog::Print(appSecret);
-        OhLog::Print("\n");
+        OhLog::Print("Qobuz: appId = %.*s, appSecret = %.*s\n", PBUF(appId), PBUF(appSecret));
         iMediaPlayer->Add(ProtocolFactory::NewQobuz(appId, appSecret, *iMediaPlayer, iUserAgent));
     }
     iMediaPlayer->Add(ProtocolFactory::NewCalmRadio(aEnv, ssl, iUserAgent, *iMediaPlayer));
