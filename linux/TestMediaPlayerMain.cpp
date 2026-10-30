@@ -76,55 +76,22 @@ void TestMediaPlayerThread::RunInThread()
     TestMediaPlayerInit::AppendUniqueId(dvStack->Env(), iOptions.Udn().Value(), Brn("TestMediaPlayer"), udn);
     Log::Print("UDN is %.*s\n", PBUF(udn));
 
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.Room().CString());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.Name().CString());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.TuneIn().CString());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.Tidal().CString());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.Qobuz().CString());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.UserAgent().CString());
-    Log::Print("%s:%d - %s\n", __FILE__, __LINE__, iOptions.StoreFile().CString());
-    Log::Print("%s:%d - %u\n", __FILE__, __LINE__, iOptions.OptionOdp().Value());
-    Log::Print("%s:%d - %u\n", __FILE__, __LINE__, iOptions.OptionWebUi().Value());
+    Log::Print("Room: %s, Name: %s\n", iOptions.Room().CString(), iOptions.Name().CString());
+    Log::Print("TuneIn: %s, Tidal: %s, Qobuz: %s\n",
+        iOptions.TuneIn().CString(), iOptions.Tidal().CString(), iOptions.Qobuz().CString());
+    Log::Print("UserAgent: %s, StoreFile: %s\n",
+        iOptions.UserAgent().CString(), iOptions.StoreFile().CString());
+    Log::Print("ODP port: %u, Web UI port: %u\n",
+        iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value());
 
 
     // Create TestMediaPlayer.
     tmp = new TestMediaPlayer(*dvStack, *cpStack, udn, iOptions.Room().CString(), iOptions.Name().CString(),
         iOptions.TuneIn().Value(), iOptions.Tidal().Value(), iOptions.Qobuz().Value(),
         iOptions.UserAgent().Value(), iOptions.StoreFile().CString(), iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value(), iOptions.RadioBrowser().Value());
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
-#if 0
-    // Add the audio driver to the pipeline.
-    //
-    // The 22052ms value a is a bit of a magic number which get's
-    // things going for the Hifiberry Digi+ card.
-    //
-    // FIXME This should be calculated.
-    driver = new DriverAlsa(tmp->Pipeline(), 22052);
-    if (driver == NULL)
-    {
-        Log::Print("%s:%d - Unable to start DriverAlsa\n", __FILE__, __LINE__);
-    }
-    else
-    {
-        Log::Print("%s:%d - DriverAlsa started !\n", __FILE__, __LINE__);
-    }
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
-    Media::AnimatorBasic* animator = new Media::AnimatorBasic(
-        dvStack->Env(),
-        tmp->Pipeline(),
-        iOptions.ClockPull().Value(),
-        tmp->DsdMaxSampleRate(),
-        tmp->DsdSampleBlockWords(),
-        tmp->DsdPadBytesPerChunk());
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
-    tmp->SetPullableClock(*animator);
- #endif
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
     tmp->Run();
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
+    Log::Print("Shutting down pipeline\n");
     tmp->StopPipeline();
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
-    //delete animator;
     delete tmp;
 }
 #include<stdio.h>
@@ -159,7 +126,7 @@ void CDECL sig_handler(int signo)
   if (signo == SIGINT)
   {
     tmp->RequestExit();
-    printf("received SIGINT\n");
+    Log::Print("Received SIGINT\n");
   }
 }
 
