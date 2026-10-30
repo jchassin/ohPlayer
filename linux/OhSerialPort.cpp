@@ -1,5 +1,6 @@
 #include "OhSerialPort.h"
 #include <OpenHome/Private/Printer.h>
+#include "OhLog.h"
 #include <OpenHome/Private/Thread.h>
 #include <sys/ioctl.h>
 #include <cerrno>
@@ -40,7 +41,7 @@ TBool OhSerialPort::Open() {
 
     iFd = open(iDevicePath.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
     if (iFd == -1) {
-        Log::Print("OhSerialPort: Failed to open %s: %s\n", iDevicePath.c_str(), strerror(errno));
+        OhLog::PrintError("OhSerialPort: failed to open %s: %s\n", iDevicePath.c_str(), strerror(errno));
         return false;
     }
 
@@ -69,7 +70,7 @@ TBool OhSerialPort::Open() {
     }
 
     iIsOpen = true;
-    Log::Print("OhSerialPort: Opened %s at %u baud\n", iDevicePath.c_str(), iBaudRate);
+    OhLog::Print("OhSerialPort: Opened %s at %u baud\n", iDevicePath.c_str(), iBaudRate);
     return true;
 }
 
@@ -119,7 +120,7 @@ TBool OhSerialPort::Write(const Brx& aData, TUint aTimeoutMs) {
 
     ssize_t written = write(iFd, aData.Ptr(), aData.Bytes());
     if (written == -1) {
-        Log::Print("OhSerialPort: Write failed: %s\n", strerror(errno));
+        OhLog::PrintError("OhSerialPort: write failed: %s\n", strerror(errno));
         return false;
     }
     return (written == (ssize_t)aData.Bytes());
@@ -141,7 +142,7 @@ TBool OhSerialPort::Read(Bwx& aBuffer, TUint aTimeoutMs) {
 
 TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse, TUint aTimeoutMs) {
     if (!iIsOpen) {
-        Log::Print("OhSerialPort: Port not open for SendCommandAndWaitResponse\n");
+        OhLog::PrintWarning("OhSerialPort: port not open for SendCommandAndWaitResponse\n");
         return false;
     }
 
@@ -163,7 +164,7 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     commandWithPrefix.Append("\r\n");
 
     if (!Write(Brn(commandWithPrefix.Ptr(), commandWithPrefix.Bytes()))) {
-        Log::Print("OhSerialPort: Failed to write command\n");
+        OhLog::PrintError("OhSerialPort: failed to write command\n");
         return false;
     }
 
@@ -202,7 +203,7 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
                 break;
             }
         } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
-            Log::Print("OhSerialPort: Read error: %s\n", strerror(errno));
+            OhLog::PrintError("OhSerialPort: read error: %s\n", strerror(errno));
             return false;
         }
         
@@ -211,7 +212,7 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     }
 
     if (!foundEnd) {
-        Log::Print("OhSerialPort: Timeout waiting for response\n");
+        OhLog::PrintWarning("OhSerialPort: timeout waiting for response\n");
         return false;
     }
 

@@ -1,3 +1,4 @@
+#include "OhLog.h"
 #include "RadioBrowserClient.h"
 #include <OpenHome/Media/Protocol/ProtocolHls.h>
 #include <OpenHome/Json.h>
@@ -182,7 +183,7 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
         }
         data.insert(data.end(), read.Ptr(), read.Ptr() + read.Bytes());
         if (data.size() > 4 * 1024 * 1024) {
-            Log::Print("RadioBrowserClient: response exceeds 4MB cap\n");
+            OhLog::Print("RadioBrowserClient: response exceeds 4MB cap\n");
             break; // safety cap
         }
     }
@@ -296,11 +297,11 @@ void RadioBrowserClient::ParseStations(IReader& aReader, std::vector<Station>& a
         }
     }
     catch (JsonInvalid&) {
-        Log::Print("RadioBrowserClient: invalid JSON response\n");
+        OhLog::Print("RadioBrowserClient: invalid JSON response\n");
         aResults.clear();
     }
     catch (JsonUnsupported&) {
-        Log::Print("RadioBrowserClient: unsupported JSON response\n");
+        OhLog::Print("RadioBrowserClient: unsupported JSON response\n");
         aResults.clear();
     }
 }

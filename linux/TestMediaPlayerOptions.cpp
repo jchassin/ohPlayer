@@ -23,7 +23,7 @@ TestMediaPlayerOptions::TestMediaPlayerOptions()
     , iOptionStoreFile("-s", "--storefile", Brn(""), "File for reading/writing persistent store")
     , iOptionOdp("", "--odp", 0, "Port for ODP server")
     , iOptionWebUi("", "--webui", 0, "Port for Web UI server")
-    , iOptionShell("", "--shell", 0, "Port for shell")
+    , iOptionShell("", "--shell", 2323, "Port for shell (0 to disable)")
     , iOptionRadioBrowser("", "--radiobrowser", "Enable the Radio Browser UPnP media server (radio-browser.info directory)")
 {
     iParser.AddOption(&iOptionRoom);

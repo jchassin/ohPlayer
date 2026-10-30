@@ -1,3 +1,4 @@
+#include "OhLog.h"
 #include "RadioBrowserMediaServer.h"
 #include <OpenHome/Media/Protocol/ProtocolHls.h>  // UriLoaderError
 #include <OpenHome/Net/Private/DviStack.h>
@@ -209,7 +210,7 @@ void RadioBrowserMediaServer::ContentDirectory::Browse(Net::IDvInvocation& aInvo
         }
     }
     catch (UriLoaderError&) {
-        Log::Print("RadioBrowserMediaServer: API request failed\n");
+        OhLog::Print("RadioBrowserMediaServer: API request failed\n");
         didl.SetBytes(0);
     }
 
@@ -266,7 +267,7 @@ void RadioBrowserMediaServer::ContentDirectory::Search(Net::IDvInvocation& aInvo
         didl.Append(Brn(kDidlEpilogue));
     }
     catch (UriLoaderError&) {
-        Log::Print("RadioBrowserMediaServer: search request failed\n");
+        OhLog::Print("RadioBrowserMediaServer: search request failed\n");
     }
 
     aInvocation.StartResponse();

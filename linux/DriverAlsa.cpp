@@ -761,7 +761,7 @@ void DriverAlsa::Pimpl::Write(const Brx& aData)
             }
 
             ++iRecoverCount;
-            Log::Print("DriverAlsa: recovered from %s (recoveries=%u)",
+            OhLog::Print("DriverAlsa: recovered from %s (recoveries=%u)",
                        snd_strerror(writeError),
                        iRecoverCount);
             continue;
@@ -826,34 +826,34 @@ void DriverAlsa::Pimpl::LogPCMState()
     switch (snd_pcm_state(iHandle))
     {
         case SND_PCM_STATE_OPEN:
-            Log::Print("PCM STATE: SND_PCM_STATE_OPEN\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_OPEN\n");
             break;
         case SND_PCM_STATE_SETUP:
-            Log::Print("PCM STATE: SND_PCM_STATE_SETUP\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_SETUP\n");
             break;
         case SND_PCM_STATE_PREPARED:
-            Log::Print("PCM STATE: SND_PCM_STATE_PREPARED\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_PREPARED\n");
             break;
         case SND_PCM_STATE_RUNNING:
-            Log::Print("PCM STATE: SND_PCM_STATE_RUNNING\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_RUNNING\n");
             break;
         case SND_PCM_STATE_XRUN:
-            Log::Print("PCM STATE: SND_PCM_STATE_XRUN\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_XRUN\n");
             break;
         case SND_PCM_STATE_DRAINING:
-            Log::Print("PCM STATE: SND_PCM_STATE_DRAINING\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_DRAINING\n");
             break;
         case SND_PCM_STATE_PAUSED:
-            Log::Print("PCM STATE: SND_PCM_STATE_PAUSED\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_PAUSED\n");
             break;
         case SND_PCM_STATE_SUSPENDED:
-            Log::Print("PCM STATE: SND_PCM_STATE_SUSPENDED\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_SUSPENDED\n");
             break;
         case SND_PCM_STATE_DISCONNECTED:
-            Log::Print("PCM STATE: SND_PCM_STATE_DISCONNECTED\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: SND_PCM_STATE_DISCONNECTED\n");
             break;
         default:
-            Log::Print("PCM STATE: UNKNOWN\n");
+            OhLog::PrintDebug("DriverAlsa: PCM STATE: UNKNOWN\n");
             break;
     }
 }
@@ -873,7 +873,7 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
         }
     }
 
-    Log::Print("DriverAlsa: previous stream stats: "
+    OhLog::Print("DriverAlsa: previous stream stats: "
                "bytes=%u xruns=%u recoveries=%u waits=%u\n",
                iBytesSent,
                iXrunCount,
@@ -887,7 +887,7 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
 
     auto decodedStreamInfo = aMsg->StreamInfo();
 
-    Log::Print("DriverAlsa: Finding PcmProcessor for stream: BitDepth = %d, "
+    OhLog::Print("DriverAlsa: Finding PcmProcessor for stream: BitDepth = %d, "
                "SampleRate = %d, Channels = %d\n",
                decodedStreamInfo.BitDepth(), decodedStreamInfo.SampleRate(),
                decodedStreamInfo.NumChannels());
@@ -931,7 +931,7 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
 
             iDitch = false;
 
-            Log::Print("Found PcmProcessor %d\n", iProfileIndex);
+            OhLog::Print("DriverAlsa: found PcmProcessor %d\n", iProfileIndex);
 
             return;
         }
@@ -1034,7 +1034,7 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     err = snd_pcm_prepare(iHandle);
     if (err < 0) return false;
 
-    Log::Print("DriverAlsa: configured ALSA: rate=%u channels=%u "
+    OhLog::Print("DriverAlsa: configured ALSA: rate=%u channels=%u "
                "format=%d buffer=%lu frames/%u us "
                "period=%lu frames/%u us "
                "startThreshold=%lu availMin=%lu\n",
