@@ -444,8 +444,13 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
         OhLog::Print("TestMediaPlayer: DriverAlsa started\n");
     }
 #endif
-    iPipelineObserver = std::make_unique<LoggingPipelineObserver>();
-    iMediaPlayer->Pipeline().AddObserver(*iPipelineObserver);
+    // Attach the pipeline logging observer only in debug mode: it logs every
+    // pipeline event (TRACK/METATEXT/FORMAT/TIME each second) at kEssential,
+    // and the now-playing info is already covered by the Raspdac observer.
+    if (OhLog::IsDebugEnabled()) {
+        iPipelineObserver = std::make_unique<LoggingPipelineObserver>();
+        iMediaPlayer->Pipeline().AddObserver(*iPipelineObserver);
+    }
     iFnUpdaterStandard = std::make_unique<FriendlyNameAttributeUpdater>(iMediaPlayer->FriendlyNameObservable(), iMediaPlayer->ThreadPool(), *iDevice);
     iFnManagerUpnpAv =  std::make_unique<FriendlyNameManagerUpnpAv>(kFriendlyNamePrefix, iMediaPlayer->Product());
     iFnUpdaterUpnpAv = std::make_unique<FriendlyNameAttributeUpdater>(*iFnManagerUpnpAv, iMediaPlayer->ThreadPool(), *iDeviceUpnpAv);
