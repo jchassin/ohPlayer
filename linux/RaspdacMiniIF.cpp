@@ -95,14 +95,14 @@ try {
 } catch (...) {aArtistName = Brn("");}
         
 iOhMdpIF->setTrack(aTitle, aArtistName, aAlbumName, aAlbumArtURI);
-Log::Print("Artist : %.*s Album : %.*s Track : %.*s\n URI : %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle), PBUF(aAlbumArtURI));
+Log::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle), PBUF(aAlbumArtURI));
 
 
 }
 void RaspdacObserver::NotifyStreamInfo(const DecodedStreamInfo& aStreamInfo)
 {
     //iDurationSeconds = (TUint)(aStreamInfo.TrackLength() / Jiffies::kPerSecond);
-    Log::Print("Pipeline report property: FORMAT {bitRate=%u; bitDepth=%u, sampleRate=%u, numChannels=%u, codec=%.*s; trackLength=%llx, lossless=%u, channelConfig=%s}\n",
+    Log::Print("Raspdac: FORMAT {bitRate=%u; bitDepth=%u, sampleRate=%u, numChannels=%u, codec=%.*s; trackLength=%llx, lossless=%u, channelConfig=%s}\n",
                aStreamInfo.BitRate(), aStreamInfo.BitDepth(), aStreamInfo.SampleRate(), aStreamInfo.NumChannels(),
                PBUF(aStreamInfo.CodecName()), aStreamInfo.TrackLength(), aStreamInfo.Lossless(), aStreamInfo.Profile().ToString());
     iOhMdpIF-> setStreamInfo(aStreamInfo.BitRate(), aStreamInfo.NumChannels(), aStreamInfo.BitDepth(), aStreamInfo.SampleRate());
