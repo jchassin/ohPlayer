@@ -1073,3 +1073,42 @@ void TestMediaPlayerInit::AppendUniqueId(Environment& aEnv, const Brx& aUserUdn,
         aOutput.Replace(aUserUdn);
     }
 }
+
+void TestMediaPlayerInit::CreateCanonicalUuid(const Brx& aSeed, Bwh& aUuid)
+{
+    static const TUint kUuidBytes = 36;
+    if (aUuid.MaxBytes() < kUuidBytes) {
+        aUuid.Grow(kUuidBytes + 1);
+    }
+    // Deterministic 128-bit hash of the seed (FNV-1a x2, two independent
+    // constants) so the same room always yields the same uuid.
+    TUint64 h1 = 0xcbf29ce484222325ULL;
+    TUint64 h2 = 0x9e3779b97f4a7c15ULL;
+    for (TUint i = 0; i < aSeed.Bytes(); i++) {
+        h1 ^= aSeed[i]; h1 *= 0x100000001b3ULL;
+        h2 ^= (TUint64(aSeed[i]) << 32) | aSeed[i]; h2 *= 0x100000001b3ULL;
+    }
+    const TUint64 ms[] = { h1, h2 };
+    const TByte* p = reinterpret_cast<const TByte*>(ms);
+    // Canonical uuid layout: 8-4-4-4-12 hex. Use "4c494e4e" ("LINN") as the
+    // first group so Linn tools recognise the device (same trick as the
+    // historical TestMediaPlayer-0123456789 udn prefix).
+    aUuid.Replace(Brn("4c494e4e"));
+    aUuid.Append('-');
+    for (TUint i = 0; i < 2; i++) { // group 2 (4 hex)
+        Ascii::AppendHex(aUuid, p[i]);
+    }
+    aUuid.Append('-');
+    for (TUint i = 2; i < 4; i++) { // group 3 (4 hex)
+        Ascii::AppendHex(aUuid, p[i]);
+    }
+    aUuid.Append('-');
+    for (TUint i = 4; i < 6; i++) { // group 4 (4 hex)
+        Ascii::AppendHex(aUuid, p[i]);
+    }
+    aUuid.Append('-');
+    for (TUint i = 6; i < 12; i++) { // group 5 (12 hex)
+        Ascii::AppendHex(aUuid, p[i]);
+    }
+    aUuid.PtrZ();
+}
