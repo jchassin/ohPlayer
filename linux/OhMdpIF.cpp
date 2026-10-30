@@ -30,13 +30,8 @@ OhMdpIFSession::OhMdpIFSession(OhMdpIF* OhMdpIF)
 
 OhMdpIFSession::~OhMdpIFSession()
     {
-        //Log::Print("%s:%d - deleting \n",__FILE__, __LINE__);
         delete iReaderUntil;
-        //Log::Print("%s:%d - deleted \n",__FILE__, __LINE__);
         delete iStream;
-        //Log::Print("%s:%d - deleted \n",__FILE__, __LINE__);
-        //SocketTcpSession::~SocketTcpSession();
-        //Log::Print("%s:%d - deleted \n",__FILE__, __LINE__);
     }
 void  OhMdpIFSession::Run()
     {
@@ -77,10 +72,8 @@ void  OhMdpIFSession::Run()
         while (!done) {
             try {
                 Brn buf = iReaderUntil->ReadUntil('\n');
-                //Log::Print("buf received : "); Log::Print(buf);
 		if (buf.Equals(statusCommand)||buf.Equals(statusCommandDos))
                 {
-                  //Log::Print("status received");
                   sprintf(aBuff, "%u", iParentOhMdpIF->iVolume);
                   iWriteBuffer->Write(volumeHdr);iWriteBuffer->Write(Brn(aBuff));iWriteBuffer->Write(EndOfLine);
                    
@@ -99,8 +92,6 @@ void  OhMdpIFSession::Run()
                 }
 		else if (buf.Equals(currentSongCommand)||buf.Equals(currentSongCommandDos))
                 {
-                  //Log::Print("current received");
-
                   iWriteBuffer->Write(titleHdr);
                   iWriteBuffer->Write(iParentOhMdpIF->iTitle);
                   iWriteBuffer->Write(EndOfLine);
@@ -172,11 +163,6 @@ OhMdpIF * OhMdpIF::getInstance()
 }
 OhMdpIF::~OhMdpIF()
 {
-   //Log::Print("%s:%d - deleting iServer\n",__FILE__, __LINE__);
-   //delete iServer;
-   //Log::Print("%s:%d - iServer deleted\n",__FILE__, __LINE__);
-   //delete iSession;
-   //Log::Print("%s:%d - iSession deleted\n",__FILE__, __LINE__);
 }
 
 OhMdpIF::OhMdpIF()
