@@ -83,7 +83,7 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
         iCurrentVolume = linnVolume;
-        OhLog::Print("OhLinnAmpVolume: Set volume to %u (Linn: %u)\n", aVolume, linnVolume);
+        OhLog::PrintDebug("OhLinnAmpVolume: Set volume to %u (Linn: %u)\n", aVolume, linnVolume);
     } else {
         OhLog::PrintError("OhLinnAmpVolume: failed to send volume command\n");
     }
