@@ -997,7 +997,9 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     // kMedia and kPipeline are disabled: they are extremely verbose
     // (every HLS segment fetch / pipeline element transition is logged)
     // and were only useful during bring-up.
-    Debug::SetLevel(Debug::kSources);
+    // AddLevel (not SetLevel) so the ohPlayer application level enabled in
+    // main() (OhLog::kLevel = kApplication0) is preserved.
+    Debug::AddLevel(Debug::kSources);
     //Debug::AddLevel(Debug::kPipeline);
     //Debug::AddLevel(Debug::kMedia);
     Debug::AddLevel(Debug::kRaat);
