@@ -73,8 +73,16 @@ void TestMediaPlayerThread::RunInThread()
 
     // Set/construct UDN.
     Bwh udn;
-    // Note: prefix udn with 4c494e4e- to get older versions of Linn Konfig to recognise our devices
-    TestMediaPlayerInit::AppendUniqueId(dvStack->Env(), iOptions.Udn().Value(), Brn("TestMediaPlayer"), udn);
+    if (iOptions.Udn().Value().Bytes() > 0) {
+        // Explicit -u/--udn: use as provided.
+        udn.Replace(iOptions.Udn().Value());
+    }
+    else {
+        // Derive a canonical UPnP uuid (8-4-4-4-12) from the room name so
+        // the device identity is stable across reboots and IP changes, and
+        // well-formed for control points that reject non-uuid UDNs.
+        TestMediaPlayerInit::CreateCanonicalUuid(iOptions.Room().Value(), udn);
+    }
     OhLog::Print("UDN is %.*s\n", PBUF(udn));
 
     OhLog::Print("Room: %s, Name: %s\n", iOptions.Room().CString(), iOptions.Name().CString());

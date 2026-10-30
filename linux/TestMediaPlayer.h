@@ -308,6 +308,12 @@ public:
     static OpenHome::Net::Library* CreateLibrary(const TChar* aRoom, TBool aLoopback, TUint aAdapter, TUint aShellPort);  // creates lib; client must start appropriate stacks
     static void SeedRandomNumberGenerator(Environment& aEnv, const Brx& aRoom, TIpAddress aAddress, Net::DviServerUpnp& aServer);    // seed from room + server port
     static void AppendUniqueId(Environment& aEnv, const Brx& aUserUdn, const Brx& aDefaultUdn, Bwh& aOutput);
+    /*
+     * Derives a canonical UPnP uuid (8-4-4-4-12 hex, no "uuid:" prefix)
+     * from a stable seed (e.g. the room name), prefixed with 4c494e4e ("LINN")
+     * for recognition by Linn tools. Deterministic: same seed, same uuid.
+     */
+    static void CreateCanonicalUuid(const Brx& aSeed, Bwh& aUuid);
 };
 
 } // namespace Test
