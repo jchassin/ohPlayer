@@ -18,7 +18,6 @@ VolumeControl::VolumeControl()
 {
     const TChar *CARD          = "default";
     const TChar *SELEM_NAMES[] = {"Digital", "PCM", "Master"};
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Get the mixer element for the default sound card.
     if (snd_mixer_open(&iHandle, 0) < 0) {
         iHandle = NULL;
@@ -60,12 +59,12 @@ VolumeControl::VolumeControl()
     }
     if (iElem != NULL) {
         if (snd_mixer_selem_has_playback_switch(iElem)) {
-            Log::Print("VolumeControl snd_mixer_selem_set_playback_switch_all\n");
+            Log::Print("VolumeControl: unmuting playback switch\n");
             snd_mixer_selem_set_playback_switch_all(iElem, 1);
         }
     } else {
         // No volume control on this sound card: output runs at full scale.
-        Log::Print("VolumeControl: no ALSA volume control found - output at full scale\n");
+        OhLog::PrintWarning("VolumeControl: no ALSA volume control found - output at full scale\n");
     }
 
 }
@@ -101,7 +100,7 @@ void VolumeControl::SetVolume(TUint aVolume)
     {
         return;
     }
-    Log::Print("Volume : %u\n", aVolume );
+    Log::Print("VolumeControl: set volume %u\n", aVolume);
     volume = double((aVolume / MILLI_DB_PER_STEP)/100.0f);
 
     // Use the dB range to map the volume to a scale more in tune
@@ -113,14 +112,13 @@ void VolumeControl::SetVolume(TUint aVolume)
         err = snd_mixer_selem_get_playback_volume_range(iElem, &min, &max);
         if (err < 0)
         {
-            OhLog::PrintError("SetVolume : %d\n", __LINE__);
+            OhLog::PrintError("VolumeControl: failed to get playback volume range\n");
             return;
         }
 
         value = lrint(floor(volume * (max - min))) + min;
         snd_mixer_selem_set_playback_volume_all(iElem, value);
 
-        OhLog::PrintError("SetVolume : %d\n", __LINE__);
         return;
     }
 
@@ -129,7 +127,6 @@ void VolumeControl::SetVolume(TUint aVolume)
         // dB range less than 24 dB, use a linear mapping
         value = lrint(floor(volume * (max - min))) + min;
         snd_mixer_selem_set_playback_dB_all(iElem, value, -1);
-        OhLog::PrintError("SetVolume : %d\n", __LINE__);
         return;
     }
 
