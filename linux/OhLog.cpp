@@ -15,23 +15,47 @@
 
 using namespace OpenHome;
 
+const TUint64 OhLog::kLevel = Debug::kApplication0;
+
 TBool OhLog::IsDebugEnabled()
 {
-    static TBool checked = false;
-    static TBool enabled = false;
-    if (!checked) {
-        checked = true;
-        const char* env = getenv("OHP_DEBUG");
-        enabled = (env != nullptr && env[0] != '\0' && strcmp(env, "0") != 0);
+    return Debug::TestLevel(kLevel) && Debug::TestSeverity(Debug::kSeverityDebug);
+}
+
+void OhLog::SetDebugEnabled(TBool aEnabled)
+{
+    if (aEnabled) {
+        Debug::AddLevel(kLevel);
+        Debug::SetSeverity(Debug::kSeverityDebug);
     }
-    return enabled;
+    else {
+        Debug::RemoveLevel(kLevel);
+        if (Debug::Severity() < Debug::kSeverityInfo) {
+            Debug::SetSeverity(Debug::kSeverityInfo);
+        }
+    }
+}
+
+static TInt PrintWithContextVA(TUint64 aLevel, TUint aSeverity, const TChar* aFormat, va_list aArgs)
+{
+    TChar temp[Log::kMaxPrintBytes + 1];
+    const TInt n = vsnprintf(temp, sizeof(temp), aFormat, aArgs);
+    if (n < 0) {
+        return 0;
+    }
+    Brn message(reinterpret_cast<const TByte*>(temp),
+                (n >= (TInt)sizeof(temp)) ? sizeof(temp) - 1 : n);
+    return Log::PrintWithContext(aLevel, aSeverity, message);
 }
 
 TInt OhLog::Print(const TChar* aFormat, ...)
 {
+    if (!Debug::TestLevel(kLevel)) {
+        return 0;
+    }
     va_list arg;
     va_start(arg, aFormat);
-    TInt ret = Log::PrintVA(aFormat, arg);
+    TInt ret = PrintWithContextVA(kLevel, Debug::kSeverityInfo, aFormat, arg);
     va_end(arg);
     return ret;
 }
@@ -44,7 +68,7 @@ TInt OhLog::PrintDebug(const TChar* aFormat, ...)
     va_list arg;
     va_start(arg, aFormat);
     Log::Print("%s", AC_CYAN);
-    TInt ret = Log::PrintVA(aFormat, arg);
+    TInt ret = PrintWithContextVA(kLevel, Debug::kSeverityDebug, aFormat, arg);
     Log::Print("%s", AC_NORMAL);
     va_end(arg);
     return ret;
@@ -52,26 +76,28 @@ TInt OhLog::PrintDebug(const TChar* aFormat, ...)
 
 TInt OhLog::PrintError(const TChar* aFormat, ...)
 {
+    if (!Debug::TestLevel(kLevel)) {
+        return 0;
+    }
     va_list arg;
     va_start(arg, aFormat);
-
     Log::Print("%s", AC_RED);
-    TInt ret = Log::PrintVA(aFormat, arg);
+    TInt ret = PrintWithContextVA(kLevel, Debug::kSeverityError, aFormat, arg);
     Log::Print("%s", AC_NORMAL);
-
     va_end(arg);
     return ret;
 }
 
 TInt OhLog::PrintWarning(const TChar* aFormat, ...)
 {
+    if (!Debug::TestLevel(kLevel)) {
+        return 0;
+    }
     va_list arg;
     va_start(arg, aFormat);
-
     Log::Print("%s", AC_YELLOW);
-    TInt ret = Log::PrintVA(aFormat, arg);
+    TInt ret = PrintWithContextVA(kLevel, Debug::kSeverityWarning, aFormat, arg);
     Log::Print("%s", AC_NORMAL);
-
     va_end(arg);
     return ret;
 }

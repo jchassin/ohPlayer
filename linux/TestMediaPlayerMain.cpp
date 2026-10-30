@@ -102,6 +102,16 @@ void CDECL sig_handler(int signo);
 const gchar        *g_appName   = "OpenHomePlayer";
 int CDECL main(int aArgc, char* aArgv[])
 {
+    // Enable the ohPlayer application log level; OHP_DEBUG additionally
+    // enables debug-severity messages.
+    OhLog::SetDebugEnabled(false);
+    Debug::AddLevel(OhLog::kLevel);
+    {
+        const char* dbg = getenv("OHP_DEBUG");
+        if (dbg != nullptr && dbg[0] != '\0' && strcmp(dbg, "0") != 0) {
+            OhLog::SetDebugEnabled(true);
+        }
+    }
 #ifdef _WIN32
     char* noErrDlgs = getenv("NO_ERROR_DIALOGS");
     if (noErrDlgs != nullptr && strcmp(noErrDlgs, "1") == 0) {
