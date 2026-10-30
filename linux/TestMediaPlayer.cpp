@@ -305,7 +305,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             // No amplifier detected: grey out the volume in control points.
             // Volume.Enabled already reads No, so the greyed-out state is
             // announced and persists to the next start.
-            Log::Print("Linn Amp volume control failed - volume disabled\n");
+            OhLog::PrintError("TestMediaPlayer: Linn Amp volume control failed - volume disabled\n");
             volumeInit.SetVolume(iVolumeSinkLogger);
             volumeInit.SetBalance(iVolumeSinkLogger);
             volumeInit.SetFade(iVolumeSinkLogger);
@@ -321,7 +321,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             // Grey out the volume in control points by disabling Volume.Enabled
             // before the MediaPlayer is created (ohPipeline only announces the
             // Volume attribute when internal volume control is enabled).
-            Log::Print("Internal volume control enabled but sound card has no mixer - volume disabled\n");
+            OhLog::PrintWarning("TestMediaPlayer: sound card has no mixer - volume disabled\n");
             LinnAmpConfig::WriteVolumeControlEnabled(*iConfigRamStore, false);
             volumeInit.SetVolume(iVolumeSinkLogger);
             volumeInit.SetBalance(iVolumeSinkLogger);
@@ -437,26 +437,23 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 #if 1
     if (iDriver == NULL)
     {
-        Log::Print("%s:%d - Unable to start DriverAlsa\n", __FILE__, __LINE__);
+        OhLog::PrintError("TestMediaPlayer: unable to start DriverAlsa\n");
     }
     else
     {
-        Log::Print("%s:%d - DriverAlsa started !\n", __FILE__, __LINE__);
+        Log::Print("TestMediaPlayer: DriverAlsa started\n");
     }
 #endif
     iPipelineObserver = std::make_unique<LoggingPipelineObserver>();
     iMediaPlayer->Pipeline().AddObserver(*iPipelineObserver);
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
     iFnUpdaterStandard = std::make_unique<FriendlyNameAttributeUpdater>(iMediaPlayer->FriendlyNameObservable(), iMediaPlayer->ThreadPool(), *iDevice);
     iFnManagerUpnpAv =  std::make_unique<FriendlyNameManagerUpnpAv>(kFriendlyNamePrefix, iMediaPlayer->Product());
     iFnUpdaterUpnpAv = std::make_unique<FriendlyNameAttributeUpdater>(*iFnManagerUpnpAv, iMediaPlayer->ThreadPool(), *iDeviceUpnpAv);
     iFsFlushPeriodic = std::make_unique<FsFlushPeriodic>(iMediaPlayer->Env(), iMediaPlayer->PowerManager(), iMediaPlayer->ThreadPool(), kFsFlushFreqMs);
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Register with the PowerManager
     IPowerManager& powerManager = iMediaPlayer->PowerManager();
     iPowerObserver = powerManager.RegisterPowerHandler(*this, kPowerPriorityLowest, "TestMediaPlayer");
     iStandbyObserver = powerManager.RegisterStandbyHandler(*this, kStandbyHandlerPriorityNormal, "TestMediaPlayer");
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
     // Register Raspdac interface notification
     iRaspdacObserver = std::make_unique<RaspdacObserver>();
     iMediaPlayer->Pipeline().AddObserver(*iRaspdacObserver);
@@ -471,7 +468,6 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     initParams->SetMaxServerThreadsLongPoll(aMaxWebUiTabs);
     initParams->SetSendQueueSize(aUiSendQueueSize);
     iAppFramework = std::make_unique<WebAppFramework>(aDvStack.Env(), initParams, iMediaPlayer->ThreadPool());
-    Log::Print("%s:%d\n", __FILE__, __LINE__);
 }
 
 TestMediaPlayer::~TestMediaPlayer()
@@ -1018,7 +1014,7 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
     std::vector<NetworkAdapter*>* subnetList = lib->CreateSubnetList();
     const TUint adapterIndex = aAdapter;
     if (subnetList->size() <= adapterIndex) {
-        Log::Print("ERROR: adapter %u doesn't exist\n", adapterIndex);
+        OhLog::PrintError("TestMediaPlayer: adapter %u doesn't exist\n", adapterIndex);
         ASSERTS();
     }
     Log::Print ("adapter list:\n");
@@ -1042,7 +1038,7 @@ OpenHome::Net::Library* TestMediaPlayerInit::CreateLibrary(
 void TestMediaPlayerInit::SeedRandomNumberGenerator(Environment& aEnv, const Brx& aRoom, TIpAddress aAddress, DviServerUpnp& aServer)
 {
     if (aRoom == Brx::Empty()) {
-        Log::Print("ERROR: room must be set\n");
+        OhLog::PrintError("TestMediaPlayer: room must be set\n");
         ASSERTS();
     }
     // Re-seed random number generator with hash of (unique) room name + UPnP
