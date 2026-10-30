@@ -17,25 +17,26 @@ using namespace OpenHome;
 
 TInt OhLog::PrintError(const TChar* aFormat, ...)
 {
-    TInt ret;
     va_list arg;
-    va_start(arg,aFormat);
+    va_start(arg, aFormat);
 
-   Log::Print("%s", AC_RED);
-   ret = Log::Print(aFormat, arg);
-   Log::Print("%s", AC_NORMAL);
-   va_end(arg);
-   return (ret);
+    Log::Print("%s", AC_RED);
+    TInt ret = Log::PrintVA(aFormat, arg);
+    Log::Print("%s", AC_NORMAL);
+
+    va_end(arg);
+    return ret;
 }
+
 TInt OhLog::PrintWarning(const TChar* aFormat, ...)
 {
-    TInt ret;
     va_list arg;
-    va_start(arg,aFormat);
+    va_start(arg, aFormat);
 
-   Log::Print("%s", AC_YELLOW);
-   ret = Log::Print(aFormat, arg);
-   Log::Print("%s", AC_NORMAL);
-   va_end(arg);
-   return (ret);
+    Log::Print("%s", AC_YELLOW);
+    TInt ret = Log::PrintVA(aFormat, arg);
+    Log::Print("%s", AC_NORMAL);
+
+    va_end(arg);
+    return ret;
 }
