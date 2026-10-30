@@ -826,34 +826,34 @@ void DriverAlsa::Pimpl::LogPCMState()
     switch (snd_pcm_state(iHandle))
     {
         case SND_PCM_STATE_OPEN:
-            Log::Print("PCM STATE: SND_PCM_STATE_OPEN\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_OPEN\n");
             break;
         case SND_PCM_STATE_SETUP:
-            Log::Print("PCM STATE: SND_PCM_STATE_SETUP\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_SETUP\n");
             break;
         case SND_PCM_STATE_PREPARED:
-            Log::Print("PCM STATE: SND_PCM_STATE_PREPARED\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_PREPARED\n");
             break;
         case SND_PCM_STATE_RUNNING:
-            Log::Print("PCM STATE: SND_PCM_STATE_RUNNING\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_RUNNING\n");
             break;
         case SND_PCM_STATE_XRUN:
-            Log::Print("PCM STATE: SND_PCM_STATE_XRUN\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_XRUN\n");
             break;
         case SND_PCM_STATE_DRAINING:
-            Log::Print("PCM STATE: SND_PCM_STATE_DRAINING\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_DRAINING\n");
             break;
         case SND_PCM_STATE_PAUSED:
-            Log::Print("PCM STATE: SND_PCM_STATE_PAUSED\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_PAUSED\n");
             break;
         case SND_PCM_STATE_SUSPENDED:
-            Log::Print("PCM STATE: SND_PCM_STATE_SUSPENDED\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_SUSPENDED\n");
             break;
         case SND_PCM_STATE_DISCONNECTED:
-            Log::Print("PCM STATE: SND_PCM_STATE_DISCONNECTED\n");
+            Log::Print("DriverAlsa: PCM STATE: SND_PCM_STATE_DISCONNECTED\n");
             break;
         default:
-            Log::Print("PCM STATE: UNKNOWN\n");
+            Log::Print("DriverAlsa: PCM STATE: UNKNOWN\n");
             break;
     }
 }
@@ -931,7 +931,7 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
 
             iDitch = false;
 
-            Log::Print("Found PcmProcessor %d\n", iProfileIndex);
+            Log::Print("DriverAlsa: found PcmProcessor %d\n", iProfileIndex);
 
             return;
         }
