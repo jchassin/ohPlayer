@@ -70,7 +70,7 @@ TBool OhSerialPort::Open() {
     }
 
     iIsOpen = true;
-    Log::Print("OhSerialPort: Opened %s at %u baud\n", iDevicePath.c_str(), iBaudRate);
+    OhLog::Print("OhSerialPort: Opened %s at %u baud\n", iDevicePath.c_str(), iBaudRate);
     return true;
 }
 

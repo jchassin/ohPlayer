@@ -59,7 +59,7 @@ VolumeControl::VolumeControl()
     }
     if (iElem != NULL) {
         if (snd_mixer_selem_has_playback_switch(iElem)) {
-            Log::Print("VolumeControl: unmuting playback switch\n");
+            OhLog::Print("VolumeControl: unmuting playback switch\n");
             snd_mixer_selem_set_playback_switch_all(iElem, 1);
         }
     } else {
@@ -100,7 +100,7 @@ void VolumeControl::SetVolume(TUint aVolume)
     {
         return;
     }
-    Log::Print("VolumeControl: set volume %u\n", aVolume);
+    OhLog::Print("VolumeControl: set volume %u\n", aVolume);
     volume = double((aVolume / MILLI_DB_PER_STEP)/100.0f);
 
     // Use the dB range to map the volume to a scale more in tune

@@ -1,3 +1,4 @@
+#include "OhLog.h"
 #include "OpenHomePlayer.h"
 #include "TestMediaPlayer.h"
 #include <OpenHome/Types.h>
@@ -74,14 +75,14 @@ void TestMediaPlayerThread::RunInThread()
     Bwh udn;
     // Note: prefix udn with 4c494e4e- to get older versions of Linn Konfig to recognise our devices
     TestMediaPlayerInit::AppendUniqueId(dvStack->Env(), iOptions.Udn().Value(), Brn("TestMediaPlayer"), udn);
-    Log::Print("UDN is %.*s\n", PBUF(udn));
+    OhLog::Print("UDN is %.*s\n", PBUF(udn));
 
-    Log::Print("Room: %s, Name: %s\n", iOptions.Room().CString(), iOptions.Name().CString());
-    Log::Print("TuneIn: %s, Tidal: %s, Qobuz: %s\n",
+    OhLog::Print("Room: %s, Name: %s\n", iOptions.Room().CString(), iOptions.Name().CString());
+    OhLog::Print("TuneIn: %s, Tidal: %s, Qobuz: %s\n",
         iOptions.TuneIn().CString(), iOptions.Tidal().CString(), iOptions.Qobuz().CString());
-    Log::Print("UserAgent: %s, StoreFile: %s\n",
+    OhLog::Print("UserAgent: %s, StoreFile: %s\n",
         iOptions.UserAgent().CString(), iOptions.StoreFile().CString());
-    Log::Print("ODP port: %u, Web UI port: %u\n",
+    OhLog::Print("ODP port: %u, Web UI port: %u\n",
         iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value());
 
 
@@ -90,7 +91,7 @@ void TestMediaPlayerThread::RunInThread()
         iOptions.TuneIn().Value(), iOptions.Tidal().Value(), iOptions.Qobuz().Value(),
         iOptions.UserAgent().Value(), iOptions.StoreFile().CString(), iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value(), iOptions.RadioBrowser().Value());
     tmp->Run();
-    Log::Print("Shutting down pipeline\n");
+    OhLog::Print("Shutting down pipeline\n");
     tmp->StopPipeline();
     delete tmp;
 }
@@ -126,7 +127,7 @@ void CDECL sig_handler(int signo)
   if (signo == SIGINT)
   {
     tmp->RequestExit();
-    Log::Print("Received SIGINT\n");
+    OhLog::Print("Received SIGINT\n");
   }
 }
 

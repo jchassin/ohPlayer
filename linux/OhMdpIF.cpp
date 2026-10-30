@@ -1,3 +1,4 @@
+#include "OhLog.h"
 // TCP Server text interface for OLED screen
 #include <OpenHome/Net/Private/Globals.h>
 #include <OpenHome/Types.h>
@@ -181,7 +182,7 @@ OhMdpIF::OhMdpIF()
 
     Endpoint::AddressBuf myBuf;
     TIpAddressUtils::ToString(addr, myBuf);
-    Log::Print("Using network interface %.*s\n\n", PBUF(myBuf));
+    OhLog::Print("Using network interface %.*s\n\n", PBUF(myBuf));
 
 #if 1
     for (TUint i=0; i<ifs->size(); i++) {

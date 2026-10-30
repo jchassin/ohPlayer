@@ -85,7 +85,7 @@ void ConfigRamStore::Read(const Brx& aKey, Bwx& aDest)
     }
 
     if (it->second->Bytes() > aDest.MaxBytes()) {
-        Log::Print("ConfigRamStore::Read StoreReadBufferUndersized aKey: %.*s, aDest.MaxBytes(): %u, it->second->Bytes(): %u, it->second: %.*s\n", PBUF(aKey), aDest.MaxBytes(), it->second->Bytes(), PBUF(*it->second));
+        OhLog::Print("ConfigRamStore::Read StoreReadBufferUndersized aKey: %.*s, aDest.MaxBytes(): %u, it->second->Bytes(): %u, it->second: %.*s\n", PBUF(aKey), aDest.MaxBytes(), it->second->Bytes(), PBUF(*it->second));
         THROW(StoreReadBufferUndersized);
     }
 
@@ -225,24 +225,24 @@ StorePrinter::StorePrinter(IStoreVisitable& aVisitable)
 
 void StorePrinter::Print()
 {
-    Log::Print("RamStore: [\n");
+    OhLog::PrintDebug("RamStore: [\n");
     iVisitable.Accept(*this);
-    Log::Print("]\n");
+    OhLog::PrintDebug("]\n");
 }
 
 void StorePrinter::Visit(const Brx& aKey, const Brx& aValue)
 {
-    Log::Print("   {%.*s, ", PBUF(aKey));
+    OhLog::PrintDebug("   {%.*s, ", PBUF(aKey));
     // See if value is size of an int. If so, additionally print value as a
     // numeral, in case it is actually a numeric value.
     if (aValue.Bytes() == sizeof(TUint32)) {
         TUint32 val = Converter::BeUint32At(aValue, 0);
-        Log::Print("%u/%.*s", val, PBUF(aValue));
+        OhLog::PrintDebug("%u/%.*s", val, PBUF(aValue));
     }
     else {
-        Log::Print(aValue);
+        OhLog::PrintDebug("%.*s", PBUF(aValue));
     }
-    Log::Print("}\n");
+    OhLog::PrintDebug("}\n");
 }
 
 

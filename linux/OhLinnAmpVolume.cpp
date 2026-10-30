@@ -42,7 +42,7 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolu
     if (!iSerialPort->Open()) {
         OhLog::PrintError("OhLinnAmpVolume: failed to open serial port %s\n", aSerialPortPath.c_str());
     } else {
-        Log::Print("OhLinnAmpVolume: Connected to %s\n", aSerialPortPath.c_str());
+        OhLog::Print("OhLinnAmpVolume: Connected to %s\n", aSerialPortPath.c_str());
         QueryId();
         // Align amp with OpenHome product initial state (standby at boot)
         SetStandby(true);
@@ -83,7 +83,7 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
         iCurrentVolume = linnVolume;
-        Log::Print("OhLinnAmpVolume: Set volume to %u (Linn: %u)\n", aVolume, linnVolume);
+        OhLog::Print("OhLinnAmpVolume: Set volume to %u (Linn: %u)\n", aVolume, linnVolume);
     } else {
         OhLog::PrintError("OhLinnAmpVolume: failed to send volume command\n");
     }
@@ -141,9 +141,9 @@ void OhLinnAmpVolume::QueryId() {
             std::string serial = id.substr(3);
             iDeviceId.Replace(Brn(serial.c_str()));
             iDeviceModel.Replace(Brn(model.c_str()));
-            Log::Print("OhLinnAmpVolume: Linn %s detected (serial %s)\n", model.c_str(), serial.c_str());
+            OhLog::Print("OhLinnAmpVolume: Linn %s detected (serial %s)\n", model.c_str(), serial.c_str());
         } else {
-            Log::Print("OhLinnAmpVolume: Device ID: %s\n", respStr.c_str());
+            OhLog::Print("OhLinnAmpVolume: Device ID: %s\n", respStr.c_str());
         }
     } else {
         OhLog::PrintError("OhLinnAmpVolume: failed to query device ID\n");
@@ -159,7 +159,7 @@ void OhLinnAmpVolume::SetStandby(TBool aOn) {
     Brn cmd(reinterpret_cast<const TByte*>(command), strlen(command));
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
-        Log::Print("OhLinnAmpVolume: Standby %s\n", aOn ? "ON" : "OFF");
+        OhLog::Print("OhLinnAmpVolume: Standby %s\n", aOn ? "ON" : "OFF");
     } else {
         OhLog::PrintError("OhLinnAmpVolume: failed to set standby %s\n", aOn ? "ON" : "OFF");
     }
@@ -174,7 +174,7 @@ void OhLinnAmpVolume::SetTone(const char* aPrefix, TInt aValue) {
     Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
-        Log::Print("OhLinnAmpVolume: Set %s to %d\n", aPrefix, aValue);
+        OhLog::Print("OhLinnAmpVolume: Set %s to %d\n", aPrefix, aValue);
     } else {
         OhLog::PrintError("OhLinnAmpVolume: failed to set %s\n", aPrefix);
     }
@@ -198,7 +198,7 @@ void OhLinnAmpVolume::SelectInput(int aSource) {
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
         std::string respStr(reinterpret_cast<const char*>(response.Ptr()), response.Bytes());
-        Log::Print("OhLinnAmpVolume: Selected input %d\n", aSource);
+        OhLog::Print("OhLinnAmpVolume: Selected input %d\n", aSource);
     } else {
         OhLog::PrintError("OhLinnAmpVolume: failed to select input %d\n", aSource);
     }
@@ -217,7 +217,7 @@ TBool OhLinnAmpVolume::QueryCurrentVolume() {
         if (volumePos != std::string::npos) {
             try {
                 iCurrentVolume = std::stoi(respStr.substr(volumePos + strlen(kCmdVolume)));
-                Log::Print("OhLinnAmpVolume: Current volume: %u\n", iCurrentVolume);
+                OhLog::Print("OhLinnAmpVolume: Current volume: %u\n", iCurrentVolume);
                 return true;
             } catch (...) {
                 OhLog::PrintError("OhLinnAmpVolume: invalid volume response\n");
