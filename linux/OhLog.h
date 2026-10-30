@@ -14,6 +14,10 @@ namespace OpenHome {
     {
       public:
         // Application log level (one of the ohNet kApplication* subsystem bits).
+        // kApplication2: the debug-severity messages can then be toggled at
+        // runtime from the debug shell ('debug set Application2' /
+        // 'debug clear Application2', plus 'debug severity Debug' to raise
+        // the severity threshold).
         static const TUint64 kLevel;
 
         static TInt Print(const TChar* aFormat, ...);
