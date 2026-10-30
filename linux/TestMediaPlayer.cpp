@@ -209,6 +209,44 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     OhLog::Print("Shell running on port %u\n", aDvStack.Env().Shell()->Port());
     iInfoLogger = std::make_unique<Media::AllocatorInfoLogger>();
 
+    // Create the read/write store before the UPnP devices: the device UDN is
+    // derived from the effective room (Product.Room from the store, falling
+    // back to the -r argument), so the store must be loaded first.
+    iRamStore = std::make_unique<RamStore>(kSongcastSenderIconFileName);
+    iConfigRamStore = std::make_unique<ConfigRamStore>();
+    if (Brn(aStoreFile).Bytes() > 0) {
+        StoreFileReaderJson storeFileReader(aStoreFile);
+        storeFileReader.Read(*iConfigRamStore);
+
+        iStoreFileWriter = std::make_unique<StoreFileWriterJson>(aStoreFile);
+        iConfigRamStore->AddStoreObserver(*iStoreFileWriter);
+    }
+    else {
+        OhLog::Print("No store file parameter specified - will not attempt to load store values from file, and changes to store values will not be persisted.\n");
+    }
+
+    // Derive the device UDN.
+    Bwh udn;
+    if (aUdn.Bytes() > 0) {
+        // Explicit -u/--udn: use as provided.
+        udn.Replace(aUdn);
+    }
+    else {
+        // Canonical uuid from the effective room: the configured room
+        // (Product.Room from the store) when set, else the -r argument.
+        // Keeps the device identity distinct per room and stable over time.
+        Bws<Product::kMaxRoomBytes> roomBuf;
+        static const Brn kKeyProductRoom("Product.Room");
+        try {
+            iConfigRamStore->Read(kKeyProductRoom, roomBuf);
+        }
+        catch (StoreKeyNotFound&) {
+            roomBuf.Replace(Brn(aRoom));
+        }
+        TestMediaPlayerInit::CreateCanonicalUuid(roomBuf, udn);
+    }
+    OhLog::Print("UDN is %.*s\n", PBUF(udn));
+
     // Do NOT set UPnP friendly name attributes at this stage.
     // (Wait until MediaPlayer is created so that friendly name can be observed.)
 
@@ -216,7 +254,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
 
     // Create UPnP device.
     // Friendly name not set here.
-    iDevice = std::make_unique<DvDeviceStandard>(aDvStack, aUdn, static_cast<Net::IResourceManager&>(*this));
+    iDevice = std::make_unique<DvDeviceStandard>(aDvStack, udn, static_cast<Net::IResourceManager&>(*this));
     iDevice->SetAttribute("Upnp.Domain", "av.openhome.org");
     iDevice->SetAttribute("Upnp.Type", "Source");
     iDevice->SetAttribute("Upnp.Version", "1");
@@ -228,7 +266,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     iDevice->SetAttribute("Odp.Name", "Ds");
 
     // Create separate UPnP device for standard MediaRenderer.
-    Bws<256> buf(aUdn);
+    Bws<256> buf(udn);
     buf.Append("-MediaRenderer");
     iDeviceUpnpAv = std::make_unique<DvDeviceStandard>(aDvStack, buf);
     // Friendly name not set here.
@@ -241,22 +279,6 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     iDeviceUpnpAv->SetAttribute("Lpec.Name", "MediaRenderer");
 #endif
     iDeviceUpnpAv->SetAttribute("Odp.Name", "MediaRenderer");
-
-    // create read/write store.  This creates a number of static (constant) entries automatically
-    iRamStore = std::make_unique<RamStore>(kSongcastSenderIconFileName);
-
-    // create a read/write store using the new config framework
-    iConfigRamStore = std::make_unique<ConfigRamStore>();
-    if (Brn(aStoreFile).Bytes() > 0) {
-        StoreFileReaderJson storeFileReader(aStoreFile);
-        storeFileReader.Read(*iConfigRamStore);
-
-        iStoreFileWriter = std::make_unique<StoreFileWriterJson>(aStoreFile);
-        iConfigRamStore->AddStoreObserver(*iStoreFileWriter);
-    }
-    else {
-        OhLog::Print("No store file parameter specified - will not attempt to load store values from file, and changes to store values will not be persisted.\n");
-    }
 
     VolumeProfile volumeProfile;
     VolumeConsumer volumeInit;
@@ -376,7 +398,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
                                    mediaPlayerStore, pipelineInit, *iAudioTime,
                                    volumeInit, volumeProfile,
                                    *iInfoLogger,
-                                   aUdn, mpInit);
+                                   udn, mpInit);
     delete mpInit;
 
     // Radio Browser media server: exposes the community radio directory
@@ -392,9 +414,9 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
             // simple deterministic 128-bit hash of the renderer udn (FNV-1a x2)
             TUint64 h1 = 0xcbf29ce484222325ULL;
             TUint64 h2 = 0x9e3779b97f4a7c15ULL;
-            for (TUint i = 0; i < aUdn.Bytes(); i++) {
-                h1 ^= aUdn[i]; h1 *= 0x100000001b3ULL;
-                h2 ^= (TUint64(aUdn[i]) << 32) | aUdn[i]; h2 *= 0x100000001b3ULL;
+            for (TUint i = 0; i < udn.Bytes(); i++) {
+                h1 ^= udn[i]; h1 *= 0x100000001b3ULL;
+                h2 ^= (TUint64(udn[i]) << 32) | udn[i]; h2 *= 0x100000001b3ULL;
             }
             const TUint64 ms[] = { h1, h2 };
             const TByte* p = reinterpret_cast<const TByte*>(ms);

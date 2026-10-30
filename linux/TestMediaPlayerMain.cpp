@@ -71,19 +71,10 @@ void TestMediaPlayerThread::RunInThread()
     TestMediaPlayerInit::SeedRandomNumberGenerator(dvStack->Env(), iOptions.Room().Value(), adapter->Address(), dvStack->ServerUpnp());
     adapter->RemoveRef(cookie);
 
-    // Set/construct UDN.
-    Bwh udn;
-    if (iOptions.Udn().Value().Bytes() > 0) {
-        // Explicit -u/--udn: use as provided.
-        udn.Replace(iOptions.Udn().Value());
-    }
-    else {
-        // Derive a canonical UPnP uuid (8-4-4-4-12) from the room name so
-        // the device identity is stable across reboots and IP changes, and
-        // well-formed for control points that reject non-uuid UDNs.
-        TestMediaPlayerInit::CreateCanonicalUuid(iOptions.Room().Value(), udn);
-    }
-    OhLog::Print("UDN is %.*s\n", PBUF(udn));
+    // The device UDN is derived in the TestMediaPlayer constructor: an
+    // explicit -u/--udn is used as provided, otherwise a canonical uuid is
+    // derived from the effective room (configured Product.Room, falling
+    // back to the -r argument).
 
     OhLog::Print("Room: %s, Name: %s\n", iOptions.Room().CString(), iOptions.Name().CString());
     OhLog::Print("TuneIn: %s, Tidal: %s, Qobuz: %s\n",
@@ -95,7 +86,7 @@ void TestMediaPlayerThread::RunInThread()
 
 
     // Create TestMediaPlayer.
-    tmp = new TestMediaPlayer(*dvStack, *cpStack, udn, iOptions.Room().CString(), iOptions.Name().CString(),
+    tmp = new TestMediaPlayer(*dvStack, *cpStack, iOptions.Udn().Value(), iOptions.Room().CString(), iOptions.Name().CString(),
         iOptions.TuneIn().Value(), iOptions.Tidal().Value(), iOptions.Qobuz().Value(),
         iOptions.UserAgent().Value(), iOptions.StoreFile().CString(), iOptions.OptionOdp().Value(), iOptions.OptionWebUi().Value(), iOptions.RadioBrowser().Value());
     tmp->Run();
