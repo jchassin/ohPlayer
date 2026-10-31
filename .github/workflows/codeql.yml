@@ -1,0 +1,67 @@
+name: CodeQL security scan
+
+# Manual-only: run from the Actions tab ("Run workflow" button).
+# CodeQL builds the code (fetch_deps + make) and runs SAST analysis;
+# results land in the repository Security tab.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  # Required to upload results to the Security tab.
+  security-events: write
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (cpp)
+    # x64: the build uses aarch64 prebuilt dependencies for linking, but
+    # CodeQL instruments the compilation of the repository sources, which
+    # works on the default runner.
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CODEQL_EXTRACTOR_CPP_AUTOINSTALL_DEPENDENCIES: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang pkg-config libglib2.0-dev libasound2-dev \
+            libssl-dev binutils
+
+      - name: Fetch prebuilt dependencies
+        run: ./fetch_deps.sh
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: cpp
+          # For a curated C/C++ scan: the default query suite includes the
+          # security-and-quality queries. Keep default for now.
+          # queries: security-extended
+
+      - name: Build (compile the repository sources)
+        # The prebuilt dependencies downloaded by fetch_deps.sh are aarch64
+        # static libraries, so linking the final binary on an x64 runner
+        # cannot succeed. That is fine for CodeQL: it instruments the
+        # *compilation* of the repository sources, which completes fully
+        # before the link step. All translation units are extracted into
+        # the CodeQL database even though the final link fails.
+        run: |
+          make -C linux -j"$(nproc)" || echo "link step failed (expected on x64) - compilation units captured"
+      - name: Check compilation produced objects
+        run: |
+          # Fail loudly if nothing was compiled - the CodeQL database would be empty.
+          count=$(find linux/raspbian/objs -name '*.o' | wc -l)
+          echo "compiled objects: $count"
+          test "$count" -gt 0
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/manual/cpp"
