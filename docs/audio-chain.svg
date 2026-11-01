@@ -22,6 +22,9 @@
     <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#1976d2"/>
     </marker>
+    <marker id="arrowViolet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7b1fa2"/>
+    </marker>
   </defs>
 
   <rect width="1200" height="700" fill="#fafafa" rx="12"/>
@@ -43,6 +46,11 @@
   <text x="122" y="284" text-anchor="middle" font-size="10.5" font-weight="700" fill="#e65100">announced target: 150 ms</text>
   <text x="122" y="300" text-anchor="middle" font-size="9.5" fill="#ef6c00">MediaLatency in every packet</text>
   <text x="122" y="314" text-anchor="middle" font-size="9.5" fill="#ef6c00">→ injected as MsgDelay</text>
+
+  <!-- inter room delay arrow: from the DS audio output to the renderer DAC output -->
+  <path d="M 122 336 C 300 405, 950 405, 1082 296"
+        fill="none" stroke="#7b1fa2" stroke-width="2" stroke-dasharray="9,6" marker-end="url(#arrowViolet)"/>
+  <text x="602" y="398" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7b1fa2">inter room delay</text>
 
   <!-- RECEIVER -->
   <rect x="240" y="105" width="935" height="240" rx="10" fill="none" stroke="#b0bec5" stroke-dasharray="5,4"/>
@@ -130,8 +138,8 @@
   <text x="730" y="570" font-size="11.5" fill="#607d8b">Encoded Reservoir absorbs network cuts</text>
   <text x="730" y="587" font-size="11.5" fill="#607d8b">without adding latency.</text>
 
-  <rect x="700" y="610" width="18" height="18" rx="4" fill="#ef9a9a"/>
-  <text x="730" y="624" font-size="12.5" font-weight="700" fill="#37474f">Measured (metronome)</text>
+  <rect x="700" y="610" width="18" height="18" rx="4" fill="#7b1fa2"/>
+  <text x="730" y="624" font-size="12.5" font-weight="700" fill="#7b1fa2">Measured (metronome) - inter room delay</text>
   <text x="730" y="645" font-size="11.5" fill="#607d8b">ramper 200ms: 62 ms offset - ramper 85ms +</text>
   <text x="730" y="662" font-size="11.5" fill="#607d8b">ALSA 12ms: ~5 ms offset (below audibility).</text>
 </svg>
