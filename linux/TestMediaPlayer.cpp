@@ -153,6 +153,34 @@ void RebootLogger::Reboot(const Brx& aReason)
     _exit(0);
 }
 
+// SongcastLatencyLogger
+
+SongcastLatencyLogger::SongcastLatencyLogger()
+    : iLastLatency(UINT_MAX)
+{
+}
+
+void SongcastLatencyLogger::Process(OhmMsgAudio& aMsg)
+{
+    const TUint latency = aMsg.MediaLatency();
+    if (latency != iLastLatency) {
+        iLastLatency = latency;
+        // Same conversion as ProtocolOhBase applies before injecting the
+        // MsgDelay that the PhaseAdjuster matches against.
+        const TUint delayJiffies = (TUint)Jiffies::FromSongcastTime(latency, aMsg.SampleRate());
+        OhLog::PrintDebug("Songcast: sender media latency = %u (songcast time) = %u jiffies (~%ums) @ %uHz\n",
+                          latency, delayJiffies, delayJiffies / Jiffies::kPerMs, aMsg.SampleRate());
+    }
+}
+
+void SongcastLatencyLogger::Process(OhmMsgTrack& /*aMsg*/)
+{
+}
+
+void SongcastLatencyLogger::Process(OhmMsgMetatext& /*aMsg*/)
+{
+}
+
 
 // DummyRaatSignalPath
 
@@ -455,7 +483,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // RadioPresets in InitialiseSubsystems, after the Radio source is added.
     iRadioPresetsStatic = std::make_unique<RadioPresetsStatic>(iMediaPlayer->ConfigInitialiser());
     
-    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
+    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 12052);
 #if 1
     if (iDriver == NULL)
     {
@@ -777,7 +805,7 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
                                                  Optional<IClockPuller>(nullptr),
                                                  Optional<IOhmTimestamper>(iTxTimestamper),
                                                  Optional<IOhmTimestamper>(iRxTimestamper),
-                                                 Optional<IOhmMsgProcessor>()));
+                                                 Optional<IOhmMsgProcessor>(iSongcastLatencyLogger)));
 
 #ifdef RAAT_ENABLE
     ASSERT(iPullableClock != nullptr);
