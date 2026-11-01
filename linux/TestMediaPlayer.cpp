@@ -155,8 +155,9 @@ void RebootLogger::Reboot(const Brx& aReason)
 
 // SongcastLatencyLogger
 
-SongcastLatencyLogger::SongcastLatencyLogger()
-    : iLastLatency(UINT_MAX)
+SongcastLatencyLogger::SongcastLatencyLogger(TUint aDownstreamJiffies)
+    : iDownstreamJiffies(aDownstreamJiffies)
+    , iLastLatency(UINT_MAX)
 {
 }
 
@@ -172,6 +173,18 @@ void SongcastLatencyLogger::Process(OhmMsgAudio& aMsg)
         // PrintDebug was observed not to reach the output on this build.
         OhLog::Print("Songcast: sender media latency = %u (songcast time) = %u jiffies (~%ums) @ %uHz\n",
                     latency, delayJiffies, delayJiffies / Jiffies::kPerMs, aMsg.SampleRate());
+        CheckTarget(delayJiffies);
+    }
+}
+
+void SongcastLatencyLogger::CheckTarget(TUint aTargetJiffies)
+{
+    if (iDownstreamJiffies > aTargetJiffies) {
+        OhLog::PrintWarning("Songcast: downstream buffers (~%ums) exceed the sender's target (~%ums): "
+                            "multiroom offset cannot be compensated - reduce StarvationRamperMinSize "
+                            "or the Driver ALSA Buffer\n",
+                            iDownstreamJiffies / Jiffies::kPerMs,
+                            aTargetJiffies / Jiffies::kPerMs);
     }
 }
 
@@ -395,9 +408,14 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // start.
     const TUint starvationRamperMinJiffies = PipelineConfig::ReadStarvationRamperMinSizeJiffiesFromStore(*iConfigRamStore);
     const TUint encodedReservoirBytes = PipelineConfig::ReadEncodedReservoirSizeBytesFromStore(*iConfigRamStore);
-    OhLog::Print("Pipeline buffers: StarvationRamperMinSize=%u jiffies (~%ums), EncodedReservoirSize=%u bytes\n",
+    const TUint alsaBufferUs = PipelineConfig::ReadAlsaBufferUsFromStore(*iConfigRamStore);
+    OhLog::Print("Pipeline buffers: StarvationRamperMinSize=%u jiffies (~%ums), EncodedReservoirSize=%u bytes, AlsaBuffer=%u us (~%ums)\n",
                starvationRamperMinJiffies, starvationRamperMinJiffies / Jiffies::kPerMs,
-               encodedReservoirBytes);
+               encodedReservoirBytes, alsaBufferUs, alsaBufferUs / 1000);
+    // Downstream latency fed to the Songcast target check (ramper + ALSA).
+    const TUint downstreamJiffies = starvationRamperMinJiffies
+                                  + (alsaBufferUs * Jiffies::kPerMs) / 1000;
+    iSongcastLatencyLogger = std::make_unique<SongcastLatencyLogger>(downstreamJiffies);
     auto pipelineInit = PipelineInitParams::New();
     pipelineInit->SetStarvationRamperMinSize(starvationRamperMinJiffies); // larger StarvationRamper size useful for desktop
                                                                      // platforms with slightly unpredictable thread scheduling
@@ -808,7 +826,7 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
                                                  Optional<IClockPuller>(nullptr),
                                                  Optional<IOhmTimestamper>(iTxTimestamper),
                                                  Optional<IOhmTimestamper>(iRxTimestamper),
-                                                 Optional<IOhmMsgProcessor>(iSongcastLatencyLogger)));
+                                                 Optional<IOhmMsgProcessor>(*iSongcastLatencyLogger)));
 
 #ifdef RAAT_ENABLE
     ASSERT(iPullableClock != nullptr);

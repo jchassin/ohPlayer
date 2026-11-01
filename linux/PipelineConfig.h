@@ -27,14 +27,16 @@ public:
     static const Brn kKeyAlsaBufferUs;
 
     // Allowed ranges, in native units.
-    // StarvationRamperMinSize: 20 ms (ohPipeline default) to 120 ms, in jiffies.
+    // StarvationRamperMinSize: 20 ms (ohPipeline default) to 280 ms, in jiffies.
     // The Songcast protocol aligns a receiver on the media latency announced by
-    // the sender (150 ms on Linn DS firmware): the PhaseAdjuster compensates
-    // downstream buffer depth up to that target, but cannot pull a pipeline that
-    // exceeds it back in sync. Keep StarvationRamperMinSize + DriverAlsaBuffer
-    // below 150 ms so multiroom offset stays compensated.
+    // the sender: 150 ms from a Linn DS, 300 ms from an ohPlayer sender
+    // (OhmSender kSongcastLatencyMs). The PhaseAdjuster compensates downstream
+    // buffer depth up to that target, but cannot pull a pipeline that exceeds
+    // it back in sync. Keep StarvationRamperMinSize + DriverAlsaBuffer below the
+    // sender's target; SongcastLatencyLogger logs a warning when the configured
+    // sum exceeds the target observed in the live stream.
     static const TUint kMinStarvationRamperJiffies = Media::Jiffies::kPerMs * 20;
-    static const TUint kMaxStarvationRamperJiffies = Media::Jiffies::kPerMs * 120;
+    static const TUint kMaxStarvationRamperJiffies = Media::Jiffies::kPerMs * 280;
     static const TUint kMinEncodedReservoirBytes  = 64 * 1024;
     static const TUint kMaxEncodedReservoirBytes  = 8 * 1024 * 1024;
 

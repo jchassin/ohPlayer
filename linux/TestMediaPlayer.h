@@ -120,16 +120,25 @@ public: // from IRebootHandler
  * pipeline injects as MsgDelay (ProtocolOhBase converts it via
  * Jiffies::FromSongcastTime) - the master variable of the multiroom offset
  * that the PhaseAdjuster aims to match by dropping/injecting audio.
+ *
+ * Also warns when the configured downstream latency (StarvationRamperMinSize
+ * + DriverAlsaBuffer) exceeds the sender's target: above the target the
+ * PhaseAdjuster cannot compensate and the receiver lags the sender in
+ * multiroom. The check runs on each latency change (stream lifecycle), so
+ * it always reflects the current group's sender.
  */
 class SongcastLatencyLogger : public IOhmMsgProcessor, private INonCopyable
 {
 public:
-    SongcastLatencyLogger();
+    SongcastLatencyLogger(TUint aDownstreamJiffies);
 public: // from IOhmMsgProcessor
     void Process(OhmMsgAudio& aMsg) override;
     void Process(OhmMsgTrack& aMsg) override;
     void Process(OhmMsgMetatext& aMsg) override;
 private:
+    void CheckTarget(TUint aTargetJiffies);
+private:
+    const TUint iDownstreamJiffies;
     TUint iLastLatency;
 };
 
@@ -229,7 +238,7 @@ protected:
     std::unique_ptr<MediaPlayer> iMediaPlayer;
     std::unique_ptr<Web::WebAppFramework> iAppFramework;    // FIXME - add getter to IMediaPlayer and make private
     RebootLogger iRebootHandler;
-    SongcastLatencyLogger iSongcastLatencyLogger;
+    std::unique_ptr<SongcastLatencyLogger> iSongcastLatencyLogger;
     Media::IPullableClock* iPullableClock;
     std::unique_ptr<Media::AllocatorInfoLogger> iInfoLogger;
     std::unique_ptr<IPlaylistLoader> iPlaylistLoader;
