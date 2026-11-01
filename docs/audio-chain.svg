@@ -84,7 +84,7 @@
   <text x="992" y="206" text-anchor="middle" font-size="10.5" fill="#ad1457">DriverAlsa to DAC</text>
   <rect x="941" y="222" width="102" height="44" rx="4" fill="#ec407a" opacity="0.4"/>
   <text x="992" y="240" text-anchor="middle" font-size="10" fill="#880e4f">kept full</text>
-  <text x="992" y="256" text-anchor="middle" font-size="10" fill="#880e4f">12 ms (default)</text>
+  <text x="992" y="256" text-anchor="middle" font-size="10" fill="#880e4f">12 ms (incl. I2S fifo)</text>
   <text x="992" y="292" text-anchor="middle" font-size="11" font-weight="600" fill="#c2185b">downstream latency (part 2)</text>
   <text x="992" y="310" text-anchor="middle" font-size="9.5" fill="#ad1457">configui: AlsaBufferUs</text>
 
@@ -92,7 +92,7 @@
   <circle cx="1118" cy="240" r="46" fill="#fff8e1" stroke="#ffca28" stroke-width="2"/>
   <text x="1118" y="232" text-anchor="middle" font-size="20">&#9834;</text>
   <text x="1118" y="254" text-anchor="middle" font-size="10.5" font-weight="600" fill="#f57f17">DAC + speakers</text>
-  <text x="1118" y="268" text-anchor="middle" font-size="9.5" fill="#f9a825">ES9038Q2M - 2-5 ms</text>
+  <text x="1118" y="268" text-anchor="middle" font-size="9" fill="#f9a825">ES9038Q2M - ~1 ms, cancels out</text>
 
   <!-- arrows -->
   <line x1="200" y1="240" x2="258" y2="240" stroke="#546e7a" stroke-width="2.2" marker-end="url(#arrow)"/>
