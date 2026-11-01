@@ -168,8 +168,10 @@ void SongcastLatencyLogger::Process(OhmMsgAudio& aMsg)
         // Same conversion as ProtocolOhBase applies before injecting the
         // MsgDelay that the PhaseAdjuster matches against.
         const TUint delayJiffies = (TUint)Jiffies::FromSongcastTime(latency, aMsg.SampleRate());
-        OhLog::PrintDebug("Songcast: sender media latency = %u (songcast time) = %u jiffies (~%ums) @ %uHz\n",
-                          latency, delayJiffies, delayJiffies / Jiffies::kPerMs, aMsg.SampleRate());
+        // Print (info): a latency change marks a stream lifecycle event, and
+        // PrintDebug was observed not to reach the output on this build.
+        OhLog::Print("Songcast: sender media latency = %u (songcast time) = %u jiffies (~%ums) @ %uHz\n",
+                    latency, delayJiffies, delayJiffies / Jiffies::kPerMs, aMsg.SampleRate());
     }
 }
 
@@ -483,7 +485,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // RadioPresets in InitialiseSubsystems, after the Radio source is added.
     iRadioPresetsStatic = std::make_unique<RadioPresetsStatic>(iMediaPlayer->ConfigInitialiser());
     
-    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 12052);
+    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(),
+                                           PipelineConfig::ReadAlsaBufferUsFromStore(*iConfigRamStore));
 #if 1
     if (iDriver == NULL)
     {

@@ -24,14 +24,28 @@ class PipelineConfig
 public:
     static const Brn kKeyStarvationRamperMinSize;
     static const Brn kKeyEncodedReservoirSize;
+    static const Brn kKeyAlsaBufferUs;
 
     // Allowed ranges, in native units.
-    // StarvationRamperMinSize: 20 ms (ohPipeline default) to 3 s, in jiffies.
-    // EncodedReservoirSize: 64 KB to 8 MB.
+    // StarvationRamperMinSize: 20 ms (ohPipeline default) to 120 ms, in jiffies.
+    // The Songcast protocol aligns a receiver on the media latency announced by
+    // the sender (150 ms on Linn DS firmware): the PhaseAdjuster compensates
+    // downstream buffer depth up to that target, but cannot pull a pipeline that
+    // exceeds it back in sync. Keep StarvationRamperMinSize + DriverAlsaBuffer
+    // below 150 ms so multiroom offset stays compensated.
     static const TUint kMinStarvationRamperJiffies = Media::Jiffies::kPerMs * 20;
-    static const TUint kMaxStarvationRamperJiffies = Media::Jiffies::kPerMs * 3000;
+    static const TUint kMaxStarvationRamperJiffies = Media::Jiffies::kPerMs * 120;
     static const TUint kMinEncodedReservoirBytes  = 64 * 1024;
     static const TUint kMaxEncodedReservoirBytes  = 8 * 1024 * 1024;
+
+    // DriverAlsaBuffer: ALSA hardware buffer, in microseconds. Part of the
+    // downstream latency (together with StarvationRamperMinSize): keep the sum
+    // below the Songcast sender target (150 ms on Linn DS) - see the comment
+    // above. Range 5 ms to 50 ms; default 12052 us (12 ms) - the value validated
+    // by multiroom metronome measurements.
+    static const TUint kMinAlsaBufferUs = 5000;
+    static const TUint kMaxAlsaBufferUs = 50000;
+    static const TUint kDefaultAlsaBufferUs = 12052;
 
     // Defaults = the values previously used by the code:
     //  - StarvationRamperMinSize was explicitly set to 100 ms in TestMediaPlayer.cpp.
@@ -49,11 +63,13 @@ public:
     // Returns the defaults if not set or out of range.
     static TUint ReadStarvationRamperMinSizeJiffiesFromStore(Configuration::IStoreReadWrite& aStore);
     static TUint ReadEncodedReservoirSizeBytesFromStore(Configuration::IStoreReadWrite& aStore);
+    static TUint ReadAlsaBufferUsFromStore(Configuration::IStoreReadWrite& aStore);
 
 private:
     static TUint ReadNumFromStore(Configuration::IStoreReadWrite& aStore, const Brx& aKey, TUint aMin, TUint aMax, TUint aDefault);
     std::unique_ptr<Configuration::ConfigNum> iConfigStarvationRamperMinSize;
     std::unique_ptr<Configuration::ConfigNum> iConfigEncodedReservoirSize;
+    std::unique_ptr<Configuration::ConfigNum> iConfigAlsaBufferUs;
 };
 
 } // namespace Av

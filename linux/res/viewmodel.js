@@ -99,6 +99,7 @@ ViewModel = function(){
                 { key:"Delay.Value", helptext:"Helptext.Delay.Value", title:"Delay (ms)" },
                 { key:"Pipeline.StarvationRamperMinSize", helptext:"Helptext.Pipeline.StarvationRamperMinSize", title:"Starvation Ramper Min Size (jiffies)", type:"numeric" },
                 { key:"Pipeline.EncodedReservoirSize", helptext:"Helptext.Pipeline.EncodedReservoirSize", title:"Encoded Reservoir Size (bytes)", type:"numeric" },
+                { key:"Pipeline.AlsaBufferUs", helptext:"Helptext.Pipeline.AlsaBufferUs", title:"Driver ALSA Buffer (us)", type:"numeric" },
                 { key:"Device.VerboseDeviceLogging", helptext:"Helptext.Device.VerboseDeviceLogging", title:"Verbose Device Logging" },
                 { key:"Analogue.Exakt.Dual.Fronts", helptext:"Helptext.Analogue.Exakt.Dual.Fronts", title:"Dual Analogue/Exakt Stereo Output"},
                 { key:"Xlr.0.Out", helptext:"Helptext.Device.XlrOutput", title:"XLR Output" },
@@ -672,9 +673,14 @@ ViewModel = function(){
             "default" : "0 (Disabled)"
         },
         "Helptext.Pipeline.StarvationRamperMinSize" : {
-            description : "Advanced: minimum amount of buffered audio, in jiffies (56448 per ms), that must have accumulated before playback resumes after a buffer underrun. Increase this value if you experience audio dropouts on unstable network links (e.g. powerline). Default: 5644800 (100 ms). Changing this requires a reboot.",
+            description : "Advanced: minimum amount of buffered decoded audio, in jiffies (56448 per ms), in the downstream reservoir. Together with the Driver ALSA Buffer it forms the downstream latency; the Songcast protocol aligns a receiver on the media latency announced by the sender (150 ms on Linn DS firmware), and the pipeline can compensate downstream buffers up to that target but cannot recover an overshoot. Keep Starvation Ramper Min Size + Driver ALSA Buffer below 150 ms to keep multiroom offset compensated. Increase this value if you experience audio dropouts on unstable network links (e.g. powerline). Default: 5644800 (100 ms). Changing this requires a reboot.",
             options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) jiffies (56448 per ms)",
             "default" : "5644800 (100 ms)"
+        },
+        "Helptext.Pipeline.AlsaBufferUs" : {
+            description : "Advanced: ALSA hardware buffer of the audio driver, in microseconds. Part of the downstream latency (together with the Starvation Ramper Min Size) - keep the sum below the Songcast sender target (150 ms on Linn DS). A smaller buffer reduces multiroom offset but increases the risk of xruns (audio glitches) under CPU load. Default: 12052 us (12 ms). Changing this requires a reboot.",
+            options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) microseconds",
+            "default" : "12052 (12 ms)"
         },
         "Helptext.Pipeline.EncodedReservoirSize" : {
             description : "Advanced: size, in bytes, of the buffer between the network and the decoder. Increase this value to absorb network jitter on unstable links (e.g. powerline). Default: 1572864 (1536 KB). Changing this requires a reboot.",
