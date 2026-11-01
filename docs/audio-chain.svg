@@ -47,10 +47,15 @@
   <text x="122" y="300" text-anchor="middle" font-size="9.5" fill="#ef6c00">MediaLatency in every packet</text>
   <text x="122" y="314" text-anchor="middle" font-size="9.5" fill="#ef6c00">→ injected as MsgDelay</text>
 
+  <!-- DS audio output: speaker circle, same style as the renderer DAC -->
+  <circle cx="122" cy="240" r="34" fill="#fff8e1" stroke="#ffca28" stroke-width="2"/>
+  <text x="122" y="234" text-anchor="middle" font-size="16">&#9834;</text>
+  <text x="122" y="254" text-anchor="middle" font-size="9.5" font-weight="600" fill="#f57f17">DS speakers</text>
+
   <!-- inter room delay arrow: from the DS audio output to the renderer DAC output -->
-  <path d="M 122 336 C 300 405, 950 405, 1082 296"
+  <path d="M 122 280 C 200 345, 950 345, 1078 292"
         fill="none" stroke="#7b1fa2" stroke-width="2" stroke-dasharray="9,6" marker-end="url(#arrowViolet)"/>
-  <text x="602" y="398" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7b1fa2">inter room delay</text>
+  <text x="600" y="338" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7b1fa2">inter room delay</text>
 
   <!-- RECEIVER -->
   <rect x="240" y="105" width="935" height="240" rx="10" fill="none" stroke="#b0bec5" stroke-dasharray="5,4"/>
@@ -109,8 +114,8 @@
   <line x1="897" y1="240" x2="923" y2="240" stroke="#546e7a" stroke-width="2.2" marker-end="url(#arrow)"/>
   <line x1="1057" y1="240" x2="1068" y2="240" stroke="#546e7a" stroke-width="2.2" marker-end="url(#arrow)"/>
 
-  <line x1="1068" y1="368" x2="262" y2="368" stroke="#1976d2" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arrowBlue)"/>
-  <text x="665" y="388" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1976d2">pull: the output sets the pace, upstream follows</text>
+  <line x1="1068" y1="392" x2="262" y2="392" stroke="#1976d2" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arrowBlue)"/>
+  <text x="665" y="412" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1976d2">pull: the output sets the pace, upstream follows</text>
 
   <!-- downstream band -->
   <line x1="682" y1="322" x2="682" y2="420" stroke="#e57373" stroke-width="1.5"/>
