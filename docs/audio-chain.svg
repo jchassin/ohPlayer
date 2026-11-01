@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" font-family="Helvetica, Arial, sans-serif">
   <defs>
     <linearGradient id="net" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0" stop-color="#e8f4fd"/><stop offset="1" stop-color="#c9e7fb"/>
@@ -27,7 +27,7 @@
     </marker>
   </defs>
 
-  <rect width="1200" height="700" fill="#fafafa" rx="12"/>
+  <rect width="1200" height="760" fill="#fafafa" rx="12"/>
 
   <text x="600" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#263238">ohPlayer audio chain — buffers and latency (Songcast receiver)</text>
   <text x="600" y="60" text-anchor="middle" font-size="12" fill="#607d8b">Pull flow: the output sets the pace. The sender announces a media latency target (150 ms DS / 300 ms ohPlayer) that the pipeline compensates for.</text>
@@ -47,15 +47,15 @@
   <text x="122" y="300" text-anchor="middle" font-size="9.5" fill="#ef6c00">MediaLatency in every packet</text>
   <text x="122" y="314" text-anchor="middle" font-size="9.5" fill="#ef6c00">→ injected as MsgDelay</text>
 
-  <!-- DS audio output: speaker circle, same style as the renderer DAC -->
-  <circle cx="122" cy="240" r="34" fill="#fff8e1" stroke="#ffca28" stroke-width="2"/>
-  <text x="122" y="234" text-anchor="middle" font-size="16">&#9834;</text>
-  <text x="122" y="254" text-anchor="middle" font-size="9.5" font-weight="600" fill="#f57f17">DS speakers</text>
+  <!-- DS audio output: speaker circle below the sender zone, same style as the renderer DAC -->
+  <circle cx="122" cy="365" r="30" fill="#fff8e1" stroke="#ffca28" stroke-width="2"/>
+  <text x="122" y="362" text-anchor="middle" font-size="15">&#9834;</text>
+  <text x="122" y="378" text-anchor="middle" font-size="9" font-weight="600" fill="#f57f17">DS speakers</text>
 
-  <!-- inter room delay arrow: from the DS audio output to the renderer DAC output -->
-  <path d="M 122 280 C 200 345, 950 345, 1078 292"
+  <!-- inter room delay arrow: from the DS speakers to the renderer DAC output -->
+  <path d="M 122 399 C 300 440, 950 440, 1096 290"
         fill="none" stroke="#7b1fa2" stroke-width="2" stroke-dasharray="9,6" marker-end="url(#arrowViolet)"/>
-  <text x="600" y="338" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7b1fa2">inter room delay</text>
+  <text x="609" y="433" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7b1fa2">inter room delay</text>
 
   <!-- RECEIVER -->
   <rect x="240" y="105" width="935" height="240" rx="10" fill="none" stroke="#b0bec5" stroke-dasharray="5,4"/>
@@ -114,37 +114,37 @@
   <line x1="897" y1="240" x2="923" y2="240" stroke="#546e7a" stroke-width="2.2" marker-end="url(#arrow)"/>
   <line x1="1057" y1="240" x2="1068" y2="240" stroke="#546e7a" stroke-width="2.2" marker-end="url(#arrow)"/>
 
-  <line x1="1068" y1="392" x2="262" y2="392" stroke="#1976d2" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arrowBlue)"/>
-  <text x="665" y="412" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1976d2">pull: the output sets the pace, upstream follows</text>
+  <line x1="1068" y1="455" x2="262" y2="455" stroke="#1976d2" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arrowBlue)"/>
+  <text x="665" y="475" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1976d2">pull: the output sets the pace, upstream follows</text>
 
   <!-- downstream band -->
-  <line x1="682" y1="322" x2="682" y2="420" stroke="#e57373" stroke-width="1.5"/>
-  <line x1="1057" y1="322" x2="1057" y2="420" stroke="#e57373" stroke-width="1.5"/>
-  <rect x="682" y="420" width="375" height="30" rx="5" fill="#ffebee" stroke="#ef9a9a"/>
-  <text x="869" y="440" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">downstream: ramper + ALSA — keep below the sender target</text>
+  <line x1="682" y1="322" x2="682" y2="492" stroke="#e57373" stroke-width="1.5"/>
+  <line x1="1057" y1="322" x2="1057" y2="492" stroke="#e57373" stroke-width="1.5"/>
+  <rect x="682" y="557" width="375" height="30" rx="5" fill="#ffebee" stroke="#ef9a9a"/>
+  <text x="869" y="577" text-anchor="middle" font-size="12" font-weight="700" fill="#c62828">downstream: ramper + ALSA — keep below the sender target</text>
 
   <!-- rules box -->
-  <rect x="30" y="480" width="1140" height="195" rx="10" fill="#ffffff" stroke="#cfd8dc"/>
-  <text x="600" y="512" text-anchor="middle" font-size="14" font-weight="700" fill="#263238">Multiroom alignment — how the offset is governed</text>
+  <rect x="30" y="610" width="1140" height="195" rx="10" fill="#ffffff" stroke="#cfd8dc"/>
+  <text x="600" y="577" text-anchor="middle" font-size="14" font-weight="700" fill="#263238">Multiroom alignment — how the offset is governed</text>
 
-  <rect x="70" y="535" width="18" height="18" rx="4" fill="#ffb74d"/>
-  <text x="100" y="549" font-size="12.5" font-weight="700" fill="#e65100">SENDER TARGET: announced in every packet (MsgDelay) — 150 ms from a Linn DS,</text>
-  <text x="100" y="566" font-size="12.5" font-weight="700" fill="#e65100">300 ms from an ohPlayer sender</text>
-  <text x="100" y="587" font-size="11.5" fill="#607d8b">The PhaseAdjuster compensates downstream buffer depth up to that target; it cannot</text>
-  <text x="100" y="604" font-size="11.5" fill="#607d8b">recover an overshoot. A runtime warning is logged when ramper + ALSA exceed it.</text>
+  <rect x="70" y="600" width="18" height="18" rx="4" fill="#ffb74d"/>
+  <text x="100" y="614" font-size="12.5" font-weight="700" fill="#e65100">SENDER TARGET: announced in every packet (MsgDelay) — 150 ms from a Linn DS,</text>
+  <text x="100" y="631" font-size="12.5" font-weight="700" fill="#e65100">300 ms from an ohPlayer sender</text>
+  <text x="100" y="652" font-size="11.5" fill="#607d8b">The PhaseAdjuster compensates downstream buffer depth up to that target; it cannot</text>
+  <text x="100" y="669" font-size="11.5" fill="#607d8b">recover an overshoot. A runtime warning is logged when ramper + ALSA exceed it.</text>
 
-  <rect x="70" y="610" width="18" height="18" rx="4" fill="#81c784"/>
-  <text x="100" y="624" font-size="12.5" font-weight="700" fill="#1b5e20">RULE: StarvationRamperMinSize + AlsaBufferUs below the sender target</text>
-  <text x="100" y="645" font-size="11.5" fill="#607d8b">Below the target the pipeline compensates (multiroom offset ~0); above it the receiver</text>
-  <text x="100" y="662" font-size="11.5" fill="#607d8b">lags. Max ramper = 280 ms (configui), ALSA 5-50 ms; both senders covered.</text>
+  <rect x="70" y="675" width="18" height="18" rx="4" fill="#81c784"/>
+  <text x="100" y="689" font-size="12.5" font-weight="700" fill="#1b5e20">RULE: StarvationRamperMinSize + AlsaBufferUs below the sender target</text>
+  <text x="100" y="710" font-size="11.5" fill="#607d8b">Below the target the pipeline compensates (multiroom offset ~0); above it the receiver</text>
+  <text x="100" y="727" font-size="11.5" fill="#607d8b">lags. Max ramper = 280 ms (configui), ALSA 5-50 ms; both senders covered.</text>
 
-  <rect x="700" y="535" width="18" height="18" rx="4" fill="#ef9a9a"/>
-  <text x="730" y="549" font-size="12.5" font-weight="700" fill="#37474f">UPSTREAM = free resilience</text>
-  <text x="730" y="570" font-size="11.5" fill="#607d8b">Encoded Reservoir absorbs network cuts</text>
-  <text x="730" y="587" font-size="11.5" fill="#607d8b">without adding latency.</text>
+  <rect x="700" y="600" width="18" height="18" rx="4" fill="#ef9a9a"/>
+  <text x="730" y="614" font-size="12.5" font-weight="700" fill="#37474f">UPSTREAM = free resilience</text>
+  <text x="730" y="635" font-size="11.5" fill="#607d8b">Encoded Reservoir absorbs network cuts</text>
+  <text x="730" y="652" font-size="11.5" fill="#607d8b">without adding latency.</text>
 
-  <rect x="700" y="610" width="18" height="18" rx="4" fill="#7b1fa2"/>
-  <text x="730" y="624" font-size="12.5" font-weight="700" fill="#7b1fa2">Measured (metronome) - inter room delay</text>
-  <text x="730" y="645" font-size="11.5" fill="#607d8b">ramper 200ms: 62 ms offset - ramper 85ms +</text>
-  <text x="730" y="662" font-size="11.5" fill="#607d8b">ALSA 12ms: ~5 ms offset (below audibility).</text>
+  <rect x="700" y="675" width="18" height="18" rx="4" fill="#7b1fa2"/>
+  <text x="730" y="689" font-size="12.5" font-weight="700" fill="#7b1fa2">Measured (metronome) - inter room delay</text>
+  <text x="730" y="710" font-size="11.5" fill="#607d8b">ramper 200ms: 62 ms offset - ramper 85ms +</text>
+  <text x="730" y="727" font-size="11.5" fill="#607d8b">ALSA 12ms: ~5 ms offset (below audibility).</text>
 </svg>
