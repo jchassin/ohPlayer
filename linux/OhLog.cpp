@@ -55,7 +55,9 @@ TInt OhLog::Print(const TChar* aFormat, ...)
     }
     va_list arg;
     va_start(arg, aFormat);
+    Log::Print("%s", AC_GREEN);
     TInt ret = PrintWithContextVA(kLevel, Debug::kSeverityInfo, aFormat, arg);
+    Log::Print("%s", AC_NORMAL);
     va_end(arg);
     return ret;
 }
