@@ -100,7 +100,7 @@ void VolumeControl::SetVolume(TUint aVolume)
     {
         return;
     }
-    OhLog::Print("VolumeControl: set volume %u\n", aVolume);
+    OhLog::PrintDebug("VolumeControl: set volume %u\n", aVolume);
     volume = double((aVolume / MILLI_DB_PER_STEP)/100.0f);
 
     // Use the dB range to map the volume to a scale more in tune
