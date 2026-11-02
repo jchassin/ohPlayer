@@ -683,7 +683,7 @@ ViewModel = function(){
             "default" : "12052 (12 ms)"
         },
         "Helptext.Pipeline.EncodedReservoirSize" : {
-            description : "Advanced: size, in bytes, of the buffer between the network and the decoder. Increase this value to absorb network jitter on unstable links (e.g. powerline). Default: 1572864 (1536 KB). Changing this requires a reboot.",
+            description : "Advanced: size, in bytes, of the buffer between the network and the decoder. Note: this buffer only fills for sources that deliver faster than real time (e.g. http radio bursts); a Songcast stream is paced at real time and keeps it near empty, so increasing it does not protect against Songcast dropouts - the Starvation Ramper and the decoded reservoir are what absorb network cuts there. Default: 1572864 (1536 KB, the ohPipeline default). Changing this requires a reboot.",
             options : "<%- field.meta.min %> (min) to <%- field.meta.max %> (max) bytes",
             "default" : "1572864 (1536 KB)"
         },
