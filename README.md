@@ -7,6 +7,7 @@ A full (software) OpenHome media player for Raspberry Pi, controllable from any 
 ## Documentation
 
 * [Radio](docs/RADIO.md) — internet radio: presets and the Radio Browser media server (radio-browser.info)
+* [Configuration](docs/CONFIGURATION.md) — web ui settings, pipeline buffers, Songcast multiroom rule (with the [audio chain diagram](docs/audio-chain.svg))
 * [Hardware setups](docs/HARDWARE.md) — Raspdac Mini configurations, internal vs Linn amplifier volume routing
 * [Installation & build](docs/BUILD.md) — prerequisites, build, dependencies
 * [History](docs/HISTORY.md) — change log
