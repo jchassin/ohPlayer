@@ -7,6 +7,7 @@ namespace Av {
 
 const Brn PipelineConfig::kKeyStarvationRamperMinSize("Pipeline.StarvationRamperMinSize");
 const Brn PipelineConfig::kKeyEncodedReservoirSize("Pipeline.EncodedReservoirSize");
+const Brn PipelineConfig::kKeyAlsaBufferUs("Pipeline.AlsaBufferUs");
 
 // Out-of-class definitions: the constants are odr-used (passed by const
 // reference to the Configuration::ConfigNum constructor), which requires
@@ -17,6 +18,9 @@ const TUint PipelineConfig::kMinEncodedReservoirBytes;
 const TUint PipelineConfig::kMaxEncodedReservoirBytes;
 const TUint PipelineConfig::kDefaultStarvationRamperJiffies;
 const TUint PipelineConfig::kDefaultEncodedReservoirBytes;
+const TUint PipelineConfig::kMinAlsaBufferUs;
+const TUint PipelineConfig::kMaxAlsaBufferUs;
+const TUint PipelineConfig::kDefaultAlsaBufferUs;
 
 PipelineConfig::PipelineConfig(Configuration::IConfigInitialiser& aConfigInit)
 {
@@ -30,6 +34,11 @@ PipelineConfig::PipelineConfig(Configuration::IConfigInitialiser& aConfigInit)
         aConfigInit, kKeyEncodedReservoirSize,
         kMinEncodedReservoirBytes, kMaxEncodedReservoirBytes,
         kDefaultEncodedReservoirBytes,
+        true /* aRebootRequired: applied at next start */);
+    iConfigAlsaBufferUs = std::make_unique<Configuration::ConfigNum>(
+        aConfigInit, kKeyAlsaBufferUs,
+        kMinAlsaBufferUs, kMaxAlsaBufferUs,
+        kDefaultAlsaBufferUs,
         true /* aRebootRequired: applied at next start */);
 }
 
@@ -49,6 +58,13 @@ TUint PipelineConfig::ReadEncodedReservoirSizeBytesFromStore(Configuration::ISto
     return ReadNumFromStore(aStore, kKeyEncodedReservoirSize,
                             kMinEncodedReservoirBytes, kMaxEncodedReservoirBytes,
                             kDefaultEncodedReservoirBytes);
+}
+
+TUint PipelineConfig::ReadAlsaBufferUsFromStore(Configuration::IStoreReadWrite& aStore)
+{
+    return ReadNumFromStore(aStore, kKeyAlsaBufferUs,
+                            kMinAlsaBufferUs, kMaxAlsaBufferUs,
+                            kDefaultAlsaBufferUs);
 }
 
 TUint PipelineConfig::ReadNumFromStore(Configuration::IStoreReadWrite& aStore, const Brx& aKey, TUint aMin, TUint aMax, TUint aDefault)

@@ -1,24 +1,16 @@
 [Unit]
 Description=Startup Open Home Player
-#Wants=multi-user.target
-#After=graphical.target network.target sound.target
-#Requires=sound.target
-#
-#After=network-online.target sound.target multi-user.target graphical.target graphical-session.target
-#Wants=network-online.target sound.target multi-user.target graphical.target graphical-session.target
-After=network-online.target sound.target
-Wants=network-online.target sound.target 
-
+After=network-online.target
+Wants=network-online.target
 
 [Service]
-ExecStartPre=/bin/sleep 10
-ExecStart=openhome-player
-#StandardOutput=null
+#Environment="OHP_DEBUG=1"
+ExecStart=/home/jean/ohPlayer/linux/raspbian/openhome-player -s /home/jean/.config/OpenHomePlayer/ohPersist --webui 8080
+StandardOutput=append:/var/log/ohp.log
+StandardError=append:/var/log/ohp.log
 User=jean
 Type=simple
-#Restart=always
-#KillSignal=SIGINT
-
-#[Install]
-#WantedBy=multi-user.target
-
+Restart=always
+KillSignal=SIGINT
+[Install]
+WantedBy=multi-user.target

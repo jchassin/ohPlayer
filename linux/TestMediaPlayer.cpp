@@ -153,6 +153,49 @@ void RebootLogger::Reboot(const Brx& aReason)
     _exit(0);
 }
 
+// SongcastLatencyLogger
+
+SongcastLatencyLogger::SongcastLatencyLogger(TUint aDownstreamJiffies)
+    : iDownstreamJiffies(aDownstreamJiffies)
+    , iLastLatency(UINT_MAX)
+{
+}
+
+void SongcastLatencyLogger::Process(OhmMsgAudio& aMsg)
+{
+    const TUint latency = aMsg.MediaLatency();
+    if (latency != iLastLatency) {
+        iLastLatency = latency;
+        // Same conversion as ProtocolOhBase applies before injecting the
+        // MsgDelay that the PhaseAdjuster matches against.
+        const TUint delayJiffies = (TUint)Jiffies::FromSongcastTime(latency, aMsg.SampleRate());
+        // Print (info): a latency change marks a stream lifecycle event, and
+        // PrintDebug was observed not to reach the output on this build.
+        OhLog::Print("Songcast: sender media latency = %u (songcast time) = %u jiffies (~%ums) @ %uHz\n",
+                    latency, delayJiffies, delayJiffies / Jiffies::kPerMs, aMsg.SampleRate());
+        CheckTarget(delayJiffies);
+    }
+}
+
+void SongcastLatencyLogger::CheckTarget(TUint aTargetJiffies)
+{
+    if (iDownstreamJiffies > aTargetJiffies) {
+        OhLog::PrintWarning("Songcast: downstream buffers (~%ums) exceed the sender's target (~%ums): "
+                            "multiroom offset cannot be compensated - reduce StarvationRamperMinSize "
+                            "or the Driver ALSA Buffer\n",
+                            iDownstreamJiffies / Jiffies::kPerMs,
+                            aTargetJiffies / Jiffies::kPerMs);
+    }
+}
+
+void SongcastLatencyLogger::Process(OhmMsgTrack& /*aMsg*/)
+{
+}
+
+void SongcastLatencyLogger::Process(OhmMsgMetatext& /*aMsg*/)
+{
+}
+
 
 // DummyRaatSignalPath
 
@@ -365,9 +408,14 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // start.
     const TUint starvationRamperMinJiffies = PipelineConfig::ReadStarvationRamperMinSizeJiffiesFromStore(*iConfigRamStore);
     const TUint encodedReservoirBytes = PipelineConfig::ReadEncodedReservoirSizeBytesFromStore(*iConfigRamStore);
-    OhLog::Print("Pipeline buffers: StarvationRamperMinSize=%u jiffies (~%ums), EncodedReservoirSize=%u bytes\n",
+    const TUint alsaBufferUs = PipelineConfig::ReadAlsaBufferUsFromStore(*iConfigRamStore);
+    OhLog::Print("Pipeline buffers: StarvationRamperMinSize=%u jiffies (~%ums), EncodedReservoirSize=%u bytes, AlsaBuffer=%u us (~%ums)\n",
                starvationRamperMinJiffies, starvationRamperMinJiffies / Jiffies::kPerMs,
-               encodedReservoirBytes);
+               encodedReservoirBytes, alsaBufferUs, alsaBufferUs / 1000);
+    // Downstream latency fed to the Songcast target check (ramper + ALSA).
+    const TUint downstreamJiffies = starvationRamperMinJiffies
+                                  + (alsaBufferUs * Jiffies::kPerMs) / 1000;
+    iSongcastLatencyLogger = std::make_unique<SongcastLatencyLogger>(downstreamJiffies);
     auto pipelineInit = PipelineInitParams::New();
     pipelineInit->SetStarvationRamperMinSize(starvationRamperMinJiffies); // larger StarvationRamper size useful for desktop
                                                                      // platforms with slightly unpredictable thread scheduling
@@ -455,7 +503,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     // RadioPresets in InitialiseSubsystems, after the Radio source is added.
     iRadioPresetsStatic = std::make_unique<RadioPresetsStatic>(iMediaPlayer->ConfigInitialiser());
     
-    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(), 22052);
+    iDriver = std::make_unique<DriverAlsa>(iMediaPlayer->Pipeline(),
+                                           PipelineConfig::ReadAlsaBufferUsFromStore(*iConfigRamStore));
 #if 1
     if (iDriver == NULL)
     {
@@ -777,7 +826,7 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
                                                  Optional<IClockPuller>(nullptr),
                                                  Optional<IOhmTimestamper>(iTxTimestamper),
                                                  Optional<IOhmTimestamper>(iRxTimestamper),
-                                                 Optional<IOhmMsgProcessor>()));
+                                                 Optional<IOhmMsgProcessor>(*iSongcastLatencyLogger)));
 
 #ifdef RAAT_ENABLE
     ASSERT(iPullableClock != nullptr);

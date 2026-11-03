@@ -10,6 +10,7 @@
 #include "RadioBrowserMediaServer.h"
 
 #include <OpenHome/Av/MediaPlayer.h>
+#include <OpenHome/Av/Songcast/OhmMsg.h>
 #include <OpenHome/Net/Core/DvDevice.h>
 #include <OpenHome/Av/Utils/DriverSongcastSender.h>
 #include <OpenHome/Media/PipelineManager.h>
@@ -113,6 +114,34 @@ public: // from IRebootHandler
     void Reboot(const Brx& aReason) override;
 };
 
+/*
+ * Observes the Songcast receiver's ohm messages and traces the media latency
+ * announced by the sender whenever it changes. This latency is what the
+ * pipeline injects as MsgDelay (ProtocolOhBase converts it via
+ * Jiffies::FromSongcastTime) - the master variable of the multiroom offset
+ * that the PhaseAdjuster aims to match by dropping/injecting audio.
+ *
+ * Also warns when the configured downstream latency (StarvationRamperMinSize
+ * + DriverAlsaBuffer) exceeds the sender's target: above the target the
+ * PhaseAdjuster cannot compensate and the receiver lags the sender in
+ * multiroom. The check runs on each latency change (stream lifecycle), so
+ * it always reflects the current group's sender.
+ */
+class SongcastLatencyLogger : public IOhmMsgProcessor, private INonCopyable
+{
+public:
+    SongcastLatencyLogger(TUint aDownstreamJiffies);
+public: // from IOhmMsgProcessor
+    void Process(OhmMsgAudio& aMsg) override;
+    void Process(OhmMsgTrack& aMsg) override;
+    void Process(OhmMsgMetatext& aMsg) override;
+private:
+    void CheckTarget(TUint aTargetJiffies);
+private:
+    const TUint iDownstreamJiffies;
+    TUint iLastLatency;
+};
+
 class DummyRaatSignalPath
     : public IRaatSignalPath
     , public IRaatSignalPathObservable
@@ -209,6 +238,7 @@ protected:
     std::unique_ptr<MediaPlayer> iMediaPlayer;
     std::unique_ptr<Web::WebAppFramework> iAppFramework;    // FIXME - add getter to IMediaPlayer and make private
     RebootLogger iRebootHandler;
+    std::unique_ptr<SongcastLatencyLogger> iSongcastLatencyLogger;
     Media::IPullableClock* iPullableClock;
     std::unique_ptr<Media::AllocatorInfoLogger> iInfoLogger;
     std::unique_ptr<IPlaylistLoader> iPlaylistLoader;

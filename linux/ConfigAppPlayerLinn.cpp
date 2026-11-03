@@ -61,6 +61,7 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     // Editable pipeline buffer settings (Songcast tab)
     AddConfigNum(PipelineConfig::kKeyStarvationRamperMinSize);
     AddConfigNum(PipelineConfig::kKeyEncodedReservoirSize);
+    AddConfigNum(PipelineConfig::kKeyAlsaBufferUs);
     // Expose ohPipeline's internal volume control toggle (hidden by default).
     // Allows disabling the volume control point-side on setups where the
     // sound card has no mixer and no external amplifier controls volume.
