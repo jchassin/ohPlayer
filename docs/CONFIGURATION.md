@@ -4,7 +4,9 @@ Settings live in the web configuration ui, available on the renderer's presentat
 
 ## Pipeline buffers
 
-The buffers and how they interact with Songcast multiroom are drawn in the [audio chain diagram](audio-chain.svg) — see it first for the full picture: what the sender announces, what the pipeline compensates, and what is actually heard as the inter-room delay.
+[![Audio chain diagram — buffers and latency](audio-chain.svg)](audio-chain.svg)
+
+The buffers and how they interact with Songcast multiroom are drawn in the diagram above (click to enlarge) — the full picture: what the sender announces, what the pipeline compensates, and what is actually heard as the inter-room delay.
 
 ### Starvation Ramper Min Size (`Pipeline.StarvationRamperMinSize`, in jiffies — 56448 per ms)
 
