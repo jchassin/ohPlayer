@@ -55,6 +55,7 @@ class OhMdpIF //singleton
      void setTrack(OpenHome::Brn aTitle, OpenHome::Brn anArtist, OpenHome::Brn anAlbum, OpenHome::Brn anAlbumArtURI);
      void setMode(OpenHome::Brn aMode);
      void setTime(OpenHome::TUint anElapsed);
+     void setDuration(OpenHome::TUint aDuration);
      void setStreamInfo(OpenHome::TUint aBitRate, OpenHome::TUint aChannelNum, OpenHome::TUint aBitDepth, OpenHome::TUint aSampleFreq);
      void setVolume(OpenHome::TUint aVolume);
 

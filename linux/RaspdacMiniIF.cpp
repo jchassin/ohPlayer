@@ -102,7 +102,7 @@ OhLog::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PB
 }
 void RaspdacObserver::NotifyStreamInfo(const DecodedStreamInfo& aStreamInfo)
 {
-    //iDurationSeconds = (TUint)(aStreamInfo.TrackLength() / Jiffies::kPerSecond);
+    iOhMdpIF->setDuration((TUint)(aStreamInfo.TrackLength() / Jiffies::kPerSecond));
     OhLog::Print("Raspdac: FORMAT {bitRate=%u; bitDepth=%u, sampleRate=%u, numChannels=%u, codec=%.*s; trackLength=%llx, lossless=%u, channelConfig=%s}\n",
                aStreamInfo.BitRate(), aStreamInfo.BitDepth(), aStreamInfo.SampleRate(), aStreamInfo.NumChannels(),
                PBUF(aStreamInfo.CodecName()), aStreamInfo.TrackLength(), aStreamInfo.Lossless(), aStreamInfo.Profile().ToString());
