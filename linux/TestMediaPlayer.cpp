@@ -797,12 +797,13 @@ void TestMediaPlayer::RegisterPlugins(Environment& aEnv)
     }
 
     // Register radio/url pin invokers so radio presets and stream urls can be
-    // pinned from control point apps. ohPipeline only registers these when a
+    // pinned from control point apps. ohPipeline registers these itself when a
     // TuneIn partner id is configured (SourceRadio.cpp); register them here
-    // so pinning works without TuneIn. PinsInvocable takes ownership of the
-    // invokers (deletes them in its destructor).
+    // only in the TuneIn-less case - PinsManager::Add asserts on duplicate
+    // modes (Pins.cpp). PinsInvocable takes ownership of the invokers
+    // (deletes them in its destructor).
     auto pinsInvocable = iMediaPlayer->PinsInvocable();
-    if (pinsInvocable.Ok()) {
+    if (pinsInvocable.Ok() && iTuneInPartnerId.Bytes() == 0) {
         pinsInvocable.Unwrap().Add(new RadioPins(*iDevice, iMediaPlayer->CpStack()));
         pinsInvocable.Unwrap().Add(new UrlPins(*iDevice, iMediaPlayer->CpStack(), iMediaPlayer->ThreadPool()));
     }
