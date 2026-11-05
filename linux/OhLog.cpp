@@ -15,7 +15,7 @@
 
 using namespace OpenHome;
 
-const TUint64 OhLog::kLevel = Debug::kApplication2;
+const TUint64 OhLog::kLevel = Debug::kApplication0;
 
 TBool OhLog::IsDebugEnabled()
 {
