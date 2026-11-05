@@ -122,7 +122,11 @@ void  OhMdpIFSession::Run()
 void OhMdpIF::setTime(TUint anElapsed)
 {
   iElapsed = anElapsed;
-  iDuration = 0;
+}
+
+void OhMdpIF::setDuration(TUint aDuration)
+{
+  iDuration = aDuration;
 }
 
 void OhMdpIF::setMode(Brn aMode)
@@ -149,6 +153,7 @@ void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
    iArtist = anArtist;
    iAlbum = anAlbum;
    iAlbumArtURI = anAlbumArtURI;
+   iDuration = 0;
 }
 
 
