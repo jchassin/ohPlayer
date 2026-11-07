@@ -9,9 +9,9 @@ DROP="artifacts"
 mkdir -p "$DEPS_DIR"
 
 declare -A DEPS
-DEPS[ohNet]="1.42.6276"
+DEPS[ohNet]="1.42.6286"
 DEPS[ohWafHelpers]="0.2.176"
-DEPS[ohMediaPlayer]="1.172.1253"
+DEPS[ohMediaPlayer]="1.173.1270"
 DEPS[ohNetGenerated]="1.1.260"
 
 declare -A PLATFORM_MAP

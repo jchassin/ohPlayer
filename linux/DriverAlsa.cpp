@@ -931,7 +931,7 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
 
             iDitch = false;
 
-            OhLog::Print("DriverAlsa: found PcmProcessor %d\n", iProfileIndex);
+            OhLog::PrintDebug("DriverAlsa: found PcmProcessor %d\n", iProfileIndex);
 
             return;
         }
