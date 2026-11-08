@@ -85,6 +85,7 @@ void RadioFranceNowPlaying::SetStreamUri(const Brx& aUri)
     {
         std::lock_guard<std::mutex> lock(iMutex);
         iStationId = id;
+        iLastTitle.SetBytes(0); // force a push on the first poll of the new station
     }
     iCv.notify_all();
 }
@@ -136,6 +137,10 @@ void RadioFranceNowPlaying::WorkerLoop()
                 return;
             }
         }
+        if (id == 0) {
+            lastId = 0;
+            continue; // no station selected: wait for the next uri change
+        }
         PollOnce(id);
         lastId = id;
         std::unique_lock<std::mutex> lock(iMutex);
@@ -146,6 +151,9 @@ void RadioFranceNowPlaying::WorkerLoop()
 
 void RadioFranceNowPlaying::PollOnce(TUint aStationId)
 {
+    if (aStationId == 0) {
+        return;
+    }
     try {
         Bws<kUrlMaxBytes> url;
         url.Append(kLiveMetaBase);
@@ -178,7 +186,17 @@ void RadioFranceNowPlaying::PollOnce(TUint aStationId)
 
         Bws<kTitleMaxBytes> title;
         if (ParseLiveMeta(json, title) && title.Bytes() > 0) {
-            iOhMdpIF.setTitle(Brn(title.Ptr(), title.Bytes()));
+            TBool changed;
+            {
+                std::lock_guard<std::mutex> lock(iMutex);
+                changed = !title.Equals(iLastTitle);
+                if (changed) {
+                    iLastTitle.Replace(title);
+                }
+            }
+            if (changed) {
+                iOhMdpIF.setTitle(Brn(title.Ptr(), title.Bytes()));
+            }
         }
     }
     catch (...) {

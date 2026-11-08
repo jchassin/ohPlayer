@@ -56,6 +56,7 @@ private:
     std::condition_variable iCv;
     std::atomic<TBool> iStop;
     std::atomic<TUint> iStationId;
+    Bws<kTitleMaxBytes> iLastTitle; // guarded by iMutex: skip redundant setTitle
 };
 
 } // namespace Av
