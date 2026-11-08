@@ -68,10 +68,10 @@ void RaspdacObserver::NotifyMetaText(const Brx& aText)
     // ICY StreamTitle updates arrive here as DIDL-Lite (<dc:title>...).
     // Log the raw payload and the extracted title so we can see whether the
     // radio stream actually sends show metadata and what it contains.
-    OhLog::Print("Raspdac: METATEXT (%u bytes): %.*s\n", aText.Bytes(), PBUF(aText));
+    OhLog::PrintDebug("Raspdac: METATEXT (%u bytes): %.*s\n", aText.Bytes(), PBUF(aText));
     Brn title;
     if (XmlParserBasic::TryFind(Brn("title"), aText, title)) {
-        OhLog::Print("Raspdac: METATEXT title: %.*s\n", PBUF(title));
+        OhLog::PrintDebug("Raspdac: METATEXT title: %.*s\n", PBUF(title));
         if (title.Bytes() > 0) {
             // ICY StreamTitle (show/song) -> OLED title. Keep artist/album/art
             // and duration untouched: only setTrack() resets them.
@@ -79,7 +79,7 @@ void RaspdacObserver::NotifyMetaText(const Brx& aText)
         }
     }
     else {
-        OhLog::Print("Raspdac: METATEXT without <title> element\n");
+        OhLog::PrintDebug("Raspdac: METATEXT without <title> element\n");
     }
 }
 void RaspdacObserver::NotifyTime(TUint aSeconds)
@@ -118,7 +118,7 @@ try {
 } catch (...) {aArtistName = Brn("");}
         
 iOhMdpIF->setTrack(aTitle, aArtistName, aAlbumName, aAlbumArtURI);
-        OhLog::Print("Raspdac: TRACK uri='%.*s'\n", PBUF(aTrack.Uri()));
+        OhLog::PrintDebug("Raspdac: TRACK uri='%.*s'\n", PBUF(aTrack.Uri()));
         iNowPlaying->SetStreamUri(aTrack.Uri());
 OhLog::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle), PBUF(aAlbumArtURI));
 

@@ -98,7 +98,7 @@ void RadioNowPlaying::SetStreamUri(const Brx& aUri)
         DetectProvider(aUri, provider, key);
     }
     if (provider != kProviderNone) {
-        OhLog::Print("RadioNowPlaying: stream '%.*s' -> provider %u, key '%.*s'\n",
+        OhLog::PrintDebug("RadioNowPlaying: stream '%.*s' -> provider %u, key '%.*s'\n",
                      PBUF(aUri), provider, PBUF(key));
     }
     {
@@ -142,7 +142,7 @@ TBool RadioNowPlaying::DetectProvider(const Brx& aUri, TUint& aProviderOut, Bws<
                     return true;
                 }
             }
-            OhLog::Print("RadioNowPlaying: radiofrance stream but unknown mount '%.*s'\n", PBUF(seg));
+            OhLog::PrintDebug("RadioNowPlaying: radiofrance stream but unknown mount '%.*s'\n", PBUF(seg));
             return false;
         }
 
