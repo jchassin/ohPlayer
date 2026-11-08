@@ -20,7 +20,11 @@ using namespace OpenHome::Av;
 
 static const Brn kRadioFranceLiveMetaBase("https://api.radiofrance.fr/livemeta/pull/");
 static const Brn kBbcRmsBase("https://rms.api.bbc.co.uk/v2/services/");
-static const Brn kBbcRmsSuffix("/segments/latest?experience=domestic&offset=0&limit=1");
+// experience=international: BBC Sounds is UK-only since 2025-07-21, the domestic
+// experience is geo-restricted; international serves the ww streams
+static const Brn kBbcRmsSuffix("/segments/latest?experience=international&offset=0&limit=1");
+// rms.api.bbc.co.uk answers 403 to an empty/non-browser User-Agent
+static const Brn kBbcUserAgent("Mozilla/5.0 (X11; Linux aarch64; rv:128.0) Gecko/20100101 Firefox/128.0");
 static const TUint kRetryIntervalMs = 5 * 1000; // avoid a tight retry loop on errors
 
 // Radio France livemeta station ids (the id_station used by embed.radiofrance.fr players)
@@ -58,11 +62,13 @@ RadioNowPlaying::RadioNowPlaying(Environment& aEnv, SslContext& aSsl,
     : iOhMdpIF(aOhMdpIF)
     , iTimerFactory(new TimerFactory(aEnv))
     , iLoader(nullptr)
+    , iLoaderBbc(nullptr)
     , iStop(false)
     , iProvider(kProviderNone)
     , iGeneration(0)
 {
     iLoader = new Media::UriLoader(aEnv, aSsl, aUserAgent, *iTimerFactory, kRetryIntervalMs);
+    iLoaderBbc = new Media::UriLoader(aEnv, aSsl, kBbcUserAgent, *iTimerFactory, kRetryIntervalMs);
     iThread = std::thread(&RadioNowPlaying::WorkerLoop, this);
 }
 
@@ -77,6 +83,7 @@ RadioNowPlaying::~RadioNowPlaying()
         iThread.join();
     }
     delete iLoader;
+    delete iLoaderBbc;
     delete iTimerFactory;
 }
 
@@ -208,7 +215,8 @@ void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
         }
 
         Uri uri(url);
-        IReader& reader = iLoader->Load(uri); // THROWS UriLoaderError
+        Media::UriLoader& loader = (aProvider == kProviderBbc) ? *iLoaderBbc : *iLoader;
+        IReader& reader = loader.Load(uri); // THROWS UriLoaderError
         std::vector<TByte> data;
         for (;;) {
             Brn chunk = reader.Read(4096);
@@ -221,7 +229,7 @@ void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
                 break;
             }
         }
-        iLoader->Reset();
+        loader.Reset();
 
         if (data.empty()) {
             return;
@@ -247,7 +255,9 @@ void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
         }
     }
     catch (...) {
-        OhLog::PrintWarning("RadioNowPlaying: poll failed (provider %u, key '%.*s')\n", aProvider, PBUF(aKey));
+        // UriLoader logs the HTTP status code at kMedia debug level ("UriLoader::Load code: %d")
+        OhLog::PrintWarning("RadioNowPlaying: poll failed (provider %u, key '%.*s') - enable kMedia debug to see the HTTP status\n",
+                            aProvider, PBUF(aKey));
     }
 }
 

@@ -56,7 +56,8 @@ private:
 private:
     OhMdpIF& iOhMdpIF;
     TimerFactory* iTimerFactory;
-    Media::UriLoader* iLoader;
+    Media::UriLoader* iLoader;    // player user-agent (Radio France)
+    Media::UriLoader* iLoaderBbc; // browser user-agent (BBC rms rejects empty UA)
     std::thread iThread;
     std::mutex iMutex;
     std::condition_variable iCv;
