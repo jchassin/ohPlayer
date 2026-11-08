@@ -1,5 +1,6 @@
 #include "OhLog.h"
 #include "RaspdacMiniIF.h"
+#include "RadioFranceNowPlaying.h"
 
 #include <OpenHome/Media/PipelineObserver.h>
 #include <OpenHome/Types.h>
@@ -18,13 +19,15 @@ using namespace OpenHome::Net;
 
 
 // RaspdacObserver
-RaspdacObserver::RaspdacObserver()
+RaspdacObserver::RaspdacObserver(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent)
 {
 	iOhMdpIF = OhMdpIF::getInstance();
+	iNowPlaying = new Av::RadioFranceNowPlaying(aEnv, aSsl, aUserAgent, *iOhMdpIF);
 }
 
 RaspdacObserver::~RaspdacObserver()
 {
+    delete iNowPlaying;
     delete(iOhMdpIF);
 }
 
@@ -43,6 +46,7 @@ void RaspdacObserver::NotifyPipelineState(EPipelineState aState)
     case EPipelineBuffering:
     case EPipelineWaiting:
         state = "stop";
+        iNowPlaying->SetStreamUri(Brx::Empty());
         break;
     default:
         ASSERTS();
@@ -114,6 +118,7 @@ try {
 } catch (...) {aArtistName = Brn("");}
         
 iOhMdpIF->setTrack(aTitle, aArtistName, aAlbumName, aAlbumArtURI);
+        iNowPlaying->SetStreamUri(aTrack.Uri());
 OhLog::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle), PBUF(aAlbumArtURI));
 
 

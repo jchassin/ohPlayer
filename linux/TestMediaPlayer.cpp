@@ -531,7 +531,7 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     iPowerObserver = powerManager.RegisterPowerHandler(*this, kPowerPriorityLowest, "TestMediaPlayer");
     iStandbyObserver = powerManager.RegisterStandbyHandler(*this, kStandbyHandlerPriorityNormal, "TestMediaPlayer");
     // Register Raspdac interface notification
-    iRaspdacObserver = std::make_unique<RaspdacObserver>();
+    iRaspdacObserver = std::make_unique<RaspdacObserver>(iMediaPlayer->Env(), iMediaPlayer->Ssl(), iUserAgent);
     iMediaPlayer->Pipeline().AddObserver(*iRaspdacObserver);
     iRaspdacVolumeObserver = std::make_unique<RaspdacVolumeObserver>();
     iMediaPlayer->VolumeManager().AddVolumeObserver(*iRaspdacVolumeObserver);
