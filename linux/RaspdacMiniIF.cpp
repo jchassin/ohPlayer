@@ -1,6 +1,6 @@
 #include "OhLog.h"
 #include "RaspdacMiniIF.h"
-#include "RadioFranceNowPlaying.h"
+#include "RadioNowPlaying.h"
 
 #include <OpenHome/Media/PipelineObserver.h>
 #include <OpenHome/Types.h>
@@ -22,7 +22,7 @@ using namespace OpenHome::Net;
 RaspdacObserver::RaspdacObserver(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent)
 {
 	iOhMdpIF = OhMdpIF::getInstance();
-	iNowPlaying = new Av::RadioFranceNowPlaying(aEnv, aSsl, aUserAgent, *iOhMdpIF);
+	iNowPlaying = new Av::RadioNowPlaying(aEnv, aSsl, aUserAgent, *iOhMdpIF);
 }
 
 RaspdacObserver::~RaspdacObserver()

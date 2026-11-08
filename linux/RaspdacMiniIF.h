@@ -24,7 +24,7 @@ namespace OpenHome {
     class Environment;
     class SslContext;
 namespace Av {
-class RadioFranceNowPlaying;
+class RadioNowPlaying;
 class RaspdacVolumeObserver : public IVolumeObserver
 {
    public :
@@ -49,7 +49,7 @@ class RaspdacObserver : public IPipelineObserver
 
    private: // from IPipelineObserver
     OhMdpIF * iOhMdpIF;
-    Av::RadioFranceNowPlaying * iNowPlaying;
+    Av::RadioNowPlaying * iNowPlaying;
     void NotifyPipelineState(EPipelineState aState) override;
     void NotifyMode(const Brx& aMode, const ModeInfo& aInfo,
                     const ModeTransportControls& aTransportControls) override;
