@@ -21,6 +21,13 @@ using namespace OpenHome::Av;
 static const Brn kLiveMetaBase("https://api.radiofrance.fr/livemeta/pull/");
 static const TUint kRetryIntervalMs = 5 * 1000; // avoid a tight retry loop on errors
 
+// out-of-line definitions: kPollIntervalMs is odr-used (passed by const& to
+// std::chrono::milliseconds), so it needs a definition outside the class
+const TUint RadioFranceNowPlaying::kPollIntervalMs;
+const TUint RadioFranceNowPlaying::kResponseMaxBytes;
+const TUint RadioFranceNowPlaying::kTitleMaxBytes;
+const TUint RadioFranceNowPlaying::kUrlMaxBytes;
+
 // livemeta station ids (the id_station used by embed.radiofrance.fr players)
 static const struct { const TChar* kMount; TUint kId; } kStations[] = {
     { "franceinter",   1 },
