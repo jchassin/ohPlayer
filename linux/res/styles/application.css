@@ -441,3 +441,12 @@ h3
     padding: 0!important;
     border-bottom: solid 1px #ddd;
 }
+/* Reset button on each radio preset group header (web config ui) */
+.RadioPresetResetBtn
+{
+	float: right;
+	margin-right: 8px;
+	font-size: 11px;
+	padding: 1px 8px;
+	cursor: pointer;
+}

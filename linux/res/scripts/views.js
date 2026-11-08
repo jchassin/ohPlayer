@@ -387,8 +387,36 @@ Views = function($){
       });
     }
 
+    function NumRadioPresets(){
+      var num = 0;
+      for (var k in iParametersLookup){
+        var m = /^Radio\.Preset(\d+)\.Name$/.exec(k);
+        if (m){ num = Math.max(num, parseInt(m[1], 10)); }
+      }
+      return num;
+    }
+
+    function ResetRadioPreset(aPresetIndex){
+      var fields = ["Name", "Uri", "Image"];
+      for (var i = 0; i < fields.length; i++){
+        var suffix = fields[i];
+        var key = "Radio.Preset" + aPresetIndex + "." + suffix;
+        var defParam = iParametersLookup["Radio.Preset" + aPresetIndex + ".Default." + suffix];
+        var defVal = (defParam && defParam.value !== undefined) ? defParam.value : "";
+        Controller.CommandSetParameter(key, defVal, function(){}, function(){ Dialogs.ShowCommsErrorMessage(); });
+        var parameter = iParametersLookup[key];
+        if (parameter && parameter.Id){
+          var input = $("#" + parameter.Id).find("input[parameterName='" + parameter.Name + "']");
+          if (input.length > 0){
+            input.val(defVal);
+          }
+        }
+      }
+      UpdateRadioPresetGroupTitle(aPresetIndex);
+    }
+
     function GroupRadioPresets(){
-      var numPresets = 10;
+      var numPresets = NumRadioPresets();
       for (var presetIdx = 1; presetIdx <= numPresets; presetIdx++){
         (function(presetIndex){
           var fields = ["Name", "Uri", "Image"];
@@ -414,6 +442,12 @@ Views = function($){
           var groupDiv = $("<div class='" + groupClass + " Expandable" + (collectionToggleClass ? " " + collectionToggleClass : "") + "'/>");
           var groupHeader = $("<h3 class='RadioPresetGroupHeader'/>").appendTo(groupDiv);
           var groupTitleRef = $("<a title='Expand' href='#' class='SectionHeader RadioPresetGroupTitle_" + presetIndex + "'></a>").appendTo(groupHeader);
+          var resetBtn = $("<button type='button' class='RadioPresetResetBtn' title='Reset preset to the built-in default values'>&#8634; Reset</button>");
+          resetBtn.click(function(){
+            ResetRadioPreset(presetIndex);
+            return false;
+          });
+          groupHeader.append(resetBtn);
           var groupBody = $("<div class='RadioPresetGroupBody RadioPresetGroupBody_" + presetIndex + " Expandable'/>").appendTo(groupDiv);
 
           groupTitleRef.data("presetIndex", presetIndex);

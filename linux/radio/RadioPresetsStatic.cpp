@@ -127,6 +127,15 @@ void RadioPresetsStatic::GetPresetKey(TUint aIndex, const Brx& aSuffix, Bwx& aKe
     writer.Write(aSuffix);
 }
 
+void RadioPresetsStatic::GetDefaultPreset(TUint aIndex, Bws<kMaxNameBytes>& aName,
+                                          Bws<kMaxUriBytes>& aUri, Bws<kMaxImageUriBytes>& aImage)
+{
+    const Station& station = kDefaultStations[aIndex];
+    aName.Replace(Brn(station.iName));
+    aUri.Replace(Brn(station.iUri));
+    aImage.Replace(Brn(station.iImageUri));
+}
+
 const Brx& RadioPresetsStatic::DisplayName() const
 {
     return kDisplayName;
