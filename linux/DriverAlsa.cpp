@@ -1072,7 +1072,7 @@ TUint DriverAlsa::Pimpl::DriverDelayJiffies(TUint aSampleRate)
         ret = snd_pcm_recover(iHandle, ret, 1);
         if (ret < 0) {
             if (ret == -EBADF) {
-                OhLog::PrintDebug("DriverAlsa: snd_pcm_delay() not available in current pcm state\n");
+                OhLog::PrintWarning("DriverAlsa: snd_pcm_delay() not available in current pcm state (stream reconfiguring)\n");
             }
             else {
                 OhLog::PrintError("DriverAlsa: snd_pcm_delay() error: %s\n",
