@@ -60,11 +60,11 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
             Bws<RadioPresetsStatic::kMaxImageUriBytes> defImage;
             RadioPresetsStatic::GetDefaultPreset(i, defName, defUri, defImage);
             RadioPresetsStatic::GetPresetKey(i, Brn(".Default.Name"), key);
-            AddValue(new Web::ConfigUiValRo(key, defName));
+            AddValue(new Web::ConfigUiValRo(key, Brn(defName)));
             RadioPresetsStatic::GetPresetKey(i, Brn(".Default.Uri"), key);
-            AddValue(new Web::ConfigUiValRo(key, defUri));
+            AddValue(new Web::ConfigUiValRo(key, Brn(defUri)));
             RadioPresetsStatic::GetPresetKey(i, Brn(".Default.Image"), key);
-            AddValue(new Web::ConfigUiValRo(key, defImage));
+            AddValue(new Web::ConfigUiValRo(key, Brn(defImage)));
         }
     }
     AddConfigNum(LinnAmpConfig::kKeyBass);
