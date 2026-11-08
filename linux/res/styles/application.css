@@ -441,11 +441,24 @@ h3
     padding: 0!important;
     border-bottom: solid 1px #ddd;
 }
-/* Reset button on each radio preset group header (web config ui) */
+/* Reset button on each radio preset group header (web config ui):
+   header is a flex row so the button stays right-aligned and vertically
+   centered whatever the title length */
+h3.RadioPresetGroupHeader
+{
+	display: flex;
+	align-items: center;
+	margin: 0;
+}
+h3.RadioPresetGroupHeader .SectionHeader
+{
+	flex: 1 1 auto;
+}
 .RadioPresetResetBtn
 {
-	float: right;
-	margin-right: 8px;
+	flex: 0 0 auto;
+	float: none;
+	margin: 0 0 0 8px;
 	font-size: 11px;
 	padding: 1px 8px;
 	cursor: pointer;
