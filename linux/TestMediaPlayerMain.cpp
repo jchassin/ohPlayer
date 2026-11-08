@@ -1,6 +1,8 @@
 #include "OhLog.h"
 #include "OpenHomePlayer.h"
 #include "TestMediaPlayer.h"
+#include "RadioNowPlayingTest.h"
+#include <OpenHome/Private/Network.h> // SslContext
 #include <OpenHome/Types.h>
 #include <OpenHome/Media/Tests/Cdecl.h>
 #include <OpenHome/Media/Tests/GetCh.h>
@@ -65,6 +67,14 @@ void TestMediaPlayerThread::RunInThread()
     DvStack* dvStack = nullptr;
 //    OpenHome::Media::DriverAlsa     *driver  = NULL;
     iLib->StartCombined(adapter->Subnet(), cpStack, dvStack);
+
+    // --test-radio-meta: probe now-playing endpoints of test radio stations and exit
+    if (iOptions.TestRadioMeta().Value()) {
+        SslContext ssl;
+        Av::TestRadioNowPlaying(iLib->Env(), ssl, iOptions.UserAgent().Value());
+        adapter->RemoveRef(cookie);
+        return;
+    }
 
 
     // Seed random number generator.

@@ -61,7 +61,7 @@ static TBool ContainsNoCase(const Brx& aHay, const Brx& aNeedle)
 }
 
 RadioNowPlaying::RadioNowPlaying(Environment& aEnv, SslContext& aSsl,
-                                 const Brx& aUserAgent, OhMdpIF& aOhMdpIF)
+                                 const Brx& aUserAgent, OhMdpIF* aOhMdpIF)
     : iOhMdpIF(aOhMdpIF)
     , iTimerFactory(new TimerFactory(aEnv))
     , iLoader(nullptr)
@@ -220,13 +220,11 @@ TBool RadioNowPlaying::FetchJson(const Brx& aUrl, Media::UriLoader& aLoader, std
     return !aDataOut.empty();
 }
 
-void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
+TBool RadioNowPlaying::FetchTitle(TUint aProvider, const Brx& aKey, Bws<kTitleMaxBytes>& aTitleOut)
 {
-    if (aProvider == kProviderNone) {
-        return;
-    }
+    aTitleOut.SetBytes(0);
     Media::UriLoader& loader = (aProvider == kProviderBbc) ? *iLoaderBbc : *iLoader;
-    try {
+    {
         Bws<kTitleMaxBytes> title;
         TBool ok = false;
         std::vector<TByte> data;
@@ -264,23 +262,56 @@ void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
             }
         }
         if (ok && title.Bytes() > 0) {
-            TBool changed;
-            {
-                std::lock_guard<std::mutex> lock(iMutex);
-                changed = !title.Equals(iLastTitle);
-                if (changed) {
-                    iLastTitle.Replace(title);
-                }
-            }
-            if (changed) {
-                iOhMdpIF.setTitle(Brn(title.Ptr(), title.Bytes()));
-            }
+            aTitleOut.Replace(title);
         }
+        return ok && aTitleOut.Bytes() > 0;
+    }
+}
+
+void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
+{
+    if (aProvider == kProviderNone) {
+        return;
+    }
+    Bws<kTitleMaxBytes> title;
+    TBool ok;
+    try {
+        ok = FetchTitle(aProvider, aKey, title);
     }
     catch (...) {
         // UriLoader logs the HTTP status code at kMedia debug level ("UriLoader::Load code: %d")
         OhLog::PrintWarning("RadioNowPlaying: poll failed (provider %u, key '%.*s') - enable kMedia debug to see the HTTP status\n",
                             aProvider, PBUF(aKey));
+        return;
+    }
+    if (ok) {
+        TBool changed;
+        {
+            std::lock_guard<std::mutex> lock(iMutex);
+            changed = !title.Equals(iLastTitle);
+            if (changed) {
+                iLastTitle.Replace(title);
+            }
+        }
+        if (changed && iOhMdpIF != nullptr) {
+            iOhMdpIF->setTitle(Brn(title.Ptr(), title.Bytes()));
+        }
+    }
+}
+
+TBool RadioNowPlaying::Probe(const Brx& aUri, TUint& aProviderOut, Bws<kKeyMaxBytes>& aKeyOut, Bws<kTitleMaxBytes>& aTitleOut)
+{
+    aProviderOut = kProviderNone;
+    aKeyOut.SetBytes(0);
+    aTitleOut.SetBytes(0);
+    if (aUri.Bytes() == 0 || !DetectProvider(aUri, aProviderOut, aKeyOut)) {
+        return false;
+    }
+    try {
+        return FetchTitle(aProviderOut, aKeyOut, aTitleOut);
+    }
+    catch (...) {
+        return false;
     }
 }
 

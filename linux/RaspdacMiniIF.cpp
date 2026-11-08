@@ -22,7 +22,7 @@ using namespace OpenHome::Net;
 RaspdacObserver::RaspdacObserver(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent)
 {
 	iOhMdpIF = OhMdpIF::getInstance();
-	iNowPlaying = new Av::RadioNowPlaying(aEnv, aSsl, aUserAgent, *iOhMdpIF);
+	iNowPlaying = new Av::RadioNowPlaying(aEnv, aSsl, aUserAgent, iOhMdpIF);
 }
 
 RaspdacObserver::~RaspdacObserver()

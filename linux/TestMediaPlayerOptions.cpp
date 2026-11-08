@@ -25,6 +25,7 @@ TestMediaPlayerOptions::TestMediaPlayerOptions()
     , iOptionWebUi("", "--webui", 0, "Port for Web UI server")
     , iOptionShell("", "--shell", 2323, "Port for shell (0 to disable)")
     , iOptionRadioBrowser("", "--radiobrowser", "Enable the Radio Browser UPnP media server (radio-browser.info directory)")
+    , iOptionTestRadioMeta("", "--test-radio-meta", "Probe now-playing endpoints of test radio stations (France Inter/FIP, BBC 1/2/4, Couleur 3), print results, then exit")
 {
     iParser.AddOption(&iOptionRoom);
     iParser.AddOption(&iOptionName);
@@ -42,6 +43,7 @@ TestMediaPlayerOptions::TestMediaPlayerOptions()
     iParser.AddOption(&iOptionWebUi);
     iParser.AddOption(&iOptionShell);
     iParser.AddOption(&iOptionRadioBrowser);
+    iParser.AddOption(&iOptionTestRadioMeta);
 }
 
 void TestMediaPlayerOptions::AddOption(Option* aOption)
@@ -132,4 +134,9 @@ const OptionUint& TestMediaPlayerOptions::Shell() const
 const OptionBool& TestMediaPlayerOptions::RadioBrowser() const
 {
     return iOptionRadioBrowser;
+}
+
+const OptionBool& TestMediaPlayerOptions::TestRadioMeta() const
+{
+    return iOptionTestRadioMeta;
 }

@@ -43,21 +43,28 @@ public:
     enum Provider : TUint { kProviderNone = 0, kProviderRadioFrance = 1, kProviderBbc = 2 };
 public:
     RadioNowPlaying(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent,
-                    OhMdpIF& aOhMdpIF);
+                    OhMdpIF* aOhMdpIF); // may be nullptr (test/probe mode: no OLED push)
     ~RadioNowPlaying();
 
     // aUri: current track uri (empty to stop polling).
     void SetStreamUri(const Brx& aUri);
+
+    // One-shot probe (used by the --test-radio-meta scan): detect the provider
+    // for aUri, poll its endpoint once, and return the title it would display.
+    // Returns false when the uri maps to no known provider or the poll fails.
+    TBool Probe(const Brx& aUri, TUint& aProviderOut, Bws<kKeyMaxBytes>& aKeyOut,
+                Bws<kTitleMaxBytes>& aTitleOut);
 private:
     void WorkerLoop();
     void PollOnce(TUint aProvider, const Brx& aKey);
+    TBool FetchTitle(TUint aProvider, const Brx& aKey, Bws<kTitleMaxBytes>& aTitleOut);
     TBool FetchJson(const Brx& aUrl, Media::UriLoader& aLoader, std::vector<TByte>& aDataOut);
     TBool DetectProvider(const Brx& aUri, TUint& aProviderOut, Bws<kKeyMaxBytes>& aKeyOut) const;
     TBool ParseRadioFrance(const Brx& aJson, Bwx& aTitleOut);
     TBool ParseBbcSegments(const Brx& aJson, Bwx& aTitleOut);
     TBool ParseBbcBroadcast(const Brx& aJson, Bwx& aTitleOut);
 private:
-    OhMdpIF& iOhMdpIF;
+    OhMdpIF* iOhMdpIF;
     TimerFactory* iTimerFactory;
     Media::UriLoader* iLoader;    // player user-agent (Radio France)
     Media::UriLoader* iLoaderBbc; // browser user-agent (BBC rms rejects empty UA)

@@ -308,6 +308,7 @@ public:
     const TestFramework::OptionUint& OptionWebUi() const;
     const TestFramework::OptionUint& Shell() const;
     const TestFramework::OptionBool& RadioBrowser() const;
+    const TestFramework::OptionBool& TestRadioMeta() const;
 private:
     TestFramework::OptionParser iParser;
     TestFramework::OptionString iOptionRoom;
@@ -326,6 +327,7 @@ private:
     TestFramework::OptionUint iOptionWebUi;
     TestFramework::OptionUint iOptionShell;
     TestFramework::OptionBool iOptionRadioBrowser;
+    TestFramework::OptionBool iOptionTestRadioMeta;
 };
 
 // Not very nice, but only to allow reusable test functions.
