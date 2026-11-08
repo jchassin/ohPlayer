@@ -20,6 +20,16 @@ static const struct { const TChar* kName; const TChar* kUri; } kStations[] = {
     { "BBC Radio 2 (hls ww)",       "https://as-hls-ww-live.akamaized.net/pool_74208725/live/ww/bbc_radio_two/bbc_radio_two.isml/bbc_radio_two-audio=320000.norewind.m3u8" },
     { "BBC Radio 4 FM (hls ww)",    "http://as-hls-ww-live.akamaized.net/pool_55057080/live/ww/bbc_radio_fourfm/bbc_radio_fourfm.isml/bbc_radio_fourfm-audio=96000.norewind.m3u8" },
     { "Couleur 3 (icy control)",    "http://stream.srg-ssr.ch/m/couleur3/mp3_128" },
+    // Spanish national stations: commercial ones are ICY mp3/aac (no API provider
+    // expected - their metadata comes from the stream via NotifyMetaText);
+    // RTVE is HLS with no in-stream metadata either (verified: empty EXTINF, no ID3).
+    { "Cadena SER (es icy)",  "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3" },
+    { "COPE (es icy)",        "https://flucast09-h-cloud.flumotion.com/cope/net1.mp3" },
+    { "Los 40 (es icy)",      "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3" },
+    { "Kiss FM (es icy)",     "https://kissfm.kissfmradio.cires21.com/kissfm.mp3" },
+    { "esRadio (es icy)",     "https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-high.mp3" },
+    { "Onda Cero (es icy)",   "https://radio-atres-live.ondacero.es/api/livestream-redirect/OCAAC.aac" },
+    { "Radio 3 RNE (es hls)", "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8" },
 };
 
 void Av::TestRadioNowPlaying(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent)
