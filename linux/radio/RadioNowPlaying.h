@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 namespace OpenHome {
     class Environment;
@@ -50,9 +51,11 @@ public:
 private:
     void WorkerLoop();
     void PollOnce(TUint aProvider, const Brx& aKey);
+    TBool FetchJson(const Brx& aUrl, Media::UriLoader& aLoader, std::vector<TByte>& aDataOut);
     TBool DetectProvider(const Brx& aUri, TUint& aProviderOut, Bws<kKeyMaxBytes>& aKeyOut) const;
     TBool ParseRadioFrance(const Brx& aJson, Bwx& aTitleOut);
-    TBool ParseBbc(const Brx& aJson, Bwx& aTitleOut);
+    TBool ParseBbcSegments(const Brx& aJson, Bwx& aTitleOut);
+    TBool ParseBbcBroadcast(const Brx& aJson, Bwx& aTitleOut);
 private:
     OhMdpIF& iOhMdpIF;
     TimerFactory* iTimerFactory;

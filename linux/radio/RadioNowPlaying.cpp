@@ -23,6 +23,9 @@ static const Brn kBbcRmsBase("https://rms.api.bbc.co.uk/v2/services/");
 // experience=international: BBC Sounds is UK-only since 2025-07-21, the domestic
 // experience is geo-restricted; international serves the ww streams
 static const Brn kBbcRmsSuffix("/segments/latest?experience=international&offset=0&limit=1");
+// fallback for speech stations (Radio 4...): current programme instead of music segments
+static const Brn kBbcPollBase("https://rms.api.bbc.co.uk/v2/broadcasts/poll/");
+static const Brn kBbcPollSuffix("?experience=international&limit=1");
 // rms.api.bbc.co.uk answers 403 to an empty/non-browser User-Agent
 static const Brn kBbcUserAgent("Mozilla/5.0 (X11; Linux aarch64; rv:128.0) Gecko/20100101 Firefox/128.0");
 static const TUint kRetryIntervalMs = 5 * 1000; // avoid a tight retry loop on errors
@@ -197,49 +200,69 @@ void RadioNowPlaying::WorkerLoop()
     }
 }
 
+TBool RadioNowPlaying::FetchJson(const Brx& aUrl, Media::UriLoader& aLoader, std::vector<TByte>& aDataOut)
+{
+    aDataOut.clear();
+    Uri uri(aUrl);
+    IReader& reader = aLoader.Load(uri); // THROWS UriLoaderError
+    for (;;) {
+        Brn chunk = reader.Read(4096);
+        if (chunk.Bytes() == 0) {
+            break; // end of stream
+        }
+        aDataOut.insert(aDataOut.end(), chunk.Ptr(), chunk.Ptr() + chunk.Bytes());
+        if (aDataOut.size() > kResponseMaxBytes) {
+            OhLog::PrintWarning("RadioNowPlaying: response exceeds %u bytes cap\n", kResponseMaxBytes);
+            break;
+        }
+    }
+    aLoader.Reset();
+    return !aDataOut.empty();
+}
+
 void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
 {
     if (aProvider == kProviderNone) {
         return;
     }
+    Media::UriLoader& loader = (aProvider == kProviderBbc) ? *iLoaderBbc : *iLoader;
     try {
-        Bws<kUrlMaxBytes> url;
+        Bws<kTitleMaxBytes> title;
+        TBool ok = false;
+        std::vector<TByte> data;
         if (aProvider == kProviderRadioFrance) {
+            Bws<kUrlMaxBytes> url;
             url.Append(kRadioFranceLiveMetaBase);
             url.Append(aKey);
-        }
-        else { // kProviderBbc
-            url.Append(kBbcRmsBase);
-            url.Append(aKey);
-            url.Append(kBbcRmsSuffix);
-        }
-
-        Uri uri(url);
-        Media::UriLoader& loader = (aProvider == kProviderBbc) ? *iLoaderBbc : *iLoader;
-        IReader& reader = loader.Load(uri); // THROWS UriLoaderError
-        std::vector<TByte> data;
-        for (;;) {
-            Brn chunk = reader.Read(4096);
-            if (chunk.Bytes() == 0) {
-                break; // end of stream
-            }
-            data.insert(data.end(), chunk.Ptr(), chunk.Ptr() + chunk.Bytes());
-            if (data.size() > kResponseMaxBytes) {
-                OhLog::PrintWarning("RadioNowPlaying: response exceeds %u bytes cap\n", kResponseMaxBytes);
-                break;
+            if (FetchJson(url, loader, data)) {
+                Brn json(reinterpret_cast<const TByte*>(data.data()), data.size());
+                OhLog::PrintDebug("RadioNowPlaying: provider %u key '%.*s': %.*s\n", aProvider, PBUF(aKey), PBUF(json));
+                ok = ParseRadioFrance(json, title);
             }
         }
-        loader.Reset();
-
-        if (data.empty()) {
-            return;
+        else { // kProviderBbc: music segments first, then current programme (speech stations like Radio 4)
+            Bws<kUrlMaxBytes> urlSeg;
+            urlSeg.Append(kBbcRmsBase);
+            urlSeg.Append(aKey);
+            urlSeg.Append(kBbcRmsSuffix);
+            if (FetchJson(urlSeg, loader, data)) {
+                Brn json(reinterpret_cast<const TByte*>(data.data()), data.size());
+                OhLog::PrintDebug("RadioNowPlaying: provider %u key '%.*s' segments: %.*s\n", aProvider, PBUF(aKey), PBUF(json));
+                ok = ParseBbcSegments(json, title);
+            }
+            if (!ok || title.Bytes() == 0) {
+                Bws<kUrlMaxBytes> urlPoll;
+                urlPoll.Append(kBbcPollBase);
+                urlPoll.Append(aKey);
+                urlPoll.Append(kBbcPollSuffix);
+                data.clear();
+                if (FetchJson(urlPoll, loader, data)) {
+                    Brn json(reinterpret_cast<const TByte*>(data.data()), data.size());
+                    OhLog::PrintDebug("RadioNowPlaying: provider %u key '%.*s' poll: %.*s\n", aProvider, PBUF(aKey), PBUF(json));
+                    ok = ParseBbcBroadcast(json, title) || ok;
+                }
+            }
         }
-        Brn json(reinterpret_cast<const TByte*>(data.data()), data.size());
-        OhLog::PrintDebug("RadioNowPlaying: provider %u key '%.*s': %.*s\n", aProvider, PBUF(aKey), PBUF(json));
-
-        Bws<kTitleMaxBytes> title;
-        TBool ok = (aProvider == kProviderRadioFrance) ? ParseRadioFrance(json, title)
-                                                        : ParseBbc(json, title);
         if (ok && title.Bytes() > 0) {
             TBool changed;
             {
@@ -323,13 +346,13 @@ TBool RadioNowPlaying::ParseRadioFrance(const Brx& aJson, Bwx& aTitleOut)
     }
 }
 
-TBool RadioNowPlaying::ParseBbc(const Brx& aJson, Bwx& aTitleOut)
+TBool RadioNowPlaying::ParseBbcSegments(const Brx& aJson, Bwx& aTitleOut)
 {
-    // rms.api.bbc.co.uk segments/latest JSON:
+    // rms.api.bbc.co.uk /v2/services/{sid}/segments/latest JSON:
     // { "data": [ { "segment_type": "music"|"programme"|...,
     //               "titles": { "primary": <artist or show>, "secondary": <track>, ... },
     //               "offset": { "now_playing": true|false, ... } }, ... ] }
-    // data[0] is the most recent segment.
+    // data[0] is the most recent segment. Empty data[] for speech-only stations.
     try {
         JsonParser top;
         top.Parse(aJson);
@@ -355,6 +378,45 @@ TBool RadioNowPlaying::ParseBbc(const Brx& aJson, Bwx& aTitleOut)
         }
         else if (primary.Bytes() > 0) {
             aTitleOut.Append(primary); // programme/show title
+        }
+        return aTitleOut.Bytes() > 0;
+    }
+    catch (...) {
+        return false;
+    }
+}
+
+TBool RadioNowPlaying::ParseBbcBroadcast(const Brx& aJson, Bwx& aTitleOut)
+{
+    // rms.api.bbc.co.uk /v2/broadcasts/poll/{sid} JSON (speech stations):
+    // { "data": [ { "type": "broadcast_summary", "start": ..., "end": ...,
+    //               "service_id": ..., "titles": { "primary": <show>, "secondary": <episode/date>, ... } } ] }
+    // data[0] is the current broadcast.
+    try {
+        JsonParser top;
+        top.Parse(aJson);
+        Brn dataRaw = top.String("data");
+        auto arr = JsonParserArray::Create(dataRaw);
+        Brn first;
+        if (!arr.TryNextObject(first)) {
+            return false;
+        }
+        JsonParser bcast;
+        bcast.Parse(first);
+        Brn titlesRaw = bcast.String("titles");
+        JsonParser titles;
+        titles.Parse(titlesRaw);
+        Brn primary = titles.StringOptional("primary");
+        Brn secondary = titles.StringOptional("secondary");
+        // secondary is often just a date ("08/11/2026") - skip those
+        const TBool dateLike = secondary.Bytes() == 10 && secondary[2] == '/' && secondary[5] == '/';
+        aTitleOut.SetBytes(0);
+        if (primary.Bytes() > 0) {
+            aTitleOut.Append(primary);
+            if (secondary.Bytes() > 0 && !dateLike) {
+                aTitleOut.Append(Brn(" - "));
+                aTitleOut.Append(secondary);
+            }
         }
         return aTitleOut.Bytes() > 0;
     }
