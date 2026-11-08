@@ -86,7 +86,7 @@ TUint RadioFranceNowPlaying::StationIdFromUri(const Brx& aUri) const
 {
     try {
         Uri uri(aUri);
-        Brn host = uri.Host();
+        const Brx& host = uri.Host();
         if (!ContainsNoCase(host, Brn("radiofrance.fr")) && !ContainsNoCase(host, Brn("fipradio.fr"))) {
             return 0;
         }
