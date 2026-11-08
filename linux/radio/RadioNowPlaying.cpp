@@ -136,23 +136,22 @@ TBool RadioNowPlaying::DetectProvider(const Brx& aUri, TUint& aProviderOut, Bws<
             return false;
         }
 
-        // BBC: service id = first path segment starting with "bbc_"
-        // (e.g. /pool_01505109/live/ww/bbc_radio_one/bbc_radio_one.isml/....m3u8
-        //  or /media/live/manifesto/audio/simulcast/hls/nonuk/sbr_low/ak/bbc_radio_one.m3u8)
-        Parser p(path);
-        for (;;) {
-            Brn seg = p.Next('/');
-            if (seg.Bytes() == 0) {
-                break;
-            }
-            if (seg.Bytes() > 4 && Ascii::CaseInsensitiveEquals(Brn(seg.Ptr(), 4), Brn("bbc_"))) {
-                TUint len = 4;
-                while (len < seg.Bytes() && (Ascii::IsAlphabetic(seg[len]) || Ascii::IsDigit(seg[len]) || seg[len] == '_')) {
+        // BBC: service id = first "bbc_<service>" token anywhere in the uri
+        // (path segment in akamaized/bbci.co.uk HLS urls, or ?station=bbc_... query
+        // in relays like lstn.lv/bbcradio.m3u8)
+        static const Brn kBbcPrefix("bbc_");
+        for (TUint i = 0; i + kBbcPrefix.Bytes() <= aUri.Bytes(); i++) {
+            if (Ascii::CaseInsensitiveEquals(Brn(aUri.Ptr() + i, kBbcPrefix.Bytes()), kBbcPrefix)) {
+                TUint len = kBbcPrefix.Bytes();
+                while (i + len < aUri.Bytes() &&
+                       (Ascii::IsAlphabetic(aUri[i + len]) || Ascii::IsDigit(aUri[i + len]) || aUri[i + len] == '_')) {
                     len++;
                 }
-                aKeyOut.Replace(Brn(seg.Ptr(), len));
-                aProviderOut = kProviderBbc;
-                return true;
+                if (len > kBbcPrefix.Bytes()) {
+                    aKeyOut.Replace(Brn(aUri.Ptr() + i, len));
+                    aProviderOut = kProviderBbc;
+                    return true;
+                }
             }
         }
         return false;

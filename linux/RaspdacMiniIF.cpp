@@ -118,6 +118,7 @@ try {
 } catch (...) {aArtistName = Brn("");}
         
 iOhMdpIF->setTrack(aTitle, aArtistName, aAlbumName, aAlbumArtURI);
+        OhLog::Print("Raspdac: TRACK uri='%.*s'\n", PBUF(aTrack.Uri()));
         iNowPlaying->SetStreamUri(aTrack.Uri());
 OhLog::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle), PBUF(aAlbumArtURI));
 
