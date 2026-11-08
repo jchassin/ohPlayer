@@ -154,6 +154,14 @@ void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
    iAlbum = anAlbum;
    iAlbumArtURI = anAlbumArtURI;
    iDuration = 0;
+   OhLog::Print("OhMdpIF: setTrack title='%.*s' artist='%.*s' album='%.*s' art='%.*s'\n",
+               PBUF(aTitle), PBUF(anArtist), PBUF(anAlbum), PBUF(anAlbumArtURI));
+}
+
+void OhMdpIF::setTitle(Brn aTitle)
+{
+   iTitle = aTitle;
+   OhLog::Print("OhMdpIF: setTitle '%.*s'\n", PBUF(aTitle));
 }
 
 

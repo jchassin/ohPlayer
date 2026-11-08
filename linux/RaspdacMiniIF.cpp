@@ -1,5 +1,6 @@
 #include "OhLog.h"
 #include "RaspdacMiniIF.h"
+#include "RadioNowPlaying.h"
 
 #include <OpenHome/Media/PipelineObserver.h>
 #include <OpenHome/Types.h>
@@ -18,13 +19,15 @@ using namespace OpenHome::Net;
 
 
 // RaspdacObserver
-RaspdacObserver::RaspdacObserver()
+RaspdacObserver::RaspdacObserver(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent)
 {
 	iOhMdpIF = OhMdpIF::getInstance();
+	iNowPlaying = new Av::RadioNowPlaying(aEnv, aSsl, aUserAgent, iOhMdpIF);
 }
 
 RaspdacObserver::~RaspdacObserver()
 {
+    delete iNowPlaying;
     delete(iOhMdpIF);
 }
 
@@ -43,6 +46,7 @@ void RaspdacObserver::NotifyPipelineState(EPipelineState aState)
     case EPipelineBuffering:
     case EPipelineWaiting:
         state = "stop";
+        iNowPlaying->SetStreamUri(Brx::Empty());
         break;
     default:
         ASSERTS();
@@ -59,8 +63,24 @@ void RaspdacObserver::NotifyMode(const Brx& /*aMode*/,
 {
 }
 
-void RaspdacObserver::NotifyMetaText(const Brx& /* aText */)
+void RaspdacObserver::NotifyMetaText(const Brx& aText)
 {
+    // ICY StreamTitle updates arrive here as DIDL-Lite (<dc:title>...).
+    // Log the raw payload and the extracted title so we can see whether the
+    // radio stream actually sends show metadata and what it contains.
+    OhLog::PrintDebug("Raspdac: METATEXT (%u bytes): %.*s\n", aText.Bytes(), PBUF(aText));
+    Brn title;
+    if (XmlParserBasic::TryFind(Brn("title"), aText, title)) {
+        OhLog::PrintDebug("Raspdac: METATEXT title: %.*s\n", PBUF(title));
+        if (title.Bytes() > 0) {
+            // ICY StreamTitle (show/song) -> OLED title. Keep artist/album/art
+            // and duration untouched: only setTrack() resets them.
+            iOhMdpIF->setTitle(title);
+        }
+    }
+    else {
+        OhLog::PrintDebug("Raspdac: METATEXT without <title> element\n");
+    }
 }
 void RaspdacObserver::NotifyTime(TUint aSeconds)
 {
@@ -70,9 +90,11 @@ void RaspdacObserver::NotifyTime(TUint aSeconds)
 	//	 aSeconds/60, aSeconds%60, aTrackDurationSeconds/60, aTrackDurationSeconds%60);
 }
 
-void RaspdacObserver::NotifyTrack(Track& aTrack, TBool /*aStartOfStream*/)
+void RaspdacObserver::NotifyTrack(Track& aTrack, TBool aStartOfStream)
 {
 Brn xmlBuffer(aTrack.MetaData()) ;
+OhLog::PrintDebug("Raspdac: TRACK startOfStream=%u uri=%.*s metadata(%u bytes): %.*s\n",
+                  (TUint)aStartOfStream, PBUF(aTrack.Uri()), xmlBuffer.Bytes(), PBUF(xmlBuffer));
 Brn aTitle;
 Brn aAlbumName;
 Brn aArtistName;
@@ -96,6 +118,8 @@ try {
 } catch (...) {aArtistName = Brn("");}
         
 iOhMdpIF->setTrack(aTitle, aArtistName, aAlbumName, aAlbumArtURI);
+        OhLog::PrintDebug("Raspdac: TRACK uri='%.*s'\n", PBUF(aTrack.Uri()));
+        iNowPlaying->SetStreamUri(aTrack.Uri());
 OhLog::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PBUF(aArtistName), PBUF(aAlbumName), PBUF(aTitle), PBUF(aAlbumArtURI));
 
 
@@ -103,9 +127,10 @@ OhLog::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PB
 void RaspdacObserver::NotifyStreamInfo(const DecodedStreamInfo& aStreamInfo)
 {
     iOhMdpIF->setDuration((TUint)(aStreamInfo.TrackLength() / Jiffies::kPerSecond));
-    OhLog::Print("Raspdac: FORMAT {bitRate=%u; bitDepth=%u, sampleRate=%u, numChannels=%u, codec=%.*s; trackLength=%llx, lossless=%u, channelConfig=%s}\n",
+    OhLog::Print("Raspdac: FORMAT {bitRate=%u; bitDepth=%u, sampleRate=%u, numChannels=%u, codec=%.*s; trackLength=%llx, lossless=%u, live=%u, seekable=%u, channelConfig=%s}\n",
                aStreamInfo.BitRate(), aStreamInfo.BitDepth(), aStreamInfo.SampleRate(), aStreamInfo.NumChannels(),
-               PBUF(aStreamInfo.CodecName()), aStreamInfo.TrackLength(), aStreamInfo.Lossless(), aStreamInfo.Profile().ToString());
+               PBUF(aStreamInfo.CodecName()), aStreamInfo.TrackLength(), aStreamInfo.Lossless(),
+               (TUint)aStreamInfo.Live(), (TUint)aStreamInfo.Seekable(), aStreamInfo.Profile().ToString());
     iOhMdpIF-> setStreamInfo(aStreamInfo.BitRate(), aStreamInfo.NumChannels(), aStreamInfo.BitDepth(), aStreamInfo.SampleRate());
 
 }

@@ -3,6 +3,7 @@
 #include <OpenHome/Net/Private/Globals.h>
 #include <OpenHome/OsWrapper.h>
 #include <alsa/asoundlib.h>
+#include <errno.h>
 #include <memory>
 #include <vector>
 
@@ -1057,13 +1058,26 @@ TUint DriverAlsa::Pimpl::DriverDelayJiffies(TUint aSampleRate)
     }
 
     snd_pcm_sframes_t delayFrames = 0;
+    // While the stream is (re)configured - e.g. a live radio switching sample
+    // rate 24k->48k - the handle is in SETUP/OPEN state and snd_pcm_delay()
+    // returns -EBADF. That is expected, not an error: report no delay.
+    const snd_pcm_state_t state = snd_pcm_state(iHandle);
+    if (state != SND_PCM_STATE_PREPARED && state != SND_PCM_STATE_RUNNING
+        && state != SND_PCM_STATE_PAUSED && state != SND_PCM_STATE_XRUN) {
+        return 0;
+    }
     int ret = snd_pcm_delay(iHandle, &delayFrames);
 
     if (ret < 0) {
         ret = snd_pcm_recover(iHandle, ret, 1);
         if (ret < 0) {
-            OhLog::PrintError("DriverAlsa: snd_pcm_delay() error: %s\n",
-                              snd_strerror(ret));
+            if (ret == -EBADF) {
+                OhLog::PrintWarning("DriverAlsa: snd_pcm_delay() not available in current pcm state (stream reconfiguring)\n");
+            }
+            else {
+                OhLog::PrintError("DriverAlsa: snd_pcm_delay() error: %s\n",
+                                  snd_strerror(ret));
+            }
             return 0;
         }
 

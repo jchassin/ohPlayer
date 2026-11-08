@@ -38,6 +38,15 @@ static const Station kDefaultStations[RadioPresetsStatic::kNumPresets] = {
     { "Radio Clasica RNE", "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r2_main.m3u8", "https://graph.facebook.com/radioclasicartve/picture" },
     { "Radio 3 RNE",      "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8", "https://graph.facebook.com/radio3/picture" },
     { "Radio 5 RNE",      "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r5_madrid_main.m3u8", "https://graph.facebook.com/rne/picture" },
+    // Spanish national commercial stations (direct mp3/aac streams carry ICY StreamTitle)
+    { "Cadena SER",       "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3", "https://graph.facebook.com/cadenaser/picture" },
+    { "COPE",             "https://flucast09-h-cloud.flumotion.com/cope/net1.mp3",      "https://graph.facebook.com/COPE/picture" },
+    { "Onda Cero",        "https://radio-atres-live.ondacero.es/api/livestream-redirect/OCAAC.aac", "https://graph.facebook.com/ondacero/picture" },
+    { "Europa FM",        "https://radio-atres-live.ondacero.es/api/livestream-redirect/EFMAAC.aac", "https://graph.facebook.com/europafm/picture" },
+    { "Los 40",           "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3", "https://graph.facebook.com/los40/picture" },
+    { "Cadena Dial",      "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3", "https://graph.facebook.com/cadenadial/picture" },
+    { "esRadio",          "https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-high.mp3", "https://graph.facebook.com/esradio/picture" },
+    { "Kiss FM",          "https://kissfm.kissfmradio.cires21.com/kissfm.mp3",         "https://graph.facebook.com/kissfm.es/picture" },
 };
 
 } // namespace

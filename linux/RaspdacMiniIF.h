@@ -21,7 +21,10 @@
 
 
 namespace OpenHome {
+    class Environment;
+    class SslContext;
 namespace Av {
+class RadioNowPlaying;
 class RaspdacVolumeObserver : public IVolumeObserver
 {
    public :
@@ -40,12 +43,13 @@ namespace Media {
 class RaspdacObserver : public IPipelineObserver
 {
    public:
-    RaspdacObserver();
+    RaspdacObserver(Environment& aEnv, SslContext& aSsl, const Brx& aUserAgent);
     ~RaspdacObserver();
    //void NotifyTrack(OpenHome::Media::Track& aTrack, OpenHome::TBool aStartOfStream) override ;
 
    private: // from IPipelineObserver
     OhMdpIF * iOhMdpIF;
+    Av::RadioNowPlaying * iNowPlaying;
     void NotifyPipelineState(EPipelineState aState) override;
     void NotifyMode(const Brx& aMode, const ModeInfo& aInfo,
                     const ModeTransportControls& aTransportControls) override;
