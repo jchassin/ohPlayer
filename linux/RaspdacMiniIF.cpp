@@ -68,6 +68,11 @@ void RaspdacObserver::NotifyMetaText(const Brx& aText)
     Brn title;
     if (XmlParserBasic::TryFind(Brn("title"), aText, title)) {
         OhLog::Print("Raspdac: METATEXT title: %.*s\n", PBUF(title));
+        if (title.Bytes() > 0) {
+            // ICY StreamTitle (show/song) -> OLED title. Keep artist/album/art
+            // and duration untouched: only setTrack() resets them.
+            iOhMdpIF->setTitle(title);
+        }
     }
     else {
         OhLog::Print("Raspdac: METATEXT without <title> element\n");

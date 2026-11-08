@@ -158,6 +158,12 @@ void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
                PBUF(aTitle), PBUF(anArtist), PBUF(anAlbum), PBUF(anAlbumArtURI));
 }
 
+void OhMdpIF::setTitle(Brn aTitle)
+{
+   iTitle = aTitle;
+   OhLog::Print("OhMdpIF: setTitle '%.*s'\n", PBUF(aTitle));
+}
+
 
 OhMdpIF * OhMdpIF::instance=nullptr;
 
