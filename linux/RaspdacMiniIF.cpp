@@ -59,8 +59,19 @@ void RaspdacObserver::NotifyMode(const Brx& /*aMode*/,
 {
 }
 
-void RaspdacObserver::NotifyMetaText(const Brx& /* aText */)
+void RaspdacObserver::NotifyMetaText(const Brx& aText)
 {
+    // ICY StreamTitle updates arrive here as DIDL-Lite (<dc:title>...).
+    // Log the raw payload and the extracted title so we can see whether the
+    // radio stream actually sends show metadata and what it contains.
+    OhLog::Print("Raspdac: METATEXT (%u bytes): %.*s\n", aText.Bytes(), PBUF(aText));
+    Brn title;
+    if (XmlParserBasic::TryFind(Brn("title"), aText, title)) {
+        OhLog::Print("Raspdac: METATEXT title: %.*s\n", PBUF(title));
+    }
+    else {
+        OhLog::Print("Raspdac: METATEXT without <title> element\n");
+    }
 }
 void RaspdacObserver::NotifyTime(TUint aSeconds)
 {
@@ -70,9 +81,11 @@ void RaspdacObserver::NotifyTime(TUint aSeconds)
 	//	 aSeconds/60, aSeconds%60, aTrackDurationSeconds/60, aTrackDurationSeconds%60);
 }
 
-void RaspdacObserver::NotifyTrack(Track& aTrack, TBool /*aStartOfStream*/)
+void RaspdacObserver::NotifyTrack(Track& aTrack, TBool aStartOfStream)
 {
 Brn xmlBuffer(aTrack.MetaData()) ;
+OhLog::PrintDebug("Raspdac: TRACK startOfStream=%u uri=%.*s metadata(%u bytes): %.*s\n",
+                  (TUint)aStartOfStream, PBUF(aTrack.Uri()), xmlBuffer.Bytes(), PBUF(xmlBuffer));
 Brn aTitle;
 Brn aAlbumName;
 Brn aArtistName;
@@ -103,9 +116,10 @@ OhLog::Print("Raspdac: Artist: %.*s  Album: %.*s  Track: %.*s\n URI: %.*s\n", PB
 void RaspdacObserver::NotifyStreamInfo(const DecodedStreamInfo& aStreamInfo)
 {
     iOhMdpIF->setDuration((TUint)(aStreamInfo.TrackLength() / Jiffies::kPerSecond));
-    OhLog::Print("Raspdac: FORMAT {bitRate=%u; bitDepth=%u, sampleRate=%u, numChannels=%u, codec=%.*s; trackLength=%llx, lossless=%u, channelConfig=%s}\n",
+    OhLog::Print("Raspdac: FORMAT {bitRate=%u; bitDepth=%u, sampleRate=%u, numChannels=%u, codec=%.*s; trackLength=%llx, lossless=%u, live=%u, seekable=%u, channelConfig=%s}\n",
                aStreamInfo.BitRate(), aStreamInfo.BitDepth(), aStreamInfo.SampleRate(), aStreamInfo.NumChannels(),
-               PBUF(aStreamInfo.CodecName()), aStreamInfo.TrackLength(), aStreamInfo.Lossless(), aStreamInfo.Profile().ToString());
+               PBUF(aStreamInfo.CodecName()), aStreamInfo.TrackLength(), aStreamInfo.Lossless(),
+               (TUint)aStreamInfo.Live(), (TUint)aStreamInfo.Seekable(), aStreamInfo.Profile().ToString());
     iOhMdpIF-> setStreamInfo(aStreamInfo.BitRate(), aStreamInfo.NumChannels(), aStreamInfo.BitDepth(), aStreamInfo.SampleRate());
 
 }
