@@ -153,39 +153,20 @@ ViewModel = function(){
                 ]);
             }
             if (src == "Radio") {
-                fieldList = fieldList.concat([
-                    { key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" },
-                    { key:"Radio.Preset1.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 1 Name" },
-                    { key:"Radio.Preset1.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 1 URL" },
-                    { key:"Radio.Preset1.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 1 Image URL" },
-                    { key:"Radio.Preset2.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 2 Name" },
-                    { key:"Radio.Preset2.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 2 URL" },
-                    { key:"Radio.Preset2.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 2 Image URL" },
-                    { key:"Radio.Preset3.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 3 Name" },
-                    { key:"Radio.Preset3.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 3 URL" },
-                    { key:"Radio.Preset3.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 3 Image URL" },
-                    { key:"Radio.Preset4.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 4 Name" },
-                    { key:"Radio.Preset4.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 4 URL" },
-                    { key:"Radio.Preset4.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 4 Image URL" },
-                    { key:"Radio.Preset5.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 5 Name" },
-                    { key:"Radio.Preset5.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 5 URL" },
-                    { key:"Radio.Preset5.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 5 Image URL" },
-                    { key:"Radio.Preset6.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 6 Name" },
-                    { key:"Radio.Preset6.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 6 URL" },
-                    { key:"Radio.Preset6.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 6 Image URL" },
-                    { key:"Radio.Preset7.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 7 Name" },
-                    { key:"Radio.Preset7.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 7 URL" },
-                    { key:"Radio.Preset7.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 7 Image URL" },
-                    { key:"Radio.Preset8.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 8 Name" },
-                    { key:"Radio.Preset8.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 8 URL" },
-                    { key:"Radio.Preset8.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 8 Image URL" },
-                    { key:"Radio.Preset9.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 9 Name" },
-                    { key:"Radio.Preset9.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 9 URL" },
-                    { key:"Radio.Preset9.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 9 Image URL" },
-                    { key:"Radio.Preset10.Name", helptext:"Helptext.Radio.Preset.Name", title:"Preset 10 Name" },
-                    { key:"Radio.Preset10.Uri", helptext:"Helptext.Radio.Preset.Uri", title:"Preset 10 URL" },
-                    { key:"Radio.Preset10.Image", helptext:"Helptext.Radio.Preset.Image", title:"Preset 10 Image URL" }
-                ]);
+                var numPresets = 18; // keep in sync with RadioPresetsStatic::kNumPresets
+                var presetFields = [];
+                presetFields.push({ key:"Radio.TuneInUserName", helptext:"Helptext.Radio.TuneInUserName", title:"TuneIn Username", type:"combo" });
+                for (var p = 1; p <= numPresets; p++) {
+                    var titles = { Name:"Name", Uri:"URL", Image:"Image URL" };
+                    var suffixes = ["Name", "Uri", "Image"];
+                    for (var si = 0; si < suffixes.length; si++) {
+                        var suffix = suffixes[si];
+                        presetFields.push({ key:"Radio.Preset" + p + "." + suffix, helptext:"Helptext.Radio.Preset." + suffix, title:"Preset " + p + " " + titles[suffix] });
+                        // compiled-in default for the reset button; hidden field, used for lookup only
+                        presetFields.push({ key:"Radio.Preset" + p + ".Default." + suffix, hidden:true });
+                    }
+                }
+                fieldList = fieldList.concat(presetFields);
             }
             if (src == "Spotify") {
                 fieldList = fieldList.concat([

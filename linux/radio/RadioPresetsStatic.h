@@ -28,6 +28,10 @@ public:
     static const TUint kMaxImageUriBytes = 256;
     static const TUint kKeyBytes = 32;
     static void GetPresetKey(TUint aIndex, const Brx& aSuffix, Bwx& aKey);
+    // Compiled-in default station for a preset index (0-based), used by the web
+    // config ui "reset preset" button.
+    static void GetDefaultPreset(TUint aIndex, Bws<kMaxNameBytes>& aName,
+                                 Bws<kMaxUriBytes>& aUri, Bws<kMaxImageUriBytes>& aImage);
     RadioPresetsStatic(Configuration::IConfigInitialiser& aConfigInit);
     ~RadioPresetsStatic();
 public: // from IRadioPresetProvider

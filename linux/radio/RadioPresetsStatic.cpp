@@ -28,12 +28,12 @@ struct Station {
 };
 
 static const Station kDefaultStations[RadioPresetsStatic::kNumPresets] = {
-    { "France Inter",     "https://icecast.radiofrance.fr/franceinter-hifi.aac",   "https://commons.wikimedia.org/wiki/Special:FilePath/France_Inter_logo_2021.svg?width=250" },
-    { "FIP",              "https://icecast.radiofrance.fr/fip-hifi.aac",            "https://commons.wikimedia.org/wiki/Special:FilePath/FIP_logo_2021.svg?width=250" },
-    { "France Musique",   "https://icecast.radiofrance.fr/francemusique-hifi.aac",  "https://commons.wikimedia.org/wiki/Special:FilePath/France_Musique_logo_2021.svg?width=250" },
-    { "France Info",      "https://icecast.radiofrance.fr/franceinfo-hifi.aac",     "https://commons.wikimedia.org/wiki/Special:FilePath/Franceinfo.svg?width=250" },
-    { "France Culture",   "https://icecast.radiofrance.fr/franceculture-hifi.aac",  "https://commons.wikimedia.org/wiki/Special:FilePath/France_Culture_logo_2021.svg?width=250" },
-    { "Mouv'",            "https://icecast.radiofrance.fr/mouv-hifi.aac",            "https://commons.wikimedia.org/wiki/Special:FilePath/Mouv_logo_2022.svg?width=250" },
+    { "France Inter",     "https://icecast.radiofrance.fr/franceinter-hifi.aac",   "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/France_Inter_logo_2021.svg/250px-France_Inter_logo_2021.svg.png" },
+    { "FIP",              "https://icecast.radiofrance.fr/fip-hifi.aac",            "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/FIP_logo_2021.svg/250px-FIP_logo_2021.svg.png" },
+    { "France Musique",   "https://icecast.radiofrance.fr/francemusique-hifi.aac",  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/France_Musique_logo_2021.svg/250px-France_Musique_logo_2021.svg.png" },
+    { "France Info",      "https://icecast.radiofrance.fr/franceinfo-hifi.aac",     "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Franceinfo.svg/250px-Franceinfo.svg.png" },
+    { "France Culture",   "https://icecast.radiofrance.fr/franceculture-hifi.aac",  "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/France_Culture_logo_2021.svg/250px-France_Culture_logo_2021.svg.png" },
+    { "Mouv'",            "https://icecast.radiofrance.fr/mouv-hifi.aac",            "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Mouv_logo_2022.svg/250px-Mouv_logo_2022.svg.png" },
     { "Radio Nacional",   "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r1_main.m3u8", "https://graph.facebook.com/radionacionalrne/picture" },
     { "Radio Clasica RNE", "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r2_main.m3u8", "https://graph.facebook.com/radioclasicartve/picture" },
     { "Radio 3 RNE",      "https://rtvelivestream.rtve.es/rtvesec/rne/rne_r3_main.m3u8", "https://graph.facebook.com/radio3/picture" },
@@ -125,6 +125,15 @@ void RadioPresetsStatic::GetPresetKey(TUint aIndex, const Brx& aSuffix, Bwx& aKe
     WriterBuffer writer(aKey);
     Ascii::StreamWriteUint(writer, aIndex + 1);
     writer.Write(aSuffix);
+}
+
+void RadioPresetsStatic::GetDefaultPreset(TUint aIndex, Bws<kMaxNameBytes>& aName,
+                                          Bws<kMaxUriBytes>& aUri, Bws<kMaxImageUriBytes>& aImage)
+{
+    const Station& station = kDefaultStations[aIndex];
+    aName.Replace(Brn(station.iName));
+    aUri.Replace(Brn(station.iUri));
+    aImage.Replace(Brn(station.iImageUri));
 }
 
 const Brx& RadioPresetsStatic::DisplayName() const

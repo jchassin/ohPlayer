@@ -53,6 +53,18 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
             AddConfigText(key);
             RadioPresetsStatic::GetPresetKey(i, kSuffixImage, key);
             AddConfigText(key);
+            // Compiled-in defaults, read-only: used by the web ui "reset preset"
+            // button to restore the shipped values over any manual edit.
+            Bws<RadioPresetsStatic::kMaxNameBytes> defName;
+            Bws<RadioPresetsStatic::kMaxUriBytes> defUri;
+            Bws<RadioPresetsStatic::kMaxImageUriBytes> defImage;
+            RadioPresetsStatic::GetDefaultPreset(i, defName, defUri, defImage);
+            RadioPresetsStatic::GetPresetKey(i, Brn(".Default.Name"), key);
+            AddValue(new Web::ConfigUiValRo(key, Brn(defName)));
+            RadioPresetsStatic::GetPresetKey(i, Brn(".Default.Uri"), key);
+            AddValue(new Web::ConfigUiValRo(key, Brn(defUri)));
+            RadioPresetsStatic::GetPresetKey(i, Brn(".Default.Image"), key);
+            AddValue(new Web::ConfigUiValRo(key, Brn(defImage)));
         }
     }
     AddConfigNum(LinnAmpConfig::kKeyBass);
