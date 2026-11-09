@@ -442,7 +442,7 @@ Views = function($){
           var groupDiv = $("<div class='" + groupClass + " Expandable" + (collectionToggleClass ? " " + collectionToggleClass : "") + "'/>");
           var groupHeader = $("<h3 class='RadioPresetGroupHeader'/>").appendTo(groupDiv);
           var groupTitleRef = $("<a title='Expand' href='#' class='SectionHeader RadioPresetGroupTitle_" + presetIndex + "'></a>").appendTo(groupHeader);
-          var resetBtn = $("<button type='button' class='RadioPresetResetBtn' title='Reset preset to the built-in default values'>&#8634; Reset</button>");
+          var resetBtn = $("<button type='button' class='RadioPresetResetBtn' title='Reset preset to the built-in default values'>&#8634;</button>");
           resetBtn.click(function(){
             ResetRadioPreset(presetIndex);
             return false;
