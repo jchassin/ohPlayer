@@ -129,9 +129,18 @@ void OhMdpIF::setDuration(TUint aDuration)
   iDuration = aDuration;
 }
 
+// Owning copy of a Brx into a Bwh member: Bwh(const Brx&) allocates the exact
+// size, Swap exchanges buffers (O(1), never overflows - unlike Replace() on a
+// default Bwh whose MaxBytes is 0, which would throw BufferOverflow/ASSERTS).
+static void CopyTo(Bwh& aDest, const Brx& aSrc)
+{
+    Bwh tmp(aSrc);
+    aDest.Swap(tmp);
+}
+
 void OhMdpIF::setMode(Brn aMode)
 {
-  iMode.Replace(aMode);
+  CopyTo(iMode, aMode);
 }
 
 void OhMdpIF::setVolume(OpenHome::TUint aVolume)
@@ -149,10 +158,10 @@ void OhMdpIF::setStreamInfo(TUint aBitRate, TUint aChannelNum, TUint aBitDepth, 
 
 void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
 {
-   iTitle.Replace(aTitle);
-   iArtist.Replace(anArtist);
-   iAlbum.Replace(anAlbum);
-   iAlbumArtURI.Replace(anAlbumArtURI);
+   CopyTo(iTitle, aTitle);
+   CopyTo(iArtist, anArtist);
+   CopyTo(iAlbum, anAlbum);
+   CopyTo(iAlbumArtURI, anAlbumArtURI);
    iDuration = 0;
    OhLog::Print("OhMdpIF: setTrack title='%.*s' artist='%.*s' album='%.*s' art='%.*s'\n",
                PBUF(aTitle), PBUF(anArtist), PBUF(anAlbum), PBUF(anAlbumArtURI));
@@ -160,7 +169,7 @@ void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
 
 void OhMdpIF::setTitle(Brn aTitle)
 {
-   iTitle.Replace(aTitle);
+   CopyTo(iTitle, aTitle);
    OhLog::Print("OhMdpIF: setTitle '%.*s'\n", PBUF(aTitle));
 }
 
@@ -188,7 +197,17 @@ OhMdpIF::OhMdpIF()
 
     ASSERT(ifs->size() > 0);
 
-    TIpAddress addr = (*ifs)[1]->Address();
+    // Pick the first non-loopback interface. (A hardcoded index used to be taken
+    // here; when the adapter enumeration order changed on a target, the OLED TCP
+    // server ended up bound to 127.0.0.1 and unreachable from the display.)
+    TIpAddress addr = (*ifs)[0]->Address();
+    for (TUint i = 0; i < ifs->size(); i++) {
+        const TIpAddress& candidate = (*ifs)[i]->Address();
+        if (!TIpAddressUtils::IsLoopback(candidate)) {
+            addr = candidate;
+            break;
+        }
+    }
     Endpoint endpt(0, addr);
     Endpoint::AddressBuf buf;
     endpt.AppendAddress(buf);
@@ -197,12 +216,14 @@ OhMdpIF::OhMdpIF()
     TIpAddressUtils::ToString(addr, myBuf);
     OhLog::Print("Using network interface %.*s\n\n", PBUF(myBuf));
 
+    OhLog::Print("OhMdpIF: releasing adapters\n");
 #if 1
     for (TUint i=0; i<ifs->size(); i++) {
         (*ifs)[i]->RemoveRef("OhMdp");
     }
 #endif
     //delete ifs;
+    OhLog::Print("OhMdpIF: adapters released\n");
 
     iDuration   = 0;
     iElapsed    = 0;
@@ -211,19 +232,24 @@ OhMdpIF::OhMdpIF()
     iBitDepth   = 0;
     iSampleFreq = 0;
     iVolume     = 0;
-    // Bwh members start empty; set them explicitly anyway so a 'currentsong'
-    // query before the first setTrack()/setMode() prints clean empty fields.
-    iTitle.Replace(Brx::Empty());
-    iArtist.Replace(Brx::Empty());
-    iAlbum.Replace(Brx::Empty());
-    iAlbumArtURI.Replace(Brx::Empty());
-
-    iMode.Replace(Brn("stop"));
+    // Bwh members default to empty (0 bytes) - safe to read before the first
+    // setter. NOTE: do NOT use Replace() on a default Bwh: MaxBytes is 0, so any
+    // non-empty value would throw BufferOverflow (ASSERTS in debug builds).
+    CopyTo(iMode, Brn("stop"));
     Semaphore sem("", 0);
 
-    iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
+    OhLog::Print("OhMdpIF: creating TCP server on port 6600\n");
+    try {
+        iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
+    }
+    catch (...) {
+        OhLog::PrintError("OhMdpIF: SocketTcpServer creation FAILED (port 6600 busy?)\n");
+        throw;
+    }
+    OhLog::Print("OhMdpIF: TCP server up, adding session\n");
     iSession = new OhMdpIFSession(this);
     iServer->Add("OHMDP", iSession);
+    OhLog::Print("OhMdpIF: ctor done\n");
 
     //sem.Wait();
     //delete ifs;
