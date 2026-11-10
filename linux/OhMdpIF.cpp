@@ -258,8 +258,15 @@ OhMdpIF::OhMdpIF()
     Semaphore sem("", 0);
 
     iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
-    iSession = new OhMdpIFSession(this);
-    iServer->Add("OHMDP", iSession);
+    // Register several session objects: each Add() starts its own accept
+    // thread, so several clients (OLED display + terminal) can be connected
+    // at the same time. With a single session, a second client would sit in
+    // the listen backlog forever (connected, but never served).
+    static const TUint kMaxSessions = 4;
+    for (TUint i = 0; i < kMaxSessions; i++) {
+        iSession = new OhMdpIFSession(this);
+        iServer->Add("OHMDP", iSession);
+    }
 
     //sem.Wait();
     //delete ifs;
