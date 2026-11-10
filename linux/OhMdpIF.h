@@ -54,17 +54,21 @@ class OhMdpIF //singleton
 
      void setTrack(OpenHome::Brn aTitle, OpenHome::Brn anArtist, OpenHome::Brn anAlbum, OpenHome::Brn anAlbumArtURI);
      void setTitle(OpenHome::Brn aTitle);
+     void setArtist(OpenHome::Brn aArtist);
      void setMode(OpenHome::Brn aMode);
      void setTime(OpenHome::TUint anElapsed);
      void setDuration(OpenHome::TUint aDuration);
      void setStreamInfo(OpenHome::TUint aBitRate, OpenHome::TUint aChannelNum, OpenHome::TUint aBitDepth, OpenHome::TUint aSampleFreq);
      void setVolume(OpenHome::TUint aVolume);
 
-     OpenHome::Brn iTitle;
-     OpenHome::Brn iArtist;
-     OpenHome::Brn iAlbum;
-     OpenHome::Brn iAlbumArtURI;
-     OpenHome::Brn iMode;
+     // Owning buffers (Bwh), not Brn: setTrack()/setTitle() receive Brn pointing
+     // into the pipeline track's metadata, which is freed after NotifyTrack() -
+     // storing those Brn directly left iTitle & co dangling (garbage on OLED).
+     OpenHome::Bwh iTitle;
+     OpenHome::Bwh iArtist;
+     OpenHome::Bwh iAlbum;
+     OpenHome::Bwh iAlbumArtURI;
+     OpenHome::Bwh iMode;
      OpenHome::TUint iElapsed;
      OpenHome::TUint iDuration;
      OpenHome::TUint iBitRate;
