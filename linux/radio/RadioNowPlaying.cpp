@@ -294,7 +294,9 @@ void RadioNowPlaying::PollOnce(TUint aProvider, const Brx& aKey)
             }
         }
         if (changed && iOhMdpIF != nullptr) {
-            iOhMdpIF->setTitle(Brn(title.Ptr(), title.Bytes()));
+            // Radio now-playing (song/show) goes to the OLED Artist line; Title
+            // keeps the station name set by setTrack().
+            iOhMdpIF->setArtist(Brn(title.Ptr(), title.Bytes()));
         }
     }
 }
