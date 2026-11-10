@@ -193,6 +193,12 @@ void OhMdpIF::setTitle(Brn aTitle)
    OhLog::Print("OhMdpIF: setTitle '%.*s'\n", PBUF(aTitle));
 }
 
+void OhMdpIF::setArtist(Brn aArtist)
+{
+   CopyTo(iArtist, aArtist);
+   OhLog::Print("OhMdpIF: setArtist '%.*s'\n", PBUF(aArtist));
+}
+
 
 OhMdpIF * OhMdpIF::instance=nullptr;
 

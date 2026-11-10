@@ -73,9 +73,10 @@ void RaspdacObserver::NotifyMetaText(const Brx& aText)
     if (XmlParserBasic::TryFind(Brn("title"), aText, title)) {
         OhLog::PrintDebug("Raspdac: METATEXT title: %.*s\n", PBUF(title));
         if (title.Bytes() > 0) {
-            // ICY StreamTitle (show/song) -> OLED title. Keep artist/album/art
-            // and duration untouched: only setTrack() resets them.
-            iOhMdpIF->setTitle(title);
+            // ICY StreamTitle (show/song) -> OLED artist line. Title stays the
+            // station name from setTrack(): overwriting it made the displayed
+            // title oscillate between station and song on every metadata block.
+            iOhMdpIF->setArtist(title);
         }
     }
     else {
