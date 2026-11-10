@@ -33,6 +33,7 @@ OhMdpIFSession::~OhMdpIFSession()
     {
         delete iReaderUntil;
         delete iStream;
+        delete iWriteBuffer;
     }
 void  OhMdpIFSession::Run()
     {
@@ -64,6 +65,17 @@ void  OhMdpIFSession::Run()
         char aBuff[kBuffSize];
 
         
+
+        // This session object is reused by the server accept loop for every
+        // connection: recreate the streams per connection, otherwise bytes
+        // left over from a previous client corrupt ReadUntil('\n') and
+        // commands are no longer recognised.
+        delete iReaderUntil;
+        delete iStream;
+        delete iWriteBuffer;
+        iStream = new Srs<200>(*this);
+        iReaderUntil = new ReaderUntilS<200>(*iStream);
+        iWriteBuffer = new Sws<kWriteBufferBytes>(*this);
 
         TBool done = false;
         try {
