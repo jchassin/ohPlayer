@@ -131,7 +131,7 @@ void OhMdpIF::setDuration(TUint aDuration)
 
 void OhMdpIF::setMode(Brn aMode)
 {
-  iMode = aMode;
+  iMode.Replace(aMode);
 }
 
 void OhMdpIF::setVolume(OpenHome::TUint aVolume)
@@ -149,10 +149,10 @@ void OhMdpIF::setStreamInfo(TUint aBitRate, TUint aChannelNum, TUint aBitDepth, 
 
 void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
 {
-   iTitle = aTitle;
-   iArtist = anArtist;
-   iAlbum = anAlbum;
-   iAlbumArtURI = anAlbumArtURI;
+   iTitle.Replace(aTitle);
+   iArtist.Replace(anArtist);
+   iAlbum.Replace(anAlbum);
+   iAlbumArtURI.Replace(anAlbumArtURI);
    iDuration = 0;
    OhLog::Print("OhMdpIF: setTrack title='%.*s' artist='%.*s' album='%.*s' art='%.*s'\n",
                PBUF(aTitle), PBUF(anArtist), PBUF(anAlbum), PBUF(anAlbumArtURI));
@@ -160,7 +160,7 @@ void OhMdpIF::setTrack(Brn aTitle, Brn anArtist, Brn anAlbum, Brn anAlbumArtURI)
 
 void OhMdpIF::setTitle(Brn aTitle)
 {
-   iTitle = aTitle;
+   iTitle.Replace(aTitle);
    OhLog::Print("OhMdpIF: setTitle '%.*s'\n", PBUF(aTitle));
 }
 
@@ -211,14 +211,14 @@ OhMdpIF::OhMdpIF()
     iBitDepth   = 0;
     iSampleFreq = 0;
     iVolume     = 0;
-    // Brn members must be initialised too: before the first setTrack()/setMode()
-    // the TCP 'currentsong'/'status' replies would print uninitialised memory.
-    iTitle      = Brn("");
-    iArtist     = Brn("");
-    iAlbum      = Brn("");
-    iAlbumArtURI = Brn("");
+    // Bwh members start empty; set them explicitly anyway so a 'currentsong'
+    // query before the first setTrack()/setMode() prints clean empty fields.
+    iTitle.Replace(Brx::Empty());
+    iArtist.Replace(Brx::Empty());
+    iAlbum.Replace(Brx::Empty());
+    iAlbumArtURI.Replace(Brx::Empty());
 
-    iMode = Brn("stop");
+    iMode.Replace(Brn("stop"));
     Semaphore sem("", 0);
 
     iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
