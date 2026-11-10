@@ -205,11 +205,18 @@ OhMdpIF::OhMdpIF()
     //delete ifs;
 
     iDuration   = 0;
-    iElapsed    = 0; 
+    iElapsed    = 0;
     iBitRate    = 0;
     iChannelNum = 0;
     iBitDepth   = 0;
     iSampleFreq = 0;
+    iVolume     = 0;
+    // Brn members must be initialised too: before the first setTrack()/setMode()
+    // the TCP 'currentsong'/'status' replies would print uninitialised memory.
+    iTitle      = Brn("");
+    iArtist     = Brn("");
+    iAlbum      = Brn("");
+    iAlbumArtURI = Brn("");
 
     iMode = Brn("stop");
     Semaphore sem("", 0);
