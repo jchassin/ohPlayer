@@ -197,13 +197,14 @@ OhMdpIF::OhMdpIF()
 
     ASSERT(ifs->size() > 0);
 
-    // Pick the first non-loopback interface. (A hardcoded index used to be taken
-    // here; when the adapter enumeration order changed on a target, the OLED TCP
-    // server ended up bound to 127.0.0.1 and unreachable from the display.)
+    // The OLED TCP server is loopback-only by design (the display talks to the
+    // device locally): pick the loopback adapter explicitly instead of a
+    // hardcoded index, so the bind address does not depend on the adapter
+    // enumeration order.
     TIpAddress addr = (*ifs)[0]->Address();
     for (TUint i = 0; i < ifs->size(); i++) {
         const TIpAddress& candidate = (*ifs)[i]->Address();
-        if (!TIpAddressUtils::IsLoopback(candidate)) {
+        if (TIpAddressUtils::IsLoopback(candidate)) {
             addr = candidate;
             break;
         }
@@ -216,14 +217,12 @@ OhMdpIF::OhMdpIF()
     TIpAddressUtils::ToString(addr, myBuf);
     OhLog::Print("Using network interface %.*s\n\n", PBUF(myBuf));
 
-    OhLog::Print("OhMdpIF: releasing adapters\n");
 #if 1
     for (TUint i=0; i<ifs->size(); i++) {
         (*ifs)[i]->RemoveRef("OhMdp");
     }
 #endif
     //delete ifs;
-    OhLog::Print("OhMdpIF: adapters released\n");
 
     iDuration   = 0;
     iElapsed    = 0;
@@ -238,18 +237,9 @@ OhMdpIF::OhMdpIF()
     CopyTo(iMode, Brn("stop"));
     Semaphore sem("", 0);
 
-    OhLog::Print("OhMdpIF: creating TCP server on port 6600\n");
-    try {
-        iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
-    }
-    catch (...) {
-        OhLog::PrintError("OhMdpIF: SocketTcpServer creation FAILED (port 6600 busy?)\n");
-        throw;
-    }
-    OhLog::Print("OhMdpIF: TCP server up, adding session\n");
+    iServer = new SocketTcpServer(*gEnv, "OHMDP", 6600, addr);
     iSession = new OhMdpIFSession(this);
     iServer->Add("OHMDP", iSession);
-    OhLog::Print("OhMdpIF: ctor done\n");
 
     //sem.Wait();
     //delete ifs;
