@@ -66,9 +66,14 @@ void  OhMdpIFSession::Run()
         
 
         TBool done = false;
-        iWriteBuffer->Write(Brn("OK"));
-        iWriteBuffer->Write(EndOfLine);
-        iWriteBuffer->WriteFlush();
+        try {
+            iWriteBuffer->Write(Brn("OK"));
+            iWriteBuffer->Write(EndOfLine);
+            iWriteBuffer->WriteFlush();
+        }
+        catch (WriterError&) {
+            return; // client already gone
+        }
 
         while (!done) {
             try {
@@ -114,7 +119,10 @@ void  OhMdpIFSession::Run()
                     done = true;
             }
             catch (ReaderError&) {
-                break;
+                break; // client closed the connection
+            }
+            catch (WriterError&) {
+                break; // client disconnected mid-response: writes to the socket throw
             }
         }
     }
