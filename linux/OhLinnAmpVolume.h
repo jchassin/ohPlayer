@@ -50,6 +50,7 @@ private:
     void QueryId();
     void DetectDialect();
     void QueryVersions();
+    void QueryVersion(const char* aQuery, const char* aRespPrefix, Bwh& aOut, const char* aLabel);
     TBool QueryCurrentVolume();
     void SetTone(const char* aPrefix, TInt aValue);
     void SelectInput(int aSource);

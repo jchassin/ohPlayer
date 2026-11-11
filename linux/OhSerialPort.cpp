@@ -153,18 +153,7 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         Mutex& iMutex;
     } guard{iMutex};
 
-    // Flush input buffer by reading until CRLF or timeout
-    FlushInputBuffer();
-
-    // Send command framed as $COMMAND$\r\n
-    Bws<256> commandWithPrefix;
-    commandWithPrefix.Append("$");
-    commandWithPrefix.Append(aCommand);
-    commandWithPrefix.Append("$");
-    commandWithPrefix.Append("\r\n");
-
-    if (!Write(Brn(commandWithPrefix.Ptr(), commandWithPrefix.Bytes()))) {
-        OhLog::PrintError("OhSerialPort: failed to write command\n");
+    if (!WriteFramedCommandLocked(aCommand)) {
         return false;
     }
 
@@ -218,6 +207,89 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     }
 
     aResponse.Replace(Brn(reinterpret_cast<const TByte*>(finalLine.c_str()), finalLine.size()));
+    return true;
+}
+
+TBool OhSerialPort::WriteFramedCommandLocked(const Brx& aCommand) {
+    FlushInputBuffer();
+
+    // Send command framed as $COMMAND$\r\n
+    Bws<256> commandWithPrefix;
+    commandWithPrefix.Append("$");
+    commandWithPrefix.Append(aCommand);
+    commandWithPrefix.Append("$");
+    commandWithPrefix.Append("\r\n");
+
+    if (!Write(Brn(commandWithPrefix.Ptr(), commandWithPrefix.Bytes()))) {
+        OhLog::PrintError("OhSerialPort: failed to write command\n");
+        return false;
+    }
+    return true;
+}
+
+TBool OhSerialPort::SendCommandAndReadAllLines(const Brx& aCommand, std::vector<std::string>& aLines, TUint aTimeoutMs) {
+    if (!iIsOpen) {
+        OhLog::PrintWarning("OhSerialPort: port not open for SendCommandAndReadAllLines\n");
+        return false;
+    }
+
+    iMutex.Wait();
+    struct MutexGuard {
+        ~MutexGuard() { iMutex.Signal(); }
+        Mutex& iMutex;
+    } guard{iMutex};
+
+    if (!WriteFramedCommandLocked(aCommand)) {
+        return false;
+    }
+
+    // Collect every final '!$...$' line until the line has been quiet for a
+    // short period (or the overall timeout expires). A bare '!' initial
+    // response and unsolicited '$...$' lines are ignored.
+    const TUint kQuietMs = 60;
+    TUint startTime = NowMs();
+    TUint lastDataTime = startTime;
+    std::string line;
+
+    while (NowMs() - startTime < aTimeoutMs) {
+        unsigned char buf[16];
+        ssize_t bytesRead = read(iFd, buf, sizeof(buf));
+
+        if (bytesRead > 0) {
+            lastDataTime = NowMs();
+            for (ssize_t i = 0; i < bytesRead; i++) {
+                if (buf[i] == '\r' || buf[i] == '\n') {
+                    if (!line.empty()) {
+                        if (line.size() > 1 && line[0] == '!') {
+                            aLines.push_back(line);
+                        }
+                        line.clear();
+                    }
+                } else {
+                    line += static_cast<char>(buf[i]);
+                }
+            }
+        } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
+            OhLog::PrintError("OhSerialPort: read error: %s\n", strerror(errno));
+            return false;
+        }
+
+        if (!aLines.empty() && NowMs() - lastDataTime >= kQuietMs) {
+            break;
+        }
+        usleep(5000);
+    }
+
+    if (aLines.empty()) {
+        OhLog::PrintWarning("OhSerialPort: timeout waiting for response\n");
+        return false;
+    }
+    for (const auto& l : aLines) {
+        if (l.compare(0, 6, "!$FAIL") == 0) {
+            OhLog::PrintWarning("OhSerialPort: command rejected: %s\n", l.c_str());
+            return false;
+        }
+    }
     return true;
 }
 

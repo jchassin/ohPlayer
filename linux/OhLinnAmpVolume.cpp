@@ -65,7 +65,7 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolu
     , iCmdTrebleSet(kLr2TrebleSet)
     , iDeviceId(64)
     , iDeviceModel(32)
-    , iDeviceHwVersion(128)
+    , iDeviceHwVersion(192)
     , iDeviceSwVersion(64)
 {
     if (!iSerialPort->Open()) {
@@ -151,12 +151,16 @@ void OhLinnAmpVolume::SetFade(TInt /*aFade*/) {
 }
 
 TBool OhLinnAmpVolume::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse) {
-    if (iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs)) {
-        return true;
+    // Some Linn amplifiers (e.g. Majik-I) take over a second to answer, in
+    // particular power commands while entering/leaving standby: allow a few
+    // attempts before giving up.
+    for (int attempt = 0; attempt < 3; attempt++) {
+        if (iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs)) {
+            return true;
+        }
+        usleep(100000);
     }
-    // Single retry: response may be lost if the amp is busy or transitioning
-    usleep(100000);
-    return iSerialPort->SendCommandAndWaitResponse(aCommand, aResponse, kResponseTimeoutMs);
+    return false;
 }
 
 TBool OhLinnAmpVolume::ProbeCommand(const char* aCommand, Bwx& aResponse) {
@@ -245,20 +249,31 @@ void OhLinnAmpVolume::QueryVersions() {
         return;
     }
 
-    Bws<128> response;
-    if (ProbeCommand(kCmdVersionHwQuery, response)) {
-        std::string version = LinnAmpProtocol::ParsePrefixedValue(ToString(response), kRespVersionHw);
-        if (!version.empty()) {
-            iDeviceHwVersion.Replace(Brn(version.c_str()));
-            OhLog::Print("OhLinnAmpVolume: HW version: %s\n", version.c_str());
+    QueryVersion(kCmdVersionHwQuery, kRespVersionHw, iDeviceHwVersion, "HW");
+    QueryVersion(kCmdVersionSwQuery, kRespVersionSw, iDeviceSwVersion, "SW");
+}
+
+void OhLinnAmpVolume::QueryVersion(const char* aQuery, const char* aRespPrefix, Bwh& aOut, const char* aLabel) {
+    Brn cmd(reinterpret_cast<const TByte*>(aQuery), strlen(aQuery));
+    std::vector<std::string> lines;
+    // Some amplifiers answer a VERSION query with several final lines (e.g.
+    // Majik-I $VERSION HARDWARE ?$ returns one line per board): join them all.
+    if (!iSerialPort->SendCommandAndReadAllLines(cmd, lines, kResponseTimeoutMs)) {
+        return;
+    }
+    std::string version;
+    for (const auto& line : lines) {
+        std::string v = LinnAmpProtocol::ParsePrefixedValue(line, aRespPrefix);
+        if (!v.empty()) {
+            if (!version.empty()) {
+                version += "; ";
+            }
+            version += v;
         }
     }
-    if (ProbeCommand(kCmdVersionSwQuery, response)) {
-        std::string version = LinnAmpProtocol::ParsePrefixedValue(ToString(response), kRespVersionSw);
-        if (!version.empty()) {
-            iDeviceSwVersion.Replace(Brn(version.c_str()));
-            OhLog::Print("OhLinnAmpVolume: SW version: %s\n", version.c_str());
-        }
+    if (!version.empty()) {
+        aOut.Replace(Brn(version.c_str()));
+        OhLog::Print("OhLinnAmpVolume: %s version: %s\n", aLabel, version.c_str());
     }
 }
 
