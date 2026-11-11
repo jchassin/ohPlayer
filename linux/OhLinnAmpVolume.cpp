@@ -30,7 +30,10 @@ const char* const kMajikVolumeSet = "VOLUME = ";
 const char* const kMajikVolumeQuery = "VOLUME ?";
 const char* const kMajikVolumeResp = "VOLUME ";
 const char* const kMajikBalanceSet = "BALANCE = ";
-const OpenHome::TUint kResponseTimeoutMs = 500;
+// Some Linn amplifiers (e.g. Majik-I) answer slowly, in particular to power
+// commands such as STANDBY; the final response line is detected as soon as it
+// arrives, so this timeout only bounds genuinely silent links.
+const OpenHome::TUint kResponseTimeoutMs = 1000;
 // OpenHome volume is in milli-dB: 100 steps of 1024 (see VolumeControl.cpp)
 const OpenHome::TUint kMilliDbPerStep = 1024;
 
@@ -72,10 +75,12 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolu
         QueryId();
         DetectDialect();
         QueryVersions();
-        // Align amp with OpenHome product initial state (standby at boot)
-        SetStandby(true);
-        SelectInput(kDefaultListenSource);
+        // Query volume and select the input while the amp is still awake
+        // (a Majik in standby does not answer queries), then align the amp
+        // with the OpenHome product initial state (standby at boot)
         QueryCurrentVolume();
+        SelectInput(kDefaultListenSource);
+        SetStandby(true);
     }
 }
 
