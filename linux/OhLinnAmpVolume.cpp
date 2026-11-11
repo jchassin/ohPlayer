@@ -10,7 +10,6 @@
 namespace {
 
 const char* const kCmdIdQuery = "ID ?";
-const char* const kCmdListen = "LISTEN ";
 const int kDefaultListenSource = 1;
 const char* const kCmdStandbyOn = "STANDBY ON";
 const char* const kCmdStandbyOff = "STANDBY OFF";
@@ -18,18 +17,6 @@ const char* const kCmdVersionHwQuery = "VERSION HARDWARE ?";
 const char* const kCmdVersionSwQuery = "VERSION SOFTWARE ?";
 const char* const kRespVersionHw = "VERSION HARDWARE ";
 const char* const kRespVersionSw = "VERSION SOFTWARE ";
-// LR2 preamplifier command set
-const char* const kLr2VolumeSet = "VOL = ";
-const char* const kLr2VolumeQuery = "VOL ?";
-const char* const kLr2BalanceSet = "BAL = ";
-const char* const kLr2BassSet = "BAS = ";
-const char* const kLr2TrebleSet = "TRB = ";
-// Majik integrated amplifier command set: VOLUME instead of VOL, BALANCE
-// instead of BAL, INPUT AUDIO instead of LISTEN, no tone commands
-const char* const kMajikVolumeSet = "VOLUME = ";
-const char* const kMajikVolumeQuery = "VOLUME ?";
-const char* const kMajikVolumeResp = "VOLUME ";
-const char* const kMajikBalanceSet = "BALANCE = ";
 // Some Linn amplifiers (e.g. Majik-I) answer slowly, in particular power
 // commands such as STANDBY (several seconds while entering/leaving standby);
 // the final response line is detected as soon as it arrives, so this timeout
@@ -57,14 +44,8 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolu
     : iSerialPort(new OhSerialPort(aSerialPortPath, 9600))
     , iCurrentVolume(0)
     , iVolumeLimit(aVolumeLimit)
-    , iDialect(EDialect::kLr2)
     , iStandbyOn(false)
-    , iCmdVolumeSet(kLr2VolumeSet)
-    , iCmdVolumeQuery(kLr2VolumeQuery)
-    , iCmdVolumeResp(kLr2VolumeSet)
-    , iCmdBalanceSet(kLr2BalanceSet)
-    , iCmdBassSet(kLr2BassSet)
-    , iCmdTrebleSet(kLr2TrebleSet)
+    , iProtocol(std::make_unique<LinnAmpProtocol::Lr2Protocol>())
     , iDeviceId(64)
     , iDeviceModel(32)
     , iDeviceHwVersion(192)
@@ -121,7 +102,7 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
         linnVolume = iVolumeLimit;
     }
 
-    std::string command = BuildCommand(iCmdVolumeSet, static_cast<int>(linnVolume));
+    std::string command = BuildCommand(iProtocol->VolumeSetPrefix(), static_cast<int>(linnVolume));
     Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
@@ -137,7 +118,7 @@ void OhLinnAmpVolume::SetBalance(TInt aBalance) {
         return;
     }
 
-    std::string command = BuildCommand(iCmdBalanceSet, aBalance);
+    std::string command = BuildCommand(iProtocol->BalanceSetPrefix(), aBalance);
     Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
     Bws<32> response;
     if (!SendCommandAndWaitResponse(cmd, response)) {
@@ -163,33 +144,6 @@ TBool OhLinnAmpVolume::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRes
         usleep(100000);
     }
     return false;
-}
-
-TBool OhLinnAmpVolume::ProbeCommand(const char* aCommand, Bwx& aResponse) {
-    if (!iSerialPort->IsOpen()) {
-        return false;
-    }
-    Brn cmd(reinterpret_cast<const TByte*>(aCommand), strlen(aCommand));
-    return iSerialPort->SendCommandAndWaitResponse(cmd, aResponse, kResponseTimeoutMs);
-}
-
-void OhLinnAmpVolume::SetDialect(EDialect aDialect) {
-    iDialect = aDialect;
-    if (aDialect == EDialect::kMajik) {
-        iCmdVolumeSet = kMajikVolumeSet;
-        iCmdVolumeQuery = kMajikVolumeQuery;
-        iCmdVolumeResp = kMajikVolumeResp;
-        iCmdBalanceSet = kMajikBalanceSet;
-        iCmdBassSet = nullptr;
-        iCmdTrebleSet = nullptr;
-    } else {
-        iCmdVolumeSet = kLr2VolumeSet;
-        iCmdVolumeQuery = kLr2VolumeQuery;
-        iCmdVolumeResp = kLr2VolumeSet;
-        iCmdBalanceSet = kLr2BalanceSet;
-        iCmdBassSet = kLr2BassSet;
-        iCmdTrebleSet = kLr2TrebleSet;
-    }
 }
 
 void OhLinnAmpVolume::QueryId() {
@@ -228,22 +182,17 @@ void OhLinnAmpVolume::DetectDialect() {
         return;
     }
 
-    Bws<32> response;
-    if (ProbeCommand(kMajikVolumeQuery, response)
-        && ToString(response).find("VOLUME") != std::string::npos) {
-        SetDialect(EDialect::kMajik);
-        OhLog::Print("OhLinnAmpVolume: Majik command set detected (VOLUME)\n");
-        return;
-    }
-    if (ProbeCommand(kLr2VolumeQuery, response)
-        && ToString(response).find("VOL") != std::string::npos) {
-        SetDialect(EDialect::kLr2);
-        OhLog::Print("OhLinnAmpVolume: LR2 command set detected (VOL)\n");
-        return;
-    }
-    SetDialect(LinnAmpProtocol::IsLr2IdValue(iIdValue) ? EDialect::kLr2 : EDialect::kMajik);
-    OhLog::PrintWarning("OhLinnAmpVolume: no volume query answered, assuming %s command set from ID\n",
-                        iDialect == EDialect::kLr2 ? "LR2" : "Majik");
+    LinnAmpProtocol::ProbeFn probe = [this](const std::string& aCommand, std::string& aResponse) {
+        Brn cmd(reinterpret_cast<const TByte*>(aCommand.c_str()), aCommand.size());
+        Bws<32> response;
+        if (!iSerialPort->SendCommandAndWaitResponse(cmd, response, kResponseTimeoutMs)) {
+            return false;
+        }
+        aResponse = ToString(response);
+        return true;
+    };
+    iProtocol = LinnAmpProtocol::DetectProtocol(iIdValue, probe);
+    OhLog::Print("OhLinnAmpVolume: %s command set detected\n", iProtocol->Name());
 }
 
 void OhLinnAmpVolume::QueryVersions() {
@@ -323,11 +272,19 @@ void OhLinnAmpVolume::SetTone(const char* aPrefix, TInt aValue) {
 }
 
 void OhLinnAmpVolume::SetBass(TInt aBass) {
-    SetTone(iCmdBassSet, aBass);
+    if (iProtocol->SupportsTone()) {
+        SetTone(iProtocol->BassSetPrefix(), aBass);
+    } else {
+        OhLog::PrintDebug("OhLinnAmpVolume: tone control not supported by this amplifier\n");
+    }
 }
 
 void OhLinnAmpVolume::SetTreble(TInt aTreble) {
-    SetTone(iCmdTrebleSet, aTreble);
+    if (iProtocol->SupportsTone()) {
+        SetTone(iProtocol->TrebleSetPrefix(), aTreble);
+    } else {
+        OhLog::PrintDebug("OhLinnAmpVolume: tone control not supported by this amplifier\n");
+    }
 }
 
 void OhLinnAmpVolume::SelectInput(int aSource) {
@@ -335,13 +292,7 @@ void OhLinnAmpVolume::SelectInput(int aSource) {
         return;
     }
 
-    std::ostringstream oss;
-    if (iDialect == EDialect::kMajik) {
-        oss << "INPUT AUDIO INPUT" << aSource;
-    } else {
-        oss << kCmdListen << aSource;
-    }
-    std::string command = oss.str();
+    std::string command = iProtocol->InputCommand(aSource);
     Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
@@ -356,14 +307,16 @@ TBool OhLinnAmpVolume::QueryCurrentVolume() {
         return false;
     }
 
-    Brn cmd(reinterpret_cast<const TByte*>(iCmdVolumeQuery), strlen(iCmdVolumeQuery));
+    const char* volumeQuery = iProtocol->VolumeQuery();
+    const char* volumeResp = iProtocol->VolumeResponseKeyword();
+    Brn cmd(reinterpret_cast<const TByte*>(volumeQuery), strlen(volumeQuery));
     Bws<32> response;
     if (SendCommandAndWaitResponse(cmd, response)) {
         std::string respStr = ToString(response);
-        size_t volumePos = respStr.find(iCmdVolumeResp);
+        size_t volumePos = respStr.find(volumeResp);
         if (volumePos != std::string::npos) {
             try {
-                iCurrentVolume = std::stoi(respStr.substr(volumePos + strlen(iCmdVolumeResp)));
+                iCurrentVolume = std::stoi(respStr.substr(volumePos + strlen(volumeResp)));
                 OhLog::Print("OhLinnAmpVolume: Current volume: %u\n", iCurrentVolume);
                 return true;
             } catch (...) {

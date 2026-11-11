@@ -3,8 +3,10 @@
 #include <OpenHome/Av/VolumeManager.h>
 #include <OpenHome/Media/MuteManager.h>
 #include <OpenHome/Buffer.h>
+#include <memory>
 #include <string>
 #include "OhSerialPort.h"
+#include "LinnAmpProtocol.h"
 
 namespace OpenHome {
 namespace Av {
@@ -38,15 +40,7 @@ private: // from IFade
     void SetFade(TInt aFade) override;
 
 private:
-    // Command dialects of the Linn $...$ RS232 protocol
-    enum class EDialect {
-        kLr2,   // preamplifiers: VOL / BAL / BAS / TRB / LISTEN
-        kMajik, // integrated amplifiers: VOLUME / BALANCE / INPUT AUDIO, no tone commands
-    };
-
     TBool SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse);
-    TBool ProbeCommand(const char* aCommand, Bwx& aResponse);
-    void SetDialect(EDialect aDialect);
     void QueryId();
     void DetectDialect();
     void QueryVersions();
@@ -59,14 +53,8 @@ private:
     OhSerialPort* iSerialPort;
     TUint iCurrentVolume;
     TUint iVolumeLimit;
-    EDialect iDialect;
     TBool iStandbyOn;
-    const char* iCmdVolumeSet;
-    const char* iCmdVolumeQuery;
-    const char* iCmdVolumeResp;
-    const char* iCmdBalanceSet;
-    const char* iCmdBassSet;
-    const char* iCmdTrebleSet;
+    std::unique_ptr<LinnAmpProtocol::ILinnAmpProtocol> iProtocol;
     std::string iIdValue;
     Bwh iDeviceId;
     Bwh iDeviceModel;
