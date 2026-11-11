@@ -262,6 +262,8 @@ ViewModel = function(){
                 { key:"LinnAmp.AlsaVolume", helptext:"Helptext.LinnAmp.AlsaVolume", title:"ALSA Volume", type:"numeric" },
                 { key:"LinnAmp.Model", helptext:"Helptext.LinnAmp.Model", title:"Detected Amplifier" },
                 { key:"LinnAmp.Serial", helptext:"Helptext.LinnAmp.Serial", title:"Amplifier Serial" },
+                { key:"LinnAmp.HwVersion", helptext:"Helptext.LinnAmp.HwVersion", title:"Amplifier HW Version" },
+                { key:"LinnAmp.SwVersion", helptext:"Helptext.LinnAmp.SwVersion", title:"Amplifier SW Version" },
             ]
         },
         {
@@ -625,19 +627,25 @@ ViewModel = function(){
             description : "Serial port the Linn amplifier is connected to (e.g. /dev/ttyUSB0). The amplifier is only used when Internal Volume Control is set to No. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Model" : {
-            description : "Model of the detected Linn amplifier."
+            description : "Model of the detected Linn amplifier, from <span class='HelpTextOption'>$ID ?$</span> (e.g. <span class='HelpTextOption'>LR2</span> for a preamplifier, <span class='HelpTextOption'>MAJIK_I</span> for a Majik integrated amplifier)."
         },
         "Helptext.LinnAmp.Bass" : {
-            description : "Bass adjustment of the Linn amplifier, from -7 to +7. Changing this requires a reboot."
+            description : "Bass adjustment of the Linn amplifier, from -7 to +7. Only supported by LR2 preamplifiers; ignored by Majik amplifiers. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Treble" : {
-            description : "Treble adjustment of the Linn amplifier, from -7 to +7. Changing this requires a reboot."
+            description : "Treble adjustment of the Linn amplifier, from -7 to +7. Only supported by LR2 preamplifiers; ignored by Majik amplifiers. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.AlsaVolume" : {
             description : "ALSA output level (0-100) applied when the Linn amplifier controls the volume (Internal Volume Control set to No). Use this to match the loudness of a room driven by the Linn amplifier with a room driven by the ALSA mixer. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Serial" : {
-            description : "Serial number of the detected Linn amplifier."
+            description : "Serial number of the detected Linn amplifier. Only LR2 preamplifiers report one; Majik amplifiers return their model name in <span class='HelpTextOption'>$ID ?$</span> and this field stays empty."
+        },
+        "Helptext.LinnAmp.HwVersion" : {
+            description : "Hardware version of the detected Linn amplifier, from <span class='HelpTextOption'>$VERSION HARDWARE ?$</span>."
+        },
+        "Helptext.LinnAmp.SwVersion" : {
+            description : "Software version of the detected Linn amplifier, from <span class='HelpTextOption'>$VERSION SOFTWARE ?$</span>."
         },
         "Helptext.Sender.Enabled" : {
             description : "If you wish to allow other Songcast receivers in your home to listen to the <%- device %> select <span class='HelpTextOption'><%- field.meta.options[1].value %></span>. Otherwise select <span class='HelpTextOption'><%- field.meta.options[0].value %></span>.",

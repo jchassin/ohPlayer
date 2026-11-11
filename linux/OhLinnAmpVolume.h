@@ -23,6 +23,10 @@ public:
     // Info from the $ID ?$ query, empty if not detected
     const Brx& DeviceId() const;
     const Brx& DeviceModel() const;
+    // Info from the $VERSION HARDWARE ?$ / $VERSION SOFTWARE ?$ queries,
+    // empty if not detected or not supported by the amplifier
+    const Brx& DeviceHwVersion() const;
+    const Brx& DeviceSwVersion() const;
 
 private: // from IVolume
     void SetVolume(TUint aVolume) override;
@@ -34,9 +38,19 @@ private: // from IFade
     void SetFade(TInt aFade) override;
 
 private:
+    // Command dialects of the Linn $...$ RS232 protocol
+    enum class EDialect {
+        kLr2,   // preamplifiers: VOL / BAL / BAS / TRB / LISTEN
+        kMajik, // integrated amplifiers: VOLUME / BALANCE / INPUT AUDIO, no tone commands
+    };
+
     TBool SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aResponse);
-    TBool QueryCurrentVolume();
+    TBool ProbeCommand(const char* aCommand, Bwx& aResponse);
+    void SetDialect(EDialect aDialect);
     void QueryId();
+    void DetectDialect();
+    void QueryVersions();
+    TBool QueryCurrentVolume();
     void SetTone(const char* aPrefix, TInt aValue);
     void SelectInput(int aSource);
 
@@ -44,8 +58,18 @@ private:
     OhSerialPort* iSerialPort;
     TUint iCurrentVolume;
     TUint iVolumeLimit;
+    EDialect iDialect;
+    const char* iCmdVolumeSet;
+    const char* iCmdVolumeQuery;
+    const char* iCmdVolumeResp;
+    const char* iCmdBalanceSet;
+    const char* iCmdBassSet;
+    const char* iCmdTrebleSet;
+    std::string iIdValue;
     Bwh iDeviceId;
     Bwh iDeviceModel;
+    Bwh iDeviceHwVersion;
+    Bwh iDeviceSwVersion;
 };
 
 } // namespace Av

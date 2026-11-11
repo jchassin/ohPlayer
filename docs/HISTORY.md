@@ -1,5 +1,11 @@
 # History
 
+* **2026-11-11** — Linn Majik integrated amplifiers supported by the Linn Amp detection.
+  * `$ID ?$` is parsed generically: LR2 preamplifiers answer with a model code + 12-digit serial (`LR2...`), Majik amplifiers with their model name (e.g. `MAJIK_I`). Any Linn amplifier speaking the `$...$` RS232 protocol (9600 bauds, 7E1) is now detected, not just LR2 preamplifiers.
+  * The command dialect is probed at startup (`VOLUME ?` vs `VOL ?`): Majik amplifiers use `VOLUME`/`BALANCE`/`INPUT AUDIO`, LR2 preamplifiers keep `VOL`/`BAL`/`BAS`/`TRB`/`LISTEN`. Bass/treble remain LR2-only.
+  * New read-only `LinnAmp.HwVersion` / `LinnAmp.SwVersion` fields in the web ui (from `$VERSION HARDWARE ?$` / `$VERSION SOFTWARE ?$`).
+  * Volume is now only enabled when the amplifier actually answers `$ID ?$` (previously: serial port open was enough).
+
 * **2026-11-03** — Radio Browser media server (radio-browser.info integration).
   * New DLNA Media Server device exposing the [radio-browser.info](https://www.radio-browser.info) community radio directory (45,000+ stations) to any UPnP control point. Browsable as `Radio Browser <room>` alongside MinimServer etc.
   * Navigation: Most popular, By country (short configurable list), By genre, By name (A-Z, a search-by-navigation workaround for control points that do not send ContentDirectory Search requests), each station list split into Hi-Res (>=192 kbps) / Mid-Res (96-191) / Low-Res (<96) sub-containers, alphabetically sorted.

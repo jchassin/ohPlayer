@@ -854,12 +854,14 @@ IWebApp* TestMediaPlayer::CreateConfigApp(const std::vector<const Brx*>& aSource
     FileResourceHandlerFactory resourceHandlerFactory;
     Brn linnAmpModel(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceModel() : Brx::Empty());
     Brn linnAmpSerial(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceId() : Brx::Empty());
+    Brn linnAmpHwVersion(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceHwVersion() : Brx::Empty());
+    Brn linnAmpSwVersion(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceSwVersion() : Brx::Empty());
     return new ConfigAppPlayerLinn(*iInfoLogger, iMediaPlayer->Env(), iMediaPlayer->Product(),
                                    iMediaPlayer->ConfigManager(), resourceHandlerFactory, aSources,
                                    Brn("Softplayer"), aResourceDir,
                                    aMinWebUiResourceThreads, aMaxWebUiTabs, aMaxSendQueueSize,
                                    aMsgBufCount, aMsgBufBytes, iRebootHandler,
-                                   linnAmpModel, linnAmpSerial,
+                                   linnAmpModel, linnAmpSerial, linnAmpHwVersion, linnAmpSwVersion,
                                    iLinnAmpVolume != nullptr);
 }
 
