@@ -62,7 +62,9 @@ TBool OhSerialPort::Open() {
     cfsetospeed(&newTermios, GetBaudRateFlag(iBaudRate));
 
     newTermios.c_cc[VMIN] = 0;
-    newTermios.c_cc[VTIME] = 10;
+    // VTIME in deciseconds: 1 = 100ms read granularity, so the caller's
+    // timeout is honoured within ~100ms instead of overshooting by up to 1s
+    newTermios.c_cc[VTIME] = 1;
 
     if (tcsetattr(iFd, TCSANOW, &newTermios) != 0) {
         Close();

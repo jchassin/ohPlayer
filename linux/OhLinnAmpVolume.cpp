@@ -30,10 +30,11 @@ const char* const kMajikVolumeSet = "VOLUME = ";
 const char* const kMajikVolumeQuery = "VOLUME ?";
 const char* const kMajikVolumeResp = "VOLUME ";
 const char* const kMajikBalanceSet = "BALANCE = ";
-// Some Linn amplifiers (e.g. Majik-I) answer slowly, in particular to power
-// commands such as STANDBY; the final response line is detected as soon as it
-// arrives, so this timeout only bounds genuinely silent links.
-const OpenHome::TUint kResponseTimeoutMs = 1000;
+// Some Linn amplifiers (e.g. Majik-I) answer slowly, in particular power
+// commands such as STANDBY (several seconds while entering/leaving standby);
+// the final response line is detected as soon as it arrives, so this timeout
+// only bounds genuinely silent links.
+const OpenHome::TUint kResponseTimeoutMs = 3000;
 // OpenHome volume is in milli-dB: 100 steps of 1024 (see VolumeControl.cpp)
 const OpenHome::TUint kMilliDbPerStep = 1024;
 
@@ -63,6 +64,7 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolu
     , iCmdBalanceSet(kLr2BalanceSet)
     , iCmdBassSet(kLr2BassSet)
     , iCmdTrebleSet(kLr2TrebleSet)
+    , iStandbyOn(false)
     , iDeviceId(64)
     , iDeviceModel(32)
     , iDeviceHwVersion(192)
@@ -281,6 +283,12 @@ void OhLinnAmpVolume::SetStandby(TBool aOn) {
     if (!IsVolumeSupported()) {
         return;
     }
+    // Idempotent: a Majik in standby answers very slowly, so avoid resending
+    // STANDBY ON when the amp is already in the requested state (e.g. the
+    // renderer's StandbyEnabled right after the boot-time standby).
+    if (aOn == iStandbyOn) {
+        return;
+    }
 
     const char* command = aOn ? kCmdStandbyOn : kCmdStandbyOff;
     Brn cmd(reinterpret_cast<const TByte*>(command), strlen(command));
@@ -290,6 +298,9 @@ void OhLinnAmpVolume::SetStandby(TBool aOn) {
     } else {
         OhLog::PrintError("OhLinnAmpVolume: failed to set standby %s\n", aOn ? "ON" : "OFF");
     }
+    // The amp processes the command even if its answer is lost or very slow
+    // (standby), so track the requested state either way.
+    iStandbyOn = aOn;
 }
 
 void OhLinnAmpVolume::SetTone(const char* aPrefix, TInt aValue) {

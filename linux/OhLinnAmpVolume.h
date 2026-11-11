@@ -60,6 +60,7 @@ private:
     TUint iCurrentVolume;
     TUint iVolumeLimit;
     EDialect iDialect;
+    TBool iStandbyOn;
     const char* iCmdVolumeSet;
     const char* iCmdVolumeQuery;
     const char* iCmdVolumeResp;
