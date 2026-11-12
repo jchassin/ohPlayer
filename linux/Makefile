@@ -22,7 +22,7 @@ DESTDIR     = $(PREFIX)
 BINDIR      = /bin
 RESDIR      = /share/openhome-player
 DOCDIR      = /share/doc/openhome-player
-RESOURCEDIR = res
+RESOURCEDIR = ConfigUI/res
 DEPRESOURCEDIR = ../dependencies/$(TARG_ARCH)/ohMediaPlayer/res
 
 LIBS = $(shell pkg-config --libs glib-2.0) \
@@ -57,7 +57,7 @@ LDFLAGS  = -L$(DEPS_DIR)/ohMediaPlayer/lib \
 # ships the device providers used by ohPipeline (no UPnP MediaServer support).
 OHNG_PROVIDER_DIR = $(DEPS_DIR)/Generated
 OHNG_PROVIDERS = DvUpnpOrgContentDirectory1 DvUpnpOrgConnectionManager1
-SRCS     = $(wildcard *.cpp) $(wildcard radio/*.cpp) $(addsuffix .cpp,$(addprefix $(OHNG_PROVIDER_DIR)/,$(OHNG_PROVIDERS)))
+SRCS     = $(wildcard *.cpp) $(wildcard radio/*.cpp) $(wildcard LinnAmp/*.cpp) $(wildcard ConfigUI/*.cpp) $(addsuffix .cpp,$(addprefix $(OHNG_PROVIDER_DIR)/,$(OHNG_PROVIDERS)))
 OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 
 # ============================================================================
@@ -98,6 +98,8 @@ version:
 
 # vpath lets the implicit rule find sources in subdirectories.
 vpath %.cpp radio
+vpath %.cpp LinnAmp
+vpath %.cpp ConfigUI
 vpath %.cpp $(OHNG_PROVIDER_DIR)
 
 $(OBJ_DIR)/%.o: %.cpp

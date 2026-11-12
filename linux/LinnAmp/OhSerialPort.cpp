@@ -62,7 +62,9 @@ TBool OhSerialPort::Open() {
     cfsetospeed(&newTermios, GetBaudRateFlag(iBaudRate));
 
     newTermios.c_cc[VMIN] = 0;
-    newTermios.c_cc[VTIME] = 10;
+    // VTIME in deciseconds: 1 = 100ms read granularity, so the caller's
+    // timeout is honoured within ~100ms instead of overshooting by up to 1s
+    newTermios.c_cc[VTIME] = 1;
 
     if (tcsetattr(iFd, TCSANOW, &newTermios) != 0) {
         Close();
@@ -153,9 +155,64 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         Mutex& iMutex;
     } guard{iMutex};
 
-    // Flush input buffer by reading until CRLF or timeout
-    FlushInputBuffer();
+    if (!WriteFramedCommandLocked(aCommand)) {
+        return false;
+    }
 
+    // Wait for the final response with timeout.
+    // Protocol (LR2/Majik spec section 1.4.2): an initial response '!' CRLF is
+    // issued on receipt of a valid command, followed by the final response
+    // '!$RESULT$' CRLF. Some products answer with the final line only, and an
+    // invalid command gets '!$FAIL sc fn$' with no final response: treat any
+    // line starting with '!' (longer than the bare initial '!') as the final
+    // response, and fail immediately on '!$FAIL'. Any other line (e.g. an
+    // unsolicited '$...$' event) is ignored.
+    TUint startTime = NowMs();
+    std::string line;
+    std::string finalLine;
+    TBool foundFinal = false;
+
+    while (NowMs() - startTime < aTimeoutMs) {
+        unsigned char buf[16];
+        ssize_t bytesRead = read(iFd, buf, sizeof(buf));
+
+        if (bytesRead > 0) {
+            for (ssize_t i = 0; i < bytesRead && !foundFinal; i++) {
+                if (buf[i] == '\r' || buf[i] == '\n') {
+                    if (!line.empty()) {
+                        if (line.size() > 1 && line[0] == '!') {
+                            finalLine = line;
+                            foundFinal = true;
+                        }
+                        line.clear();
+                    }
+                } else {
+                    line += static_cast<char>(buf[i]);
+                }
+            }
+        } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
+            OhLog::PrintError("OhSerialPort: read error: %s\n", strerror(errno));
+            return false;
+        }
+
+        // Small delay to avoid busy waiting
+        usleep(10000);
+    }
+
+    if (!foundFinal) {
+        OhLog::PrintWarning("OhSerialPort: timeout waiting for response\n");
+        return false;
+    }
+    if (finalLine.compare(0, 6, "!$FAIL") == 0) {
+        OhLog::PrintWarning("OhSerialPort: command rejected: %s\n", finalLine.c_str());
+        return false;
+    }
+
+    aResponse.Replace(Brn(reinterpret_cast<const TByte*>(finalLine.c_str()), finalLine.size()));
+    return true;
+}
+
+TBool OhSerialPort::WriteFramedOnlyLocked(const Brx& aCommand) {
     // Send command framed as $COMMAND$\r\n
     Bws<256> commandWithPrefix;
     commandWithPrefix.Append("$");
@@ -167,61 +224,100 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
         OhLog::PrintError("OhSerialPort: failed to write command\n");
         return false;
     }
+    return true;
+}
 
-    // Wait for responses with timeout
-    // LR2 protocol (spec section 1.4.2): an initial response '!' CRLF is issued
-    // on receipt of a valid command, followed by the final response '!$RESULT$' CRLF
+TBool OhSerialPort::WriteFramedCommandLocked(const Brx& aCommand) {
+    FlushInputBuffer();
+    return WriteFramedOnlyLocked(aCommand);
+}
+
+TBool OhSerialPort::SendCommandNoWait(const Brx& aCommand) {
+    if (!iIsOpen) {
+        OhLog::PrintWarning("OhSerialPort: port not open for SendCommandNoWait\n");
+        return false;
+    }
+
+    iMutex.Wait();
+    struct MutexGuard {
+        ~MutexGuard() { iMutex.Signal(); }
+        Mutex& iMutex;
+    } guard{iMutex};
+
+    // Light non-blocking drain: discard pending responses/events so they
+    // don't pile up in the driver buffer, without waiting for line quiet.
+    unsigned char buf[64];
+    for (int i = 0; i < 8; i++) {
+        if (read(iFd, buf, sizeof(buf)) <= 0) {
+            break;
+        }
+    }
+    return WriteFramedOnlyLocked(aCommand);
+}
+
+TBool OhSerialPort::SendCommandAndReadAllLines(const Brx& aCommand, std::vector<std::string>& aLines, TUint aTimeoutMs) {
+    if (!iIsOpen) {
+        OhLog::PrintWarning("OhSerialPort: port not open for SendCommandAndReadAllLines\n");
+        return false;
+    }
+
+    iMutex.Wait();
+    struct MutexGuard {
+        ~MutexGuard() { iMutex.Signal(); }
+        Mutex& iMutex;
+    } guard{iMutex};
+
+    if (!WriteFramedCommandLocked(aCommand)) {
+        return false;
+    }
+
+    // Collect every final '!$...$' line until the line has been quiet for a
+    // short period (or the overall timeout expires). A bare '!' initial
+    // response and unsolicited '$...$' lines are ignored.
+    const TUint kQuietMs = 60;
     TUint startTime = NowMs();
-    Bws<256> responseBuffer;
-    TBool foundEnd = false;
-    TUint linesSeen = 0;
+    TUint lastDataTime = startTime;
+    std::string line;
 
     while (NowMs() - startTime < aTimeoutMs) {
         unsigned char buf[16];
         ssize_t bytesRead = read(iFd, buf, sizeof(buf));
-        
+
         if (bytesRead > 0) {
+            lastDataTime = NowMs();
             for (ssize_t i = 0; i < bytesRead; i++) {
                 if (buf[i] == '\r' || buf[i] == '\n') {
-                    // End of a response line
-                    if (responseBuffer.Bytes() > 0) {
-                        linesSeen++;
-                        // First non-empty line is the initial response '!',
-                        // the second is the final response '!$RESULT$'
-                        if (linesSeen >= 2) {
-                            foundEnd = true;
-                            break;
+                    if (!line.empty()) {
+                        if (line.size() > 1 && line[0] == '!') {
+                            aLines.push_back(line);
                         }
-                        responseBuffer.SetBytes(0);
+                        line.clear();
                     }
                 } else {
-                    responseBuffer.Append(buf[i]);
+                    line += static_cast<char>(buf[i]);
                 }
-            }
-            
-            if (foundEnd) {
-                break;
             }
         } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
             OhLog::PrintError("OhSerialPort: read error: %s\n", strerror(errno));
             return false;
         }
-        
-        // Small delay to avoid busy waiting
-        usleep(10000);
+
+        if (!aLines.empty() && NowMs() - lastDataTime >= kQuietMs) {
+            break;
+        }
+        usleep(5000);
     }
 
-    if (!foundEnd) {
+    if (aLines.empty()) {
         OhLog::PrintWarning("OhSerialPort: timeout waiting for response\n");
         return false;
     }
-
-    // Remove trailing \r if present
-    if (responseBuffer.Bytes() > 0 && responseBuffer[responseBuffer.Bytes() - 1] == '\r') {
-        responseBuffer.SetBytes(responseBuffer.Bytes() - 1);
+    for (const auto& l : aLines) {
+        if (l.compare(0, 6, "!$FAIL") == 0) {
+            OhLog::PrintWarning("OhSerialPort: command rejected: %s\n", l.c_str());
+            return false;
+        }
     }
-    
-    aResponse.Replace(Brn(responseBuffer.Ptr(), responseBuffer.Bytes()));
     return true;
 }
 
@@ -230,31 +326,26 @@ void OhSerialPort::FlushInputBuffer() {
         return;
     }
 
-    // Read and discard all data until CRLF or timeout
+    // Drain stray input (late or unsolicited responses) until the line has
+    // been quiet for a short period, not just until the first CRLF: a late
+    // '!$...$' final response must not leak into the next command's reply.
     unsigned char buf[64];
+    const TUint kMaxFlushMs = 150;
+    const TUint kQuietMs = 30;
     TUint startTime = NowMs();
-    TBool foundCrlf = false;
+    TUint lastDataTime = startTime;
 
-    while (NowMs() - startTime < 100) { // 100ms timeout for flush
+    while (NowMs() - startTime < kMaxFlushMs) {
         ssize_t bytesRead = read(iFd, buf, sizeof(buf));
-        
         if (bytesRead > 0) {
-            // Check for CRLF in the buffer
-            for (ssize_t i = 0; i < bytesRead; i++) {
-                if (buf[i] == '\n' && i > 0 && buf[i-1] == '\r') {
-                    foundCrlf = true;
-                    break;
-                }
-            }
-            
-            if (foundCrlf) {
-                break;
-            }
+            lastDataTime = NowMs();
         } else if (bytesRead == -1 && errno != EAGAIN && errno != EWOULDBLOCK) {
             break;
         }
-        
-        usleep(10000);
+        if (NowMs() - lastDataTime >= kQuietMs) {
+            break;
+        }
+        usleep(5000);
     }
 }
 

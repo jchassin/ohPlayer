@@ -1,5 +1,5 @@
 #include "ConfigAppPlayerLinn.h"
-#include "LinnAmpConfig.h"
+#include "LinnAmp/LinnAmpConfig.h"
 #include "PipelineConfig.h"
 #include "RadioPresetsStatic.h"
 #include "VersionInfo.h"
@@ -10,6 +10,8 @@ namespace Av {
 
 static const Brn kKeyLinnAmpModel("LinnAmp.Model");
 static const Brn kKeyLinnAmpSerial("LinnAmp.Serial");
+static const Brn kKeyLinnAmpHwVersion("LinnAmp.HwVersion");
+static const Brn kKeyLinnAmpSwVersion("LinnAmp.SwVersion");
 static const Brn kKeySwVersionOhNet("About.OhNetVersion");
 static const Brn kKeySwVersionOhPipeline("About.OhPipelineVersion");
 static const Brn kKeySwVersionOhPlayer("About.OhPlayerCommit");
@@ -25,6 +27,7 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
                                          TUint aMsgBufCount, TUint aMsgBufBytes,
                                          IRebootHandler& aRebootHandler,
                                          const Brx& aLinnAmpModel, const Brx& aLinnAmpSerial,
+                                         const Brx& aLinnAmpHwVersion, const Brx& aLinnAmpSwVersion,
                                          TBool aLinnAmpActive)
     : Web::ConfigAppMediaPlayer(aInfoAggregator, aEnv, aProduct, aConfigManager, aResourceFactory,
                                 aSources, aResourcePrefix, aResourceDir,
@@ -34,6 +37,8 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     // Read-only info fields for the detected amp
     AddValue(new Web::ConfigUiValRo(kKeyLinnAmpModel, Brn(aLinnAmpModel)));
     AddValue(new Web::ConfigUiValRo(kKeyLinnAmpSerial, Brn(aLinnAmpSerial)));
+    AddValue(new Web::ConfigUiValRo(kKeyLinnAmpHwVersion, Brn(aLinnAmpHwVersion)));
+    AddValue(new Web::ConfigUiValRo(kKeyLinnAmpSwVersion, Brn(aLinnAmpSwVersion)));
     // Read-only software version fields (generated at compile time by the Makefile)
     AddValue(new Web::ConfigUiValRo(kKeySwVersionOhNet, Brn(VersionInfo::kOhNet)));
     AddValue(new Web::ConfigUiValRo(kKeySwVersionOhPipeline, Brn(VersionInfo::kOhPipeline)));
@@ -70,6 +75,7 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddConfigNum(LinnAmpConfig::kKeyBass);
     AddConfigNum(LinnAmpConfig::kKeyTreble);
     AddConfigNum(LinnAmpConfig::kKeyAlsaVolume);
+    AddConfigNum(LinnAmpConfig::kKeySource);
     // Editable pipeline buffer settings (Songcast tab)
     AddConfigNum(PipelineConfig::kKeyStarvationRamperMinSize);
     AddConfigNum(PipelineConfig::kKeyEncodedReservoirSize);

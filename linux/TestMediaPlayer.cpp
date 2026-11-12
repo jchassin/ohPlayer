@@ -1,13 +1,13 @@
 #include "OhLog.h"
 #include "TestMediaPlayer.h"
 #include "RaspdacMiniIF.h"
-#include "OhLinnAmpVolume.h"
-#include "LinnAmpConfig.h"
+#include "LinnAmp/OhLinnAmpVolume.h"
+#include "LinnAmp/LinnAmpConfig.h"
 #include "PipelineConfig.h"
 #include "CrashSymboliser.h"
 #include "RadioPresetsStatic.h"
 #include "StoreWithOverriddenValue.h"
-#include "ConfigAppPlayerLinn.h"
+#include "ConfigUI/ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
 #include <cstdlib>
@@ -349,7 +349,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
         // External Linn amplifier over RS232.
         std::string serialPortStr(reinterpret_cast<const char*>(serialPortBuf.Ptr()), serialPortBuf.Bytes());
         const TUint volumeLimit = LinnAmpConfig::ReadVolumeLimitFromStore(*iConfigRamStore, 100);
-        iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr, volumeLimit);
+        const TInt listenSource = LinnAmpConfig::ReadSourceFromStore(*iConfigRamStore, LinnAmpConfig::kSourceMin);
+        iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr, volumeLimit, static_cast<TUint>(listenSource));
         if (iLinnAmpVolume->IsVolumeSupported()) {
             // Set the ALSA output level: attenuation is handled by the Linn amp
             const TUint alsaVolume = LinnAmpConfig::ReadAlsaVolumeFromStore(*iConfigRamStore, 100);
@@ -854,12 +855,14 @@ IWebApp* TestMediaPlayer::CreateConfigApp(const std::vector<const Brx*>& aSource
     FileResourceHandlerFactory resourceHandlerFactory;
     Brn linnAmpModel(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceModel() : Brx::Empty());
     Brn linnAmpSerial(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceId() : Brx::Empty());
+    Brn linnAmpHwVersion(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceHwVersion() : Brx::Empty());
+    Brn linnAmpSwVersion(iLinnAmpVolume != nullptr ? iLinnAmpVolume->DeviceSwVersion() : Brx::Empty());
     return new ConfigAppPlayerLinn(*iInfoLogger, iMediaPlayer->Env(), iMediaPlayer->Product(),
                                    iMediaPlayer->ConfigManager(), resourceHandlerFactory, aSources,
                                    Brn("Softplayer"), aResourceDir,
                                    aMinWebUiResourceThreads, aMaxWebUiTabs, aMaxSendQueueSize,
                                    aMsgBufCount, aMsgBufBytes, iRebootHandler,
-                                   linnAmpModel, linnAmpSerial,
+                                   linnAmpModel, linnAmpSerial, linnAmpHwVersion, linnAmpSwVersion,
                                    iLinnAmpVolume != nullptr);
 }
 

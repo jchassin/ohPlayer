@@ -9,8 +9,11 @@ const Brn LinnAmpConfig::kKeySerialPort("LinnAmp.SerialPort");
 const Brn LinnAmpConfig::kKeyBass("LinnAmp.Bass");
 const Brn LinnAmpConfig::kKeyTreble("LinnAmp.Treble");
 const Brn LinnAmpConfig::kKeyAlsaVolume("LinnAmp.AlsaVolume");
+const Brn LinnAmpConfig::kKeySource("LinnAmp.Source");
 const TInt LinnAmpConfig::kToneMin;
 const TInt LinnAmpConfig::kToneMax;
+const TInt LinnAmpConfig::kSourceMin;
+const TInt LinnAmpConfig::kSourceMax;
 const TUint LinnAmpConfig::kMaxSerialPortBytes;
 
 LinnAmpConfig::LinnAmpConfig(Configuration::IConfigInitialiser& aConfigInit)
@@ -27,6 +30,9 @@ LinnAmpConfig::LinnAmpConfig(Configuration::IConfigInitialiser& aConfigInit)
         true /* aRebootRequired: applied at next start */);
     iConfigAlsaVolume = std::make_unique<Configuration::ConfigNum>(
         aConfigInit, kKeyAlsaVolume, 0, 100, 100,
+        true /* aRebootRequired: applied at next start */);
+    iConfigSource = std::make_unique<Configuration::ConfigNum>(
+        aConfigInit, kKeySource, kSourceMin, kSourceMax, kSourceMin,
         true /* aRebootRequired: applied at next start */);
 }
 
@@ -96,6 +102,22 @@ TUint LinnAmpConfig::ReadAlsaVolumeFromStore(Configuration::IStoreReadWrite& aSt
         TInt val = static_cast<TInt>(Converter::BeUint32At(buf, 0));
         if (val >= 0 && val <= 100) {
             return static_cast<TUint>(val);
+        }
+    }
+    catch (StoreKeyNotFound&) {
+    }
+    return aDefault;
+}
+
+TInt LinnAmpConfig::ReadSourceFromStore(Configuration::IStoreReadWrite& aStore, TInt aDefault)
+{
+    // ConfigNum values are persisted as big-endian int32
+    Bws<sizeof(TInt)> buf;
+    try {
+        aStore.Read(kKeySource, buf);
+        TInt val = static_cast<TInt>(Converter::BeUint32At(buf, 0));
+        if (val >= kSourceMin && val <= kSourceMax) {
+            return val;
         }
     }
     catch (StoreKeyNotFound&) {

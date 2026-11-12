@@ -23,7 +23,7 @@
     </linearGradient>
   </defs>
 
-  <text x="430" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Setup 2 — Raspdac Mini / OLED with Linn preamplifier (RA2) over RS232</text>
+  <text x="430" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Setup 2 — Raspdac (RA) with Linn amplifier (e.g. Majik-I) over RS232</text>
 
   <!-- Audio path -->
   <rect x="20" y="70" width="150" height="90" rx="8" fill="url(#piGrad2)" stroke="#8a3d33"/>
@@ -37,8 +37,8 @@
   <text x="355" y="140" text-anchor="middle" font-size="10" fill="#ffd" font-style="italic">Mini / OLED</text>
 
   <rect x="540" y="70" width="160" height="90" rx="8" fill="url(#preampGrad)" stroke="#553c73"/>
-  <text x="620" y="100" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">Linn preamp</text>
-  <text x="620" y="120" text-anchor="middle" font-size="12" fill="#eee">RA2</text>
+  <text x="620" y="100" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">Linn amplifier</text>
+  <text x="620" y="120" text-anchor="middle" font-size="12" fill="#eee">e.g. MAJIK_I</text>
   <text x="620" y="140" text-anchor="middle" font-size="10" fill="#ffd" font-style="italic">volume • balance • bass • treble</text>
 
   <rect x="760" y="85" width="80" height="60" rx="6" fill="#777" stroke="#555"/>
@@ -57,7 +57,7 @@
   <text x="105" y="300" text-anchor="middle" font-size="11" fill="#fff">/dev/ttyUSB0</text>
 
   <rect x="520" y="250" width="180" height="70" rx="8" fill="url(#preampGrad)" stroke="#553c73"/>
-  <text x="610" y="280" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">RA2 control port</text>
+  <text x="610" y="280" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">RS232 port (9600 7E1)</text>
   <text x="610" y="300" text-anchor="middle" font-size="11" fill="#eee">9600 bauds, 7E1</text>
 
   <!-- vertical from Pi down, horizontal to adapter, arrow -->
@@ -68,7 +68,7 @@
   <line x1="190" y1="285" x2="518" y2="285" stroke="#b07d2a" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowSerial)"/>
   <text x="354" y="273" text-anchor="middle" font-size="11" fill="#b07d2a" font-weight="bold">RS232</text>
 
-  <!-- vertical from RA2 port up to preamp -->
+  <!-- vertical from RS232 port up to amplifier -->
   <line x1="620" y1="250" x2="620" y2="168" stroke="#b07d2a" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowSerial)"/>
   <text x="628" y="215" font-size="11" fill="#b07d2a" font-weight="bold">control</text>
 
