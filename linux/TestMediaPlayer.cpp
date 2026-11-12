@@ -7,7 +7,7 @@
 #include "CrashSymboliser.h"
 #include "RadioPresetsStatic.h"
 #include "StoreWithOverriddenValue.h"
-#include "ConfigAppPlayerLinn.h"
+#include "ConfigUI/ConfigAppPlayerLinn.h"
 #include <OpenHome/Types.h>
 #include <OpenHome/Net/Private/DviStack.h>
 #include <cstdlib>

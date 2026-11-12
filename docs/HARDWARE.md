@@ -27,14 +27,21 @@ Web UI settings (`Volume` and `Linn Amp` tabs):
 | Internal Volume Control | `Yes` |
 | Serial Port | *(empty)* |
 
-## 2. Raspdac Mini / OLED with Linn amplifier over RS232
+## 2. Raspdac Mini / OLED (RA) with a Linn amplifier over RS232 — e.g. Linn Majik-I (`MAJIK_I`)
 
-The Raspdac is connected to a Linn amplifier through a USB-to-RS232 adapter. The amplifier handles volume and balance; the DAC outputs at full scale. Two families of Linn amplifiers are detected, both speaking the same `$...$` RS232 protocol at 9600 bauds, 7E1:
+The Raspdac (RA) is connected to a Linn amplifier through a USB-to-RS232 adapter. The amplifier handles volume and balance; the DAC outputs at full scale. Two families of Linn amplifiers are detected, both speaking the same `$...$` RS232 protocol at 9600 bauds, 7E1:
 
 * **LR2 preamplifiers** (e.g. Akurate Kontrol / RA2): commands `VOL`/`BAL`/`BAS`/`TRB`/`LISTEN`; `$ID ?$` returns a model code + 12-digit serial (`LR2...`); bass/treble -7 to +7 applied at startup.
-* **Majik integrated amplifiers** (e.g. Majik-I): commands `VOLUME`/`BALANCE`/`INPUT AUDIO` (no bass/treble); `$ID ?$` returns the model name (e.g. `MAJIK_I`).
+* **Majik integrated amplifiers** (e.g. Majik-I): commands `VOLUME`/`BALANCE`/`INPUT AUDIO` (no bass/treble); `$ID ?$` returns the model name (`MAJIK_I`).
 
 The command dialect is probed automatically at startup (`VOLUME ?` vs `VOL ?`), so any Linn amplifier using this protocol is detected.
+
+### Example: RA + Majik-I (`MAJIK_I`)
+
+* Detected Amplifier: `MAJIK_I` (no serial — `$ID ?$` returns the model name); HW/SW versions from `$VERSION HARDWARE ?$` / `$VERSION SOFTWARE ?$` (the HW answer is one final line per board: MAIN / DISPLAY / PHONO — all shown)
+* Volume `$VOLUME = n$` / query `$VOLUME ?$` (0-100), balance `$BALANCE = n$`, input `$INPUT AUDIO INPUTn$` (see `Amplifier Input`, default 1); **no bass/treble commands** on a Majik
+* Standby `$STANDBY ON/OFF$`: the Majik-I answers power commands slowly (up to several seconds) — the renderer allows 3 attempts × 3 s and does not resend a standby command already applied
+* Volume/balance set commands are sent fire-and-forget (no wait for the answer), so slider-driven ramps stay smooth
 
 * Volume control: **external Linn amplifier** — `Internal Volume Control = No` with a serial port configured; the volume stays greyed out if no amplifier answers `$ID ?$`
 * Serial port: e.g. **`/dev/ttyUSB0`** (USB-RS232 adapter, 9600 bauds, 7E1)
@@ -56,8 +63,8 @@ Web UI settings (`Volume` and `Linn Amp` tabs):
 | Detected Amplifier | `LR2` + serial for a preamplifier, model name e.g. `MAJIK_I` for a Majik (read-only, from `$ID ?$`), plus HW/SW versions (from `$VERSION HARDWARE/SOFTWARE ?$`) |
 
 Behaviour:
-* The DAC output is set to full scale; attenuation is handled by the preamp
+* The DAC output is set to full scale; attenuation is handled by the amplifier
 * Volume is limited by the `Volume.Limit` setting (as on a Linn DSM)
-* The standby button of the control point app drives the preamp standby
+* The standby button of the control point app drives the amplifier standby
 
 Settings are persistent and applied at the next start of the service (a reboot of the renderer, not of the Raspberry Pi, is enough: use the `Reboot` button of the web UI).

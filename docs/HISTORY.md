@@ -1,7 +1,7 @@
 # History
 
 * **2026-11-11** — Support for the Linn **MAJIK_I** integrated amplifier (and the whole Majik family) in the Linn Amp detection.
-  * The LinnAmp sources now live in their own directory, `linux/LinnAmp/` (`LinnAmpProtocol.h`, `OhLinnAmpVolume.*`, `OhSerialPort.*`, `LinnAmpConfig.*`); the Makefile picks up `LinnAmp/*.cpp` like `radio/*.cpp`.
+  * The LinnAmp sources now live in their own directory, `linux/LinnAmp/` (`LinnAmpProtocol.h`, `OhLinnAmpVolume.*`, `OhSerialPort.*`, `LinnAmpConfig.*`); the Makefile picks up `LinnAmp/*.cpp` like `radio/*.cpp`. The config-UI sources likewise moved to `linux/ConfigUI/` (`ConfigAppPlayerLinn.*`, `ConfigRamStore.*`, `res/`); `docs/HARDWARE.md` setup 2 now documents the RA + Majik-I (`MAJIK_I`) wiring concretely.
   * `$ID ?$` is parsed generically: LR2 preamplifiers answer with a model code + 12-digit serial (`LR2...`), Majik amplifiers with their model name (e.g. `MAJIK_I`). Any Linn amplifier speaking the `$...$` RS232 protocol (9600 bauds, 7E1) is now detected, not just LR2 preamplifiers.
   * The command dialect is probed at startup (`VOLUME ?` vs `VOL ?`): Majik amplifiers use `VOLUME`/`BALANCE`/`INPUT AUDIO`, LR2 preamplifiers keep `VOL`/`BAL`/`BAS`/`TRB`/`LISTEN`. Bass/treble remain LR2-only. Internally the dialects are a strategy pattern (`ILinnAmpProtocol` with `Lr2Protocol`/`MajikProtocol` + a `DetectProtocol()` factory in `linux/LinnAmpProtocol.h`): adding a new amp family is a new subclass, with no amp-type branching left in `OhLinnAmpVolume`.
   * New read-only `LinnAmp.HwVersion` / `LinnAmp.SwVersion` fields in the web ui (from `$VERSION HARDWARE ?$` / `$VERSION SOFTWARE ?$`).
