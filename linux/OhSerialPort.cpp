@@ -212,9 +212,7 @@ TBool OhSerialPort::SendCommandAndWaitResponse(const Brx& aCommand, Bwx& aRespon
     return true;
 }
 
-TBool OhSerialPort::WriteFramedCommandLocked(const Brx& aCommand) {
-    FlushInputBuffer();
-
+TBool OhSerialPort::WriteFramedOnlyLocked(const Brx& aCommand) {
     // Send command framed as $COMMAND$\r\n
     Bws<256> commandWithPrefix;
     commandWithPrefix.Append("$");
@@ -227,6 +225,34 @@ TBool OhSerialPort::WriteFramedCommandLocked(const Brx& aCommand) {
         return false;
     }
     return true;
+}
+
+TBool OhSerialPort::WriteFramedCommandLocked(const Brx& aCommand) {
+    FlushInputBuffer();
+    return WriteFramedOnlyLocked(aCommand);
+}
+
+TBool OhSerialPort::SendCommandNoWait(const Brx& aCommand) {
+    if (!iIsOpen) {
+        OhLog::PrintWarning("OhSerialPort: port not open for SendCommandNoWait\n");
+        return false;
+    }
+
+    iMutex.Wait();
+    struct MutexGuard {
+        ~MutexGuard() { iMutex.Signal(); }
+        Mutex& iMutex;
+    } guard{iMutex};
+
+    // Light non-blocking drain: discard pending responses/events so they
+    // don't pile up in the driver buffer, without waiting for line quiet.
+    unsigned char buf[64];
+    for (int i = 0; i < 8; i++) {
+        if (read(iFd, buf, sizeof(buf)) <= 0) {
+            break;
+        }
+    }
+    return WriteFramedOnlyLocked(aCommand);
 }
 
 TBool OhSerialPort::SendCommandAndReadAllLines(const Brx& aCommand, std::vector<std::string>& aLines, TUint aTimeoutMs) {

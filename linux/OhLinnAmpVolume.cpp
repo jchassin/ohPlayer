@@ -104,8 +104,10 @@ void OhLinnAmpVolume::SetVolume(TUint aVolume) {
 
     std::string command = BuildCommand(iProtocol->VolumeSetPrefix(), static_cast<int>(linnVolume));
     Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
-    Bws<32> response;
-    if (SendCommandAndWaitResponse(cmd, response)) {
+    // Fire-and-forget: don't block on the amp's answer, ohPipeline ramps the
+    // volume with a burst of SetVolume calls and a slow amp would make the
+    // slider lag. The response (if any) is drained by the next command.
+    if (iSerialPort->SendCommandNoWait(cmd)) {
         iCurrentVolume = linnVolume;
         OhLog::PrintDebug("OhLinnAmpVolume: Set volume to %u (Linn: %u)\n", aVolume, linnVolume);
     } else {
@@ -120,8 +122,7 @@ void OhLinnAmpVolume::SetBalance(TInt aBalance) {
 
     std::string command = BuildCommand(iProtocol->BalanceSetPrefix(), aBalance);
     Brn cmd(reinterpret_cast<const TByte*>(command.c_str()), command.size());
-    Bws<32> response;
-    if (!SendCommandAndWaitResponse(cmd, response)) {
+    if (!iSerialPort->SendCommandNoWait(cmd)) {
         OhLog::PrintError("OhLinnAmpVolume: failed to send balance command\n");
     }
 }
