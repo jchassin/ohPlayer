@@ -16,10 +16,14 @@ public:
     static const Brn kKeyBass;
     static const Brn kKeyTreble;
     static const Brn kKeyAlsaVolume;
+    static const Brn kKeySource;
 
     // Tone control range (LR2 BAS/TRB commands)
     static const TInt kToneMin = -7;
     static const TInt kToneMax = 7;
+    // Amplifier input range (Majik INPUT[1..6], LR2 LISTEN 1..6)
+    static const TInt kSourceMin = 1;
+    static const TInt kSourceMax = 6;
     static const TUint kMaxSerialPortBytes = 64;
 
     // Registers the web config parameters with the MediaPlayer's ConfigManager.
@@ -52,11 +56,16 @@ public:
     // Returns aDefault if not set.
     static TUint ReadAlsaVolumeFromStore(Configuration::IStoreReadWrite& aStore, TUint aDefault);
 
+    // Reads LinnAmp.Source (amplifier input the renderer is connected to,
+    // 1-6) from the store. Returns aDefault if not set.
+    static TInt ReadSourceFromStore(Configuration::IStoreReadWrite& aStore, TInt aDefault);
+
 private:
     std::unique_ptr<Configuration::ConfigText> iConfigSerialPort;
     std::unique_ptr<Configuration::ConfigNum> iConfigBass;
     std::unique_ptr<Configuration::ConfigNum> iConfigTreble;
     std::unique_ptr<Configuration::ConfigNum> iConfigAlsaVolume;
+    std::unique_ptr<Configuration::ConfigNum> iConfigSource;
 };
 
 } // namespace Av

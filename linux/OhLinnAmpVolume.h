@@ -14,7 +14,8 @@ namespace Av {
 class OhLinnAmpVolume : public IVolume, public IBalance, public IFade {
 public:
     // aVolumeLimit: max Linn volume (from Volume.Limit), 0-100
-    OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolumeLimit = 100);
+    // aListenSource: amplifier input the renderer is connected to (LinnAmp.Source), 1-6
+    OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolumeLimit = 100, TUint aListenSource = 1);
     ~OhLinnAmpVolume();
 
     TBool IsVolumeSupported() const;
@@ -55,6 +56,7 @@ private:
     TUint iVolumeLimit;
     TBool iStandbyOn;
     std::unique_ptr<LinnAmpProtocol::ILinnAmpProtocol> iProtocol;
+    int iListenSource;
     std::string iIdValue;
     Bwh iDeviceId;
     Bwh iDeviceModel;

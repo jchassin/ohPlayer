@@ -349,7 +349,8 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
         // External Linn amplifier over RS232.
         std::string serialPortStr(reinterpret_cast<const char*>(serialPortBuf.Ptr()), serialPortBuf.Bytes());
         const TUint volumeLimit = LinnAmpConfig::ReadVolumeLimitFromStore(*iConfigRamStore, 100);
-        iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr, volumeLimit);
+        const TInt listenSource = LinnAmpConfig::ReadSourceFromStore(*iConfigRamStore, LinnAmpConfig::kSourceMin);
+        iLinnAmpVolume = new OhLinnAmpVolume(serialPortStr, volumeLimit, static_cast<TUint>(listenSource));
         if (iLinnAmpVolume->IsVolumeSupported()) {
             // Set the ALSA output level: attenuation is handled by the Linn amp
             const TUint alsaVolume = LinnAmpConfig::ReadAlsaVolumeFromStore(*iConfigRamStore, 100);

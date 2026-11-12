@@ -260,6 +260,7 @@ ViewModel = function(){
                 { key:"LinnAmp.Bass", helptext:"Helptext.LinnAmp.Bass", title:"Bass", type:"numeric" },
                 { key:"LinnAmp.Treble", helptext:"Helptext.LinnAmp.Treble", title:"Treble", type:"numeric" },
                 { key:"LinnAmp.AlsaVolume", helptext:"Helptext.LinnAmp.AlsaVolume", title:"ALSA Volume", type:"numeric" },
+                { key:"LinnAmp.Source", helptext:"Helptext.LinnAmp.Source", title:"Amplifier Input", type:"numeric" },
                 { key:"LinnAmp.Model", helptext:"Helptext.LinnAmp.Model", title:"Detected Amplifier" },
                 { key:"LinnAmp.Serial", helptext:"Helptext.LinnAmp.Serial", title:"Amplifier Serial" },
                 { key:"LinnAmp.HwVersion", helptext:"Helptext.LinnAmp.HwVersion", title:"Amplifier HW Version" },
@@ -637,6 +638,9 @@ ViewModel = function(){
         },
         "Helptext.LinnAmp.AlsaVolume" : {
             description : "ALSA output level (0-100) applied when the Linn amplifier controls the volume (Internal Volume Control set to No). Use this to match the loudness of a room driven by the Linn amplifier with a room driven by the ALSA mixer. Changing this requires a reboot."
+        },
+        "Helptext.LinnAmp.Source" : {
+            description : "Input of the Linn amplifier the renderer is connected to, from 1 to 6 (Majik: <span class='HelpTextOption'>INPUT AUDIO INPUTn</span>, LR2 preamplifiers: <span class='HelpTextOption'>LISTEN n</span>). Selected at startup. Changing this requires a reboot."
         },
         "Helptext.LinnAmp.Serial" : {
             description : "Serial number of the detected Linn amplifier. Only LR2 preamplifiers report one; Majik amplifiers return their model name in <span class='HelpTextOption'>$ID ?$</span> and this field stays empty."

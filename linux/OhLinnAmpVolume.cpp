@@ -10,7 +10,6 @@
 namespace {
 
 const char* const kCmdIdQuery = "ID ?";
-const int kDefaultListenSource = 1;
 const char* const kCmdStandbyOn = "STANDBY ON";
 const char* const kCmdStandbyOff = "STANDBY OFF";
 const char* const kCmdVersionHwQuery = "VERSION HARDWARE ?";
@@ -40,12 +39,13 @@ std::string ToString(const OpenHome::Brx& aBuf) {
 namespace OpenHome {
 namespace Av {
 
-OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolumeLimit)
+OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolumeLimit, TUint aListenSource)
     : iSerialPort(new OhSerialPort(aSerialPortPath, 9600))
     , iCurrentVolume(0)
     , iVolumeLimit(aVolumeLimit)
     , iStandbyOn(false)
     , iProtocol(std::make_unique<LinnAmpProtocol::Lr2Protocol>())
+    , iListenSource(static_cast<int>(aListenSource))
     , iDeviceId(64)
     , iDeviceModel(32)
     , iDeviceHwVersion(192)
@@ -62,7 +62,7 @@ OhLinnAmpVolume::OhLinnAmpVolume(const std::string& aSerialPortPath, TUint aVolu
         // (a Majik in standby does not answer queries), then align the amp
         // with the OpenHome product initial state (standby at boot)
         QueryCurrentVolume();
-        SelectInput(kDefaultListenSource);
+        SelectInput(iListenSource);
         SetStandby(true);
     }
 }

@@ -51,7 +51,8 @@ Web UI settings (`Volume` and `Linn Amp` tabs):
 | Internal Volume Control | `No` (read-only while the amplifier is active) |
 | Serial Port | `/dev/ttyUSB0` |
 | Bass / Treble | -7 .. +7 |
-| ALSA Volume | 0 .. 100 (output level of the DAC; attenuation handled by the preamp) |
+| ALSA Volume | 0 .. 100 (output level of the DAC; attenuation handled by the amplifier) |
+| Amplifier Input | 1 .. 6 (default 1): input of the amplifier the renderer is connected to, selected at startup |
 | Detected Amplifier | `LR2` + serial for a preamplifier, model name e.g. `MAJIK_I` for a Majik (read-only, from `$ID ?$`), plus HW/SW versions (from `$VERSION HARDWARE/SOFTWARE ?$`) |
 
 Behaviour:

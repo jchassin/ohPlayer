@@ -75,6 +75,7 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddConfigNum(LinnAmpConfig::kKeyBass);
     AddConfigNum(LinnAmpConfig::kKeyTreble);
     AddConfigNum(LinnAmpConfig::kKeyAlsaVolume);
+    AddConfigNum(LinnAmpConfig::kKeySource);
     // Editable pipeline buffer settings (Songcast tab)
     AddConfigNum(PipelineConfig::kKeyStarvationRamperMinSize);
     AddConfigNum(PipelineConfig::kKeyEncodedReservoirSize);
