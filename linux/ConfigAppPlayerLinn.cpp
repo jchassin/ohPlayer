@@ -1,5 +1,5 @@
 #include "ConfigAppPlayerLinn.h"
-#include "LinnAmpConfig.h"
+#include "LinnAmp/LinnAmpConfig.h"
 #include "PipelineConfig.h"
 #include "RadioPresetsStatic.h"
 #include "VersionInfo.h"

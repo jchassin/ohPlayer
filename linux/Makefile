@@ -57,7 +57,7 @@ LDFLAGS  = -L$(DEPS_DIR)/ohMediaPlayer/lib \
 # ships the device providers used by ohPipeline (no UPnP MediaServer support).
 OHNG_PROVIDER_DIR = $(DEPS_DIR)/Generated
 OHNG_PROVIDERS = DvUpnpOrgContentDirectory1 DvUpnpOrgConnectionManager1
-SRCS     = $(wildcard *.cpp) $(wildcard radio/*.cpp) $(addsuffix .cpp,$(addprefix $(OHNG_PROVIDER_DIR)/,$(OHNG_PROVIDERS)))
+SRCS     = $(wildcard *.cpp) $(wildcard radio/*.cpp) $(wildcard LinnAmp/*.cpp) $(addsuffix .cpp,$(addprefix $(OHNG_PROVIDER_DIR)/,$(OHNG_PROVIDERS)))
 OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 
 # ============================================================================
@@ -98,6 +98,7 @@ version:
 
 # vpath lets the implicit rule find sources in subdirectories.
 vpath %.cpp radio
+vpath %.cpp LinnAmp
 vpath %.cpp $(OHNG_PROVIDER_DIR)
 
 $(OBJ_DIR)/%.o: %.cpp

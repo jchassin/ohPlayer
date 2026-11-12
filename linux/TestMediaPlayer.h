@@ -3,8 +3,8 @@
 #include <OpenHome/Types.h>
 #include <OpenHome/Buffer.h>
 #include "VolumeControl.h"
-#include "OhLinnAmpVolume.h"
-#include "LinnAmpConfig.h"
+#include "LinnAmp/OhLinnAmpVolume.h"
+#include "LinnAmp/LinnAmpConfig.h"
 #include "PipelineConfig.h"
 #include "RadioPresetsStatic.h"
 #include "RadioBrowserMediaServer.h"
