@@ -4,7 +4,6 @@ Views = function($){
 
     var kHeaderPrefix = "Header_";
     var kBodyPrefix = "Body_";
-    var kSelectSelectedAttribute = " selected='selected'";
     var kComboBoxToggleOption = "User-defined...";
     var kNoPreamp = "None";
 
@@ -653,7 +652,7 @@ Views = function($){
             placeholder.append(elementDescription);
             placeholder.append(CreateElementEditor(aParameter));
           }else{
-            placeholder.append("<span class='ElementDescription'>" + aParameter.DisplayName + "</span>");
+            placeholder.append($("<span class='ElementDescription'/>").text(aParameter.DisplayName));
             placeholder.append(CreateElementEditor(aParameter));
           }
           if (aParameter.RequiresReboot){
@@ -721,23 +720,7 @@ Views = function($){
             case "INTEGER":
             case "POSITIVEINTEGER":
             {
-                var validation = typeof(aParameter.Validation) != "undefined" ? "validation='" + aParameter.Validation + "' " : "";
-                var maxLength = typeof(aParameter.MaxLength) != "undefined" ? "maxLength='" + aParameter.MaxLength + "' " : "";
-                var minValue = typeof(aParameter.MinValue) != "undefined" ? "minValue='" + aParameter.MinValue + "' " : "";
-                var maxValue = typeof(aParameter.MaxValue) != "undefined" ? "maxValue='" + aParameter.MaxValue + "' " : "";
-                var target = "target='" + aParameter.Target + "' ";
-                var parameterName = "parameterName='" + aParameter.Name + "' ";
-                var parameterId = "parameterId='" + aParameter.Id + "' ";
-                var escapedValue = aParameter.value + "";
-                escapedValue = escapedValue.replace(/'/g, '&apos;');
-                var initialValue = "initialValue='" + escapedValue + "' ";
-                var value = "value='" + escapedValue + "' ";
-                var className = "class='" + aParameter.Type + (isIPad ? "_iPad" : "") + "' ";
-                var serviceName = "serviceName='" + aParameter.ServiceName + "' ";
-                editor = $("<input type='text' " + className + maxLength + validation + target + parameterName + parameterId + initialValue + value + minValue + maxValue + serviceName + "/>");
-                editor.data('parameterJson', aParameter);
-                editor.keyup(InputChanged);
-                editor.change(InputUpdated);
+                editor = CreateTextInput(aParameter, aParameter.Type + (isIPad ? "_iPad" : ""));
                 break;
             }
             case "ENUM":{
@@ -747,21 +730,7 @@ Views = function($){
                     var editor1 = $("<span class='ElementEditor' />").append(editor);
                     // string part
                     var visible = (editor.css('display') == 'none'); // enum and string should never be visible at the same time
-                    var validation = typeof(aParameter.Validation) != "undefined" ? "validation='" + aParameter.Validation + "' " : "";
-                    var maxLength = typeof(aParameter.MaxLength) != "undefined" ? "maxLength='" + aParameter.MaxLength + "' " : "";
-                    var minValue = typeof(aParameter.MinValue) != "undefined" ? "minValue='" + aParameter.MinValue + "' " : "";
-                    var maxValue = typeof(aParameter.MaxValue) != "undefined" ? "maxValue='" + aParameter.MaxValue + "' " : "";
-                    var target = "target='" + aParameter.Target + "' ";
-                    var parameterName = "parameterName='" + aParameter.Name + "' ";
-                    var parameterId = "parameterId='" + aParameter.Id + "' ";
-                    var initialValue = "initialValue='" + aParameter.value + "' ";
-                    var value = "value='" + aParameter.value + "' ";
-                    var className = "class='string" + (isIPad ? "_iPad" : "") + " Toggle_" + aParameter.Id + "' ";
-                    var serviceName = "serviceName='" + aParameter.ServiceName + "' ";
-                    editor = $("<input type='text' " + className + maxLength + validation + target + parameterName + parameterId + initialValue + value + minValue + maxValue + serviceName + "/>");
-                    editor.data('parameterJson', aParameter);
-                    editor.keyup(InputChanged);
-                    editor.change(InputUpdated);
+                    editor = CreateTextInput(aParameter, "string" + (isIPad ? "_iPad" : "") + " Toggle_" + aParameter.Id);
                     if (visible) {
                         editor.css('display', 'inline');
                     }
@@ -779,7 +748,7 @@ Views = function($){
             }
             default:
             {
-                editor = $("<span>" + aParameter.value + "</span>");
+                editor = $("<span/>").text(aParameter.value);
                 break;
             }
         }
@@ -787,36 +756,52 @@ Views = function($){
         return $("<span class='ElementEditor' />").append(editor);
     }
 
+    function CreateTextInput(aParameter, aClass){
+        var editor = $("<input type='text'/>").attr('class', aClass);
+        if (typeof(aParameter.Validation) != "undefined"){ editor.attr('validation', aParameter.Validation); }
+        if (typeof(aParameter.MaxLength) != "undefined"){ editor.attr('maxLength', aParameter.MaxLength); }
+        if (typeof(aParameter.MinValue) != "undefined"){ editor.attr('minValue', aParameter.MinValue); }
+        if (typeof(aParameter.MaxValue) != "undefined"){ editor.attr('maxValue', aParameter.MaxValue); }
+        editor.attr('target', aParameter.Target);
+        editor.attr('parameterName', aParameter.Name);
+        editor.attr('parameterId', aParameter.Id);
+        editor.attr('initialValue', aParameter.value);
+        editor.attr('value', aParameter.value);
+        editor.attr('serviceName', aParameter.ServiceName);
+        editor.data('parameterJson', aParameter);
+        editor.keyup(InputChanged);
+        editor.change(InputUpdated);
+        return editor;
+    }
+
     function CreateSelect(aParameter){
-        var target = "target='" + aParameter.Target + "' ";
-        var parameterName = "parameterName='" + aParameter.Name + "' ";
-        var parameterId = "parameterId='" + aParameter.Id + "' ";
-        var initialValue = "initialValue='" + aParameter.value + "' ";
-        var serviceName = "serviceName='" + aParameter.ServiceName + "' ";
-        var className = (aParameter.IsComboBox ? "class='selectBox Toggle_" + aParameter.Id + "'" : "class='selectBox'");
-        var select = $("<select " + className + target + parameterName + parameterId + initialValue + serviceName + "/>");
+        var select = $("<select/>")
+            .attr('target', aParameter.Target)
+            .attr('parameterName', aParameter.Name)
+            .attr('parameterId', aParameter.Id)
+            .attr('initialValue', aParameter.value)
+            .attr('serviceName', aParameter.ServiceName)
+            .addClass(aParameter.IsComboBox ? "selectBox Toggle_" + aParameter.Id : "selectBox");
         select.data('parameterJson', aParameter);
         var found = false;
         $(aParameter.AllowedValues).each(function(aIdx, aValue){
-            var selected = (aParameter.value == aValue.value ? kSelectSelectedAttribute : "");
-            select.append($("<option value='" + aValue.value + "'" + selected + ">" + aValue.text + "</option>"));
+            var option = $("<option/>").attr('value', aValue.value).text(aValue.text);
             if (aParameter.value == aValue.value){
+                option.attr('selected', 'selected');
                 found = true;
                 if (aParameter.IsComboBox) {
-                    if (aValue.value != "") {
-                        select.css('display', 'inline');
-                    }
-                    else {
-                        select.css('display', 'none');
-                    }
+                    select.css('display', aValue.value != "" ? 'inline' : 'none');
                 }
             }
+            select.append(option);
         });
         if (!found){
-            select.append($("<option value='" + aParameter.value + "'" + kSelectSelectedAttribute + ">" + (aParameter.IsComboBox ? aParameter.value : "") + "</option>"));
+            var option = $("<option/>").attr('value', aParameter.value).attr('selected', 'selected');
             if (aParameter.IsComboBox) {
+                option.text(aParameter.value);
                 select.css('display', 'none');
             }
+            select.append(option);
         }
         select.change(SelectUpdated);
         return select;
