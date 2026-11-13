@@ -64,7 +64,7 @@ OBJECTS  = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 # Compilation Build Automation Targets
 # ============================================================================
 
-.PHONY: default all clean build install uninstall
+.PHONY: default all clean build install uninstall deb
 
 default: version build $(TARGET)
 all: default
@@ -134,3 +134,9 @@ uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/openhome-player
 	rm -rf $(DESTDIR)$(DOCDIR)
 	rm -rf $(DESTDIR)$(RESDIR)
+
+# Build an apt (.deb) package: builds the renderer, stages it and packs it
+# with dpkg-deb. Options are forwarded to the script, e.g.:
+#   make deb DEB_ARGS="--version 1.0.7 --output dist"
+deb:
+	./make-apt-package.sh $(DEB_ARGS)

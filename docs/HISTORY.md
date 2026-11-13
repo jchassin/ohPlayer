@@ -1,5 +1,7 @@
 # History
 
+* **2026-11-12** — New `linux/make-apt-package.sh` (and `make deb` target) to build an apt `.deb` package: stages the renderer + web UI + systemd unit via `make install DESTDIR=...`, computes runtime dependencies with `ldd`/`dpkg -S`, packs with `dpkg-deb`. Documented in `docs/BUILD.md`.
+
 * **2026-11-11** — Support for the Linn **MAJIK_I** integrated amplifier (and the whole Majik family) in the Linn Amp detection.
   * The LinnAmp sources now live in their own directory, `linux/LinnAmp/` (`LinnAmpProtocol.h`, `OhLinnAmpVolume.*`, `OhSerialPort.*`, `LinnAmpConfig.*`); the Makefile picks up `LinnAmp/*.cpp` like `radio/*.cpp`. The config-UI sources likewise moved to `linux/ConfigUI/` (`ConfigAppPlayerLinn.*`, `ConfigRamStore.*`, `res/`); `docs/HARDWARE.md` setup 2 now documents the RA + Majik-I (`MAJIK_I`) wiring concretely.
   * `$ID ?$` is parsed generically: LR2 preamplifiers answer with a model code + 12-digit serial (`LR2...`), Majik amplifiers with their model name (e.g. `MAJIK_I`). Any Linn amplifier speaking the `$...$` RS232 protocol (9600 bauds, 7E1) is now detected, not just LR2 preamplifiers.
