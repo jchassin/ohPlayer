@@ -16,3 +16,4 @@ openhome-player
 # Generated install packages
 *.deb
 *.sh
+!make-apt-package.sh
