@@ -700,7 +700,7 @@ Views = function($){
                 var headerRow = $('<tr/>');
                 $(aParameter.listheaders).each(function(idx, header){
                   var col = $('<th/>');
-                  col.html(header);
+                  col.text(header);
                   headerRow.append(col);
                 });
                 editor.append(headerRow);
@@ -709,7 +709,7 @@ Views = function($){
                 var rowElem = $('<tr/>');
                 $(row).each(function(idx2, col){
                   var colElem = $('<td/>');
-                  colElem.html(col);
+                  colElem.text(col);
                   rowElem.append(colElem);
                 });
                 editor.append(rowElem);
