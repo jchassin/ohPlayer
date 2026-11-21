@@ -429,6 +429,15 @@ TestMediaPlayer::TestMediaPlayer(Net::DvStack& aDvStack, Net::CpStack& aCpStack,
     auto mpInit = MediaPlayerInitParams::New(Brn(aRoom), Brn(aProductName), kFriendlyNamePrefix);
     mpInit->EnableConfigApp();
     mpInit->EnablePins(kMaxPinsDevice);
+    // Register Device.StartupMode / Device.AutoPlay with the ConfigManager so
+    // they are exposed in the web config ui and persisted in the store.
+    // Without ConfigStartupMode, PowerManager gets no ConfigInitialiser and
+    // boots awake (StandbyDisableReason::Boot), which activates+prefetches the
+    // startup source at boot and can wedge the first Radio SetChannel/Play in
+    // Buffering; booting in standby ("sleep", the ConfigChoice default, same as
+    // a Linn Majik with Startup mode=sleep) activates the source cleanly on wake.
+    mpInit->EnableConfigStartupMode(true);
+    mpInit->EnableConfigAutoPlay(true);
     // When a Linn amp handles volume, report Volume.Enabled as Yes to the
     // MediaPlayer only (see StoreWithOverriddenValue); the real store keeps
     // the user's setting so the web ui and the next start are unaffected.
