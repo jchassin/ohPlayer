@@ -2,6 +2,12 @@
 
 Settings live in the web configuration ui, available on the renderer's presentation url (the `<device ip>` presentation link advertised via UPnP, port 8080 by default). Changes to pipeline buffers are applied at the next start.
 
+## Startup
+
+* **Startup Mode** (`Device.StartupMode`): whether the renderer boots in standby ("sleep", the default, same as a Linn DS/Majik) or awake. When the option is not registered the renderer always boots awake and the startup source is activated (and its last channel prefetched) at boot, which can leave the first radio play stuck in `Buffering`; booting in standby activates the source cleanly when a control point wakes the renderer (`SetStandby(No)`).
+* **Auto Play** (`Device.AutoPlay`): auto-start the startup source after boot/wake. Default: off.
+* **Startup Source** (`Source.StartupName`): source selected at boot (`last used` by default).
+
 ## Pipeline buffers
 
 [![Audio chain diagram — buffers and latency](audio-chain.svg)](audio-chain.svg)

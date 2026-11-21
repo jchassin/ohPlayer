@@ -80,6 +80,10 @@ ConfigAppPlayerLinn::ConfigAppPlayerLinn(IInfoAggregator& aInfoAggregator,
     AddConfigNum(PipelineConfig::kKeyStarvationRamperMinSize);
     AddConfigNum(PipelineConfig::kKeyEncodedReservoirSize);
     AddConfigNum(PipelineConfig::kKeyAlsaBufferUs);
+    // Startup mode (0 = boot in standby "sleep", 1 = awake), registered by the
+    // PowerManager when ConfigStartupMode is enabled. Conditional: skipped if
+    // the key is not registered, so the web ui only shows it when supported.
+    AddConfigChoiceConditional(Brn("Device.StartupMode"));
     // Expose ohPipeline's internal volume control toggle (hidden by default).
     // Allows disabling the volume control point-side on setups where the
     // sound card has no mixer and no external amplifier controls volume.
