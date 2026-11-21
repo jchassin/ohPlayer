@@ -55,6 +55,7 @@ VOLATILE_KEYS = {"dumped_at", "location", "base_url", "ssdp", "sid", "timeout",
                  "SEQ", "SID", "raw_lastchange", "label", "subscribe_error"}
 
 RADIO_SERVICE_ID = "urn:av-openhome-org:serviceId:Radio"
+CONFIG_SERVICE_ID = "urn:av-openhome-org:serviceId:Config"
 
 
 def local(tag):
@@ -368,7 +369,16 @@ def is_safe_query(name, in_args):
     return not in_args and (name.startswith("Get") or name in SAFE_QUERY_ACTIONS)
 
 
-def dump_location(location, observe=0, set_channel=None, play=False, label=None):
+def find_service(parsed, service_id):
+    for dev in flatten_devices(parsed):
+        for svc in dev["services"]:
+            if svc["serviceId"] == service_id:
+                return svc
+    return None
+
+
+def dump_location(location, observe=0, set_channel=None, play=False, label=None,
+                  get_config=None, set_config=None):
     xml_bytes = fetch(location)
     root = ET.fromstring(xml_bytes)
     dev_elem = child(root, "device")
@@ -399,19 +409,28 @@ def dump_location(location, observe=0, set_channel=None, play=False, label=None)
             time.sleep(0.2)
         time.sleep(0.5)
 
+        config_svc = find_service(parsed, CONFIG_SERVICE_ID)
+        for kv in (get_config or []):
+            if config_svc:
+                r = soap_call(config_svc["controlURL"], config_svc["serviceType"], "GetValue", {"Key": kv})
+                print(f"[get-config {kv}] -> {json.dumps(r)[:300]}")
+        for kv in (set_config or []):
+            key, _, value = kv.partition("=")
+            if config_svc and key:
+                r = soap_call(config_svc["controlURL"], config_svc["serviceType"], "SetValue",
+                              {"Key": key, "Value": value})
+                print(f"[set-config {key}={value}] -> {json.dumps(r)[:300]}")
         if set_channel:
-            for dev in flatten_devices(parsed):
-                for svc in dev["services"]:
-                    if svc["serviceId"] == RADIO_SERVICE_ID:
-                        r = soap_call(svc["controlURL"], svc["serviceType"], "SetChannel",
-                                      {"Uri": set_channel, "Metadata": didl_for_uri(set_channel)})
-                        print(f"[set-channel] -> {json.dumps(r)[:200]}")
+            radio_svc = find_service(parsed, RADIO_SERVICE_ID)
+            if radio_svc:
+                r = soap_call(radio_svc["controlURL"], radio_svc["serviceType"], "SetChannel",
+                              {"Uri": set_channel, "Metadata": didl_for_uri(set_channel)})
+                print(f"[set-channel] -> {json.dumps(r)[:200]}")
         if play:
-            for dev in flatten_devices(parsed):
-                for svc in dev["services"]:
-                    if svc["serviceId"] == RADIO_SERVICE_ID:
-                        r = soap_call(svc["controlURL"], svc["serviceType"], "Play")
-                        print(f"[play] -> {json.dumps(r)[:200]}")
+            radio_svc = find_service(parsed, RADIO_SERVICE_ID)
+            if radio_svc:
+                r = soap_call(radio_svc["controlURL"], radio_svc["serviceType"], "Play")
+                print(f"[play] -> {json.dumps(r)[:200]}")
 
         t0 = time.time()
         if observe > 0:
@@ -550,6 +569,10 @@ def main():
                    help="seconds to watch GENA events after subscribing")
     d.add_argument("--set-channel", default=None, help="Radio.SetChannel Uri to send")
     d.add_argument("--play", action="store_true", help="Radio.Play after SetChannel")
+    d.add_argument("--get-config", action="append", default=[], metavar="KEY",
+                   help="Config.GetValue(Key), repeatable (e.g. --get-config Device.StartupMode)")
+    d.add_argument("--set-config", action="append", default=[], metavar="KEY=VALUE",
+                   help="Config.SetValue(Key, Value), persisted to the store, repeatable")
 
     c = sub.add_parser("diff", help="diff two dump JSON files")
     c.add_argument("a")
@@ -590,7 +613,8 @@ def main():
         print(f"[dump] {loc}")
         doc = dump_location(loc, observe=args.observe,
                             set_channel=args.set_channel, play=args.play,
-                            label=f"device{i}")
+                            label=f"device{i}",
+                            get_config=args.get_config, set_config=args.set_config)
         docs.append(doc)
 
     if args.out:
