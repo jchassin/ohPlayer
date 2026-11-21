@@ -2,6 +2,10 @@ Device.AutoPlay
 0   Off
 1   On
 
+Device.StartupMode
+0   Sleep
+1   On
+
 Sender.Enabled
 0   False
 1   True
