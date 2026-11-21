@@ -180,6 +180,21 @@ Views = function($){
                        case "rebootbutton":
                          parameter.Type = "REBOOTBUTTON";
                          break;
+                       case "enum":
+                         parameter.Type = "ENUM";
+                         var enumAllowedValues = [];
+                         if ("options" in parameter.meta){
+                           $(parameter.meta.options).each(function(idx, option){
+                             enumAllowedValues[enumAllowedValues.length] = {text:option.value, value:"" + option.id};
+                           });
+                         }
+                         else if ("vals" in parameter.meta){
+                           $(parameter.meta.vals).each(function(idx, v){
+                             enumAllowedValues[enumAllowedValues.length] = {text:"" + v, value:"" + v};
+                           });
+                         }
+                         parameter.AllowedValues = enumAllowedValues;
+                         break;
                        case "link":
                          parameter.Type = "LINK";
                          parameter.LinkTitle = parameter.linktitle;
