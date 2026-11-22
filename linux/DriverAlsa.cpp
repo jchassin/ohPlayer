@@ -4,6 +4,7 @@
 #include <OpenHome/OsWrapper.h>
 #include <alsa/asoundlib.h>
 #include <errno.h>
+#include <cstring>
 #include <memory>
 #include <vector>
 
@@ -666,6 +667,11 @@ DriverAlsa::Pimpl::Pimpl(const TChar* aAlsaDevice, TUint aBufferUs)
 , iBufferUs(aBufferUs)
 {
     auto err = snd_pcm_open(&iHandle, aAlsaDevice, SND_PCM_STREAM_PLAYBACK, 0);
+    if (err < 0 && std::strcmp(aAlsaDevice, "plug:default") == 0) {
+        OhLog::PrintWarning("DriverAlsa: could not open %s (%s), falling back to \"default\"\n",
+                            aAlsaDevice, snd_strerror(err));
+        err = snd_pcm_open(&iHandle, "default", SND_PCM_STREAM_PLAYBACK, 0);
+    }
     ASSERT(err == 0);
 
     // PcmProcessorLe with S32 support
@@ -963,31 +969,42 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     snd_pcm_hw_params_alloca(&hwParams);
     snd_pcm_sw_params_alloca(&swParams);
 
+    auto rejected = [&](const char* aStep, int aErr) {
+        OhLog::PrintDebug("DriverAlsa: profile rejected at %s (rate=%u bitDepth=%u channels=%u): %s\n",
+                          aStep, aSampleRate, aBitDepth, aNumChannels,
+                          aErr < 0 ? snd_strerror(aErr) : "value not supported");
+        return false;
+    };
+
     int err = snd_pcm_hw_params_any(iHandle, hwParams);
-    if (err < 0) return false;
+    if (err < 0) return rejected("hw_params_any", err);
 
     err = snd_pcm_hw_params_set_access(iHandle, hwParams,
                                        SND_PCM_ACCESS_RW_INTERLEAVED);
-    if (err < 0) return false;
+    if (err < 0) return rejected("access", err);
 
     err = snd_pcm_hw_params_set_format(iHandle, hwParams,
                                        outputFormat.first);
-    if (err < 0) return false;
+    if (err < 0) return rejected("format", err);
 
     err = snd_pcm_hw_params_set_channels(iHandle, hwParams,
                                          aNumChannels);
-    if (err < 0) return false;
+    if (err < 0) return rejected("channels", err);
 
     unsigned int rate = aSampleRate;
     err = snd_pcm_hw_params_set_rate_near(iHandle, hwParams, &rate, nullptr);
-    if (err < 0 || rate != aSampleRate) return false;
+    if (err < 0 || rate != aSampleRate) {
+        OhLog::PrintDebug("DriverAlsa: profile rejected at rate: requested %u, nearest %u (%s)\n",
+                          aSampleRate, rate, err < 0 ? snd_strerror(err) : "not supported");
+        return false;
+    }
 
     unsigned int bufferTime = aBufferUs;
     err = snd_pcm_hw_params_set_buffer_time_near(iHandle,
                                                  hwParams,
                                                  &bufferTime,
                                                  nullptr);
-    if (err < 0) return false;
+    if (err < 0) return rejected("buffer_time", err);
 
     // Réglage plus adapté SPI / embarqué :
     // plusieurs petites périodes dans un buffer assez confortable.
@@ -1000,10 +1017,10 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
                                                  hwParams,
                                                  &periodTime,
                                                  nullptr);
-    if (err < 0) return false;
+    if (err < 0) return rejected("period_time", err);
 
     err = snd_pcm_hw_params(iHandle, hwParams);
-    if (err < 0) return false;
+    if (err < 0) return rejected("hw_params", err);
 
     snd_pcm_uframes_t bufferSize = 0;
     snd_pcm_uframes_t periodSize = 0;
@@ -1012,20 +1029,20 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     snd_pcm_hw_params_get_period_size(hwParams, &periodSize, nullptr);
 
     err = snd_pcm_sw_params_current(iHandle, swParams);
-    if (err < 0) return false;
+    if (err < 0) return rejected("sw_params_current", err);
 
     err = snd_pcm_sw_params_set_start_threshold(iHandle,
                                                 swParams,
                                                 periodSize);
-    if (err < 0) return false;
+    if (err < 0) return rejected("start_threshold", err);
 
     err = snd_pcm_sw_params_set_avail_min(iHandle,
                                           swParams,
                                           periodSize);
-    if (err < 0) return false;
+    if (err < 0) return rejected("avail_min", err);
 
     err = snd_pcm_sw_params(iHandle, swParams);
-    if (err < 0) return false;
+    if (err < 0) return rejected("sw_params", err);
 
     snd_pcm_uframes_t startThreshold = 0;
     snd_pcm_uframes_t availMin = 0;
@@ -1033,7 +1050,7 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     snd_pcm_sw_params_get_avail_min(swParams, &availMin);
 
     err = snd_pcm_prepare(iHandle);
-    if (err < 0) return false;
+    if (err < 0) return rejected("prepare", err);
 
     OhLog::Print("DriverAlsa: configured ALSA: rate=%u channels=%u "
                "format=%d buffer=%lu frames/%u us "
@@ -1105,7 +1122,7 @@ const TUint DriverAlsa::kSupportedMsgTypes = PipelineElement::MsgType::eMode
 
 DriverAlsa::DriverAlsa(IPipeline& aPipeline, TUint aBufferUs)
     : PipelineElement(kSupportedMsgTypes)
-    , iPimpl(new Pimpl("default", aBufferUs))
+    , iPimpl(new Pimpl("plug:default", aBufferUs))
     , iPipeline(aPipeline)
     , iMutex("alsa")
     , iQuit(false)
