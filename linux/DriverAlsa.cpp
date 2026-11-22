@@ -949,6 +949,17 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
                decodedStreamInfo.BitDepth(), decodedStreamInfo.SampleRate(),
                decodedStreamInfo.NumChannels());
 
+    // Diagnose the device capabilities so the log says why nothing matched.
+    snd_pcm_hw_params_t* hwParams;
+    snd_pcm_hw_params_alloca(&hwParams);
+    if (snd_pcm_hw_params_any(iHandle, hwParams) == 0) {
+        unsigned int rateMin = 0, rateMax = 0;
+        snd_pcm_hw_params_get_rate_min(hwParams, &rateMin, nullptr);
+        snd_pcm_hw_params_get_rate_max(hwParams, &rateMax, nullptr);
+        OhLog::PrintWarning("DriverAlsa: device supports rate range %u-%u Hz\n",
+                            rateMin, rateMax);
+    }
+
     iDitch = true;
     iProfileIndex = -1;
 }
