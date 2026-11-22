@@ -913,11 +913,21 @@ void DriverAlsa::Pimpl::ProcessDecodedStream(MsgDecodedStream* aMsg)
         iDuplicateChannel = false;
     }
 
+    // Try the configured buffer first, then a 4x larger one: at low sample
+    // rates (e.g. 16 kHz TTS) a small buffer can fall below the device
+    // minimum buffer/period constraints in frames and every profile fails.
+    const TUint kMaxBufferUs = 100000;
+    TUint bufferTries[2] = { iBufferUs, iBufferUs * 4 };
+    if (bufferTries[1] > kMaxBufferUs) {
+        bufferTries[1] = kMaxBufferUs;
+    }
+
+    for (TUint t = 0; t < 2; ++t)
     for (TUint i = 0; i < iProfiles.size(); ++i)
     {
         if (TryProfile(iProfiles[i], decodedStreamInfo.BitDepth(),
                        decodedStreamInfo.NumChannels(),
-                       decodedStreamInfo.SampleRate(), iBufferUs))
+                       decodedStreamInfo.SampleRate(), bufferTries[t]))
         {
             iProfileIndex = i;
 
@@ -981,9 +991,9 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     snd_pcm_sw_params_alloca(&swParams);
 
     auto rejected = [&](const char* aStep, int aErr) {
-        OhLog::PrintDebug("DriverAlsa: profile rejected at %s (rate=%u bitDepth=%u channels=%u): %s\n",
-                          aStep, aSampleRate, aBitDepth, aNumChannels,
-                          aErr < 0 ? snd_strerror(aErr) : "value not supported");
+        OhLog::PrintWarning("DriverAlsa: profile rejected at %s (rate=%u bitDepth=%u channels=%u bufferUs=%u): %s\n",
+                            aStep, aSampleRate, aBitDepth, aNumChannels, aBufferUs,
+                            aErr < 0 ? snd_strerror(aErr) : "value not supported");
         return false;
     };
 
@@ -1005,8 +1015,8 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     unsigned int rate = aSampleRate;
     err = snd_pcm_hw_params_set_rate_near(iHandle, hwParams, &rate, nullptr);
     if (err < 0 || rate != aSampleRate) {
-        OhLog::PrintDebug("DriverAlsa: profile rejected at rate: requested %u, nearest %u (%s)\n",
-                          aSampleRate, rate, err < 0 ? snd_strerror(err) : "not supported");
+        OhLog::PrintWarning("DriverAlsa: profile rejected at rate: requested %u, nearest %u (%s)\n",
+                            aSampleRate, rate, err < 0 ? snd_strerror(err) : "not supported");
         return false;
     }
 
