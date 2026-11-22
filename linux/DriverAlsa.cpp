@@ -1012,6 +1012,13 @@ TBool DriverAlsa::Pimpl::TryProfile(Profile& aProfile,
     if (periodTime < 10000) {
         periodTime = 10000; // 10 ms minimum
     }
+    // A period must fit at least twice in the buffer (PERIODS >= 2): at low
+    // sample rates (e.g. 16 kHz TTS) the 10 ms floor can exceed half the
+    // buffer, which leaves snd_pcm_hw_params() with no valid period and the
+    // whole stream gets rejected. Cap the period at half the buffer.
+    if (periodTime > bufferTime / 2) {
+        periodTime = bufferTime / 2;
+    }
 
     err = snd_pcm_hw_params_set_period_time_near(iHandle,
                                                  hwParams,
