@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
+#include <poll.h>
 #include <unistd.h>
 #include <termios.h>
 #include <ctime>
@@ -120,12 +121,52 @@ TBool OhSerialPort::Write(const Brx& aData, TUint aTimeoutMs) {
         return false;
     }
 
-    ssize_t written = write(iFd, aData.Ptr(), aData.Bytes());
-    if (written == -1) {
+    // The port is opened with O_NDELAY, so write() is non-blocking: it returns
+    // a short count when the TX buffer is partially full and -1/EAGAIN when it
+    // is full (typical on USB-serial adapters while a previous packet is still
+    // clocking out at 9600 baud, e.g. during a volume ramp burst). Loop until
+    // all bytes are sent, waiting for writability on EAGAIN, and only fail on
+    // a real error or when aTimeoutMs expires.
+    const TByte* ptr = aData.Ptr();
+    TUint remaining = aData.Bytes();
+    TUint startTime = NowMs();
+
+    while (remaining > 0) {
+        TUint elapsed = NowMs() - startTime;
+        if (elapsed >= aTimeoutMs) {
+            OhLog::PrintError("OhSerialPort: write timed out after %u ms (%u/%u bytes sent)\n",
+                              aTimeoutMs, aData.Bytes() - remaining, aData.Bytes());
+            return false;
+        }
+
+        ssize_t written = write(iFd, ptr, remaining);
+        if (written > 0) {
+            ptr += written;
+            remaining -= static_cast<TUint>(written);
+            continue;
+        }
+        if (written == -1 && errno == EINTR) {
+            continue;
+        }
+        if (written == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            struct pollfd pfd;
+            pfd.fd = iFd;
+            pfd.events = POLLOUT;
+            pfd.revents = 0;
+            int waitMs = static_cast<int>(aTimeoutMs - elapsed);
+            if (waitMs < 1) {
+                waitMs = 1;
+            }
+            if (poll(&pfd, 1, waitMs) == -1 && errno != EINTR) {
+                OhLog::PrintError("OhSerialPort: poll failed: %s\n", strerror(errno));
+                return false;
+            }
+            continue;
+        }
         OhLog::PrintError("OhSerialPort: write failed: %s\n", strerror(errno));
         return false;
     }
-    return (written == (ssize_t)aData.Bytes());
+    return true;
 }
 
 TBool OhSerialPort::Read(Bwx& aBuffer, TUint aTimeoutMs) {
